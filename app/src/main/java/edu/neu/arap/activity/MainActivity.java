@@ -1,6 +1,7 @@
 package edu.neu.arap.activity;
 
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -15,8 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import boofcv.android.BoofAndroidFiles;
+import boofcv.android.ConvertBitmap;
 import boofcv.android.gui.VideoDisplayActivity;
+import boofcv.android.gui.VideoImageProcessing;
 import boofcv.struct.calib.IntrinsicParameters;
+import boofcv.struct.image.ImageBase;
+import boofcv.struct.image.ImageType;
+import boofcv.struct.image.ImageUInt8;
+import boofcv.struct.image.MultiSpectral;
 import butterknife.ButterKnife;
 import edu.neu.arap.R;
 
@@ -54,6 +61,7 @@ public class MainActivity extends VideoDisplayActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		setProcessing(new ImageProcessing());
 	}
 
 	@Override
@@ -172,6 +180,17 @@ public class MainActivity extends VideoDisplayActivity {
 		public List<Camera.Size> sizePicture = new ArrayList<Camera.Size>();
 		public float horizontalViewAngle;
 		public float verticalViewAngle;
+	}
+
+	private class ImageProcessing<T extends ImageBase> extends VideoImageProcessing<MultiSpectral<ImageUInt8>>{
+		protected ImageProcessing() {
+			super(ImageType.ms(3, ImageUInt8.class));
+		}
+
+		@Override
+		protected void process(MultiSpectral<ImageUInt8> image, Bitmap output, byte[] storage) {
+			ConvertBitmap.multiToBitmap(image, output, storage);
+		}
 	}
 }
 
