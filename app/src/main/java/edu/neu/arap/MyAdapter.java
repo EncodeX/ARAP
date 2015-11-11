@@ -11,29 +11,40 @@ import android.widget.TextView;
  * Created by 志伟 on 2015/11/10.
  */
 class MyAdapter extends RecyclerView.Adapter {
-    class myViewHolder extends RecyclerView.ViewHolder {
+    class myViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageButton imageButton;
         private TextView textView;
-        private View root;
-        public myViewHolder(View root) {
+        private MyItemClickListener mListener;
+        public myViewHolder(View root,MyItemClickListener listener) {
             super(root);
             textView= (TextView) root.findViewById(R.id.listText);
             imageButton= (ImageButton) root.findViewById(R.id.listImage);
+            this.mListener = listener;
+            root.setOnClickListener(this);
         }
 
-        public ImageButton getImageButton() {
-            return imageButton;
-        }
-
+        public ImageButton getImageButton() {return imageButton;}
         public TextView getTextView() {
             return textView;
         }
+
+        @Override
+        public void onClick(View v) {
+            if(mListener != null){
+                mListener.onItemClick(v,getPosition());
+            }
+
+        }
     }
 
-
+    private MyItemClickListener mItemClickListener;
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        return new myViewHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list,null));
+        View view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list,null);
+        return new myViewHolder(view,mItemClickListener);
+    }
+    public void setOnItemClickListener(MyItemClickListener listener){
+        this.mItemClickListener = listener;
     }
 
     @Override

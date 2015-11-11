@@ -6,8 +6,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Toast;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements MyItemClickListener {
     private Camera camera;
     private Camera.Parameters parameters;
     @Override
@@ -28,7 +29,7 @@ public class SearchActivity extends AppCompatActivity {
         mAdapter = new MyAdapter();
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
-
+        mAdapter.setOnItemClickListener(this);
 
         findViewById(R.id.flashOn).setVisibility(View.INVISIBLE);
         findViewById(R.id.my_recycler_view).setVisibility(View.INVISIBLE);
@@ -82,5 +83,10 @@ public class SearchActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onItemClick(View view, int postion) {
+        Toast.makeText(this, "图片"+postion, Toast.LENGTH_SHORT).show();
     }
 }
