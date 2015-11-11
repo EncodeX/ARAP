@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.FileInputStream;
@@ -21,8 +22,11 @@ import boofcv.android.gui.VideoDisplayActivity;
 import boofcv.android.gui.VideoImageProcessing;
 import boofcv.struct.calib.IntrinsicParameters;
 import boofcv.struct.image.ImageBase;
+import boofcv.struct.image.ImageInterleaved;
 import boofcv.struct.image.ImageType;
 import boofcv.struct.image.ImageUInt8;
+import boofcv.struct.image.InterleavedI8;
+import boofcv.struct.image.InterleavedU8;
 import boofcv.struct.image.MultiSpectral;
 import butterknife.ButterKnife;
 import edu.neu.arap.R;
@@ -134,7 +138,7 @@ public class MainActivity extends VideoDisplayActivity {
 		}
 
 		CameraSpecs camera = specs.get(preference.cameraId);
-		preference.preview = UtilVarious.closest(camera.sizePreview,320,240);
+		preference.preview = UtilVarious.closest(camera.sizePreview,640,480);
 		preference.picture = UtilVarious.closest(camera.sizePicture,640,480);
 
 		// see if there are any intrinsic parameters to load
@@ -182,14 +186,36 @@ public class MainActivity extends VideoDisplayActivity {
 		public float verticalViewAngle;
 	}
 
-	private class ImageProcessing<T extends ImageBase> extends VideoImageProcessing<MultiSpectral<ImageUInt8>>{
+//	private class ImageProcessing<T extends ImageBase> extends VideoImageProcessing<MultiSpectral<ImageUInt8>>{
+//		protected ImageProcessing() {
+//			super(ImageType.ms(3, ImageUInt8.class));
+//		}
+//
+//		@Override
+//		protected void process(MultiSpectral<ImageUInt8> image, Bitmap output, byte[] storage) {
+//			ConvertBitmap.multiToBitmap(image, output, storage);
+//		}
+//	}
+
+//	private class ImageProcessing extends VideoImageProcessing<ImageUInt8>{
+//		protected ImageProcessing() {
+//			super(ImageType.single(ImageUInt8.class));
+//		}
+//
+//		@Override
+//		protected void process(ImageUInt8 image, Bitmap output, byte[] storage) {
+//			ConvertBitmap.grayToBitmap(image, output, storage);
+//		}
+//	}
+
+	private class ImageProcessing<T extends ImageBase> extends VideoImageProcessing<InterleavedU8>{
 		protected ImageProcessing() {
-			super(ImageType.ms(3, ImageUInt8.class));
+			super(ImageType.il(3, InterleavedU8.class));
 		}
 
 		@Override
-		protected void process(MultiSpectral<ImageUInt8> image, Bitmap output, byte[] storage) {
-			ConvertBitmap.multiToBitmap(image, output, storage);
+		protected void process(InterleavedU8 image, Bitmap output, byte[] storage) {
+			ConvertBitmap.interleavedToBitmap(image, output, storage);
 		}
 	}
 }
@@ -218,6 +244,8 @@ class UtilVarious {
 		for( int i = 0; i < sizes.size(); i++ ) {
 			Camera.Size s = sizes.get(i);
 
+			Log.d("Camera","width: "+ s.width+" height: "+s.height);
+
 			int dx = s.width-width;
 			int dy = s.height-height;
 
@@ -228,6 +256,7 @@ class UtilVarious {
 			}
 		}
 
+		Log.d("Camera","best: "+ best);
 		return best;
 	}
 
