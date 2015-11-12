@@ -262,6 +262,7 @@ public class MainActivity extends VideoDisplayActivity {
 
 	private void startAnimation(){
 		// sample code
+		// http://nineoldandroids.com
 		buildSlideAnimation(getViewPreview(), 0, 600);
 		mSlideAnimation.start();
 	}
