@@ -1,20 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageButton
+    <ImageView
+        android:id="@+id/listImage"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:id="@+id/listImage"
-        android:layout_gravity="center_horizontal"
+        android:layout_centerHorizontal="true"
         android:scaleType="fitXY"/>
 
+	<View
+		android:layout_width="wrap_content"
+		android:layout_height="24dp"
+		android:layout_alignBottom="@id/listImage"
+		android:layout_alignLeft="@id/listImage"
+		android:layout_alignRight="@id/listImage"
+		android:alpha="0.8"
+	    android:background="@drawable/gradient_shadow_inverse"/>
+
     <TextView
+        android:id="@+id/listText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Small Text"
-        android:id="@+id/listText"
-        android:layout_gravity="center_horizontal" />
-</LinearLayout>
+        android:layout_centerHorizontal="true"
+        android:layout_alignBottom="@id/listImage"
+        android:textColor="@android:color/white"
+        android:text="Small Text" />
+</RelativeLayout>

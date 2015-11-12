@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:layout_height="match_parent"
     tools:context="edu.neu.arap.SearchActivity">
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
-        android:layout_width="wrap_content"
-        android:layout_height="120dp"
-        android:scrollbars="vertical"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+	<ImageView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:scaleType="centerCrop"
+		android:src="@drawable/demo_background"/>
+	<FrameLayout
+		android:id="@+id/recycler_view_canvas"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentLeft="true"
+		android:layout_alignParentStart="true">
+		<android.support.v7.widget.RecyclerView
+			android:id="@+id/my_recycler_view"
+			android:layout_width="match_parent"
+			android:layout_height="120dp"
+			android:padding="8dp"
+			android:visibility="gone"
+			android:background="#99000000"/>
+	</FrameLayout>
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -34,22 +43,22 @@
         android:layout_alignParentStart="true"
         android:src="@mipmap/ic_flash_on_black_48dp" />
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/findOn"
-        android:layout_centerVertical="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:src="@mipmap/ic_gps_fixed_black_48dp" />
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <!--<ImageButton-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/findOn"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_alignParentEnd="true"-->
+        <!--android:src="@mipmap/ic_gps_fixed_black_48dp" />-->
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:id="@+id/findOff"
-        android:layout_centerVertical="true"
+        android:layout_margin="8dp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:src="@mipmap/ic_gps_fixed_grey600_48dp" />
+        android:layout_above="@id/recycler_view_canvas"
+	    android:background="@drawable/btn_explore_selector"/>
 
     <TextView
         android:layout_width="wrap_content"

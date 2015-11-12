@@ -54,7 +54,7 @@ public class MainActivity extends VideoDisplayActivity {
 		super.onCreate(savedInstanceState);
 //		setContentView(R.layout.activity_main);
 
-		ButterKnife.inject(this);
+		ButterKnife.bind(this);
 
 //		initCamera();
 
