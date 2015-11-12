@@ -6,7 +6,13 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
+
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorSet;
+import com.nineoldandroids.animation.ObjectAnimator;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -217,6 +223,47 @@ public class MainActivity extends VideoDisplayActivity {
 		protected void process(InterleavedU8 image, Bitmap output, byte[] storage) {
 			ConvertBitmap.interleavedToBitmap(image, output, storage);
 		}
+	}
+
+
+	private AnimatorSet mSlideAnimation;
+	private Animator.AnimatorListener mViewToggleListener = new Animator.AnimatorListener() {
+		@Override
+		public void onAnimationStart(Animator animation) {
+
+		}
+
+		@Override
+		public void onAnimationEnd(Animator animation) {
+
+		}
+
+		@Override
+		public void onAnimationCancel(Animator animation) {
+
+		}
+
+		@Override
+		public void onAnimationRepeat(Animator animation) {
+
+		}
+	};
+
+	private void buildSlideAnimation(View target, float targetPosY, int duration){
+		mSlideAnimation = new AnimatorSet();
+		mSlideAnimation.playTogether(
+				ObjectAnimator.ofFloat(target, "translationY", targetPosY)
+		);
+		mSlideAnimation.setInterpolator(new DecelerateInterpolator(4.0f));
+
+		mSlideAnimation.setDuration(duration);
+		mSlideAnimation.addListener(mViewToggleListener);
+	}
+
+	private void startAnimation(){
+		// sample code
+		buildSlideAnimation(getViewPreview(), 0, 600);
+		mSlideAnimation.start();
 	}
 }
 
