@@ -56,6 +56,8 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         layoutParams2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         layoutParams2.addRule(RelativeLayout.ABOVE,R.id.recycler_view_canvas);
+        layoutParams.rightMargin=8;
+        layoutParams2.rightMargin=8;
         findOffButton.setLayoutParams(layoutParams);
     }
     private void clickerListener(){
