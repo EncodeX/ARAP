@@ -6,11 +6,11 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-import com.threed.jpct.Animation;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -18,8 +18,13 @@ import butterknife.ButterKnife;
 public class SearchActivity extends AppCompatActivity implements MyItemClickListener {
     private Camera camera;
     private Camera.Parameters parameters;
-    private TranslateAnimation translateAnimation;
-    private TranslateAnimation translateAnimationUp;
+    private float recyclerViewHeight;
+    private TranslateAnimation translateAnimationRecyclerView;
+    private TranslateAnimation translateAnimationTextViewUp;
+    private TranslateAnimation translateAnimationRecyclerViewUp;
+    private RelativeLayout.LayoutParams layoutParams=new RelativeLayout.LayoutParams(100,100);
+    private RelativeLayout.LayoutParams layoutParams2=new RelativeLayout.LayoutParams(100,100);
+
 	@Bind(R.id.findOff)
 	Button findOffButton;
     @Bind(R.id.flashOff)
@@ -45,8 +50,13 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
         mAdapter.setOnItemClickListener(this);
-        translateAnimationUp=new TranslateAnimation(0,0,0,-100);
-        translateAnimationUp.setDuration(618);
+        translateAnimationTextViewUp =new TranslateAnimation(0,0,0,-100);
+        translateAnimationTextViewUp.setDuration(618);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        layoutParams2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        layoutParams2.addRule(RelativeLayout.ABOVE,R.id.recycler_view_canvas);
+        findOffButton.setLayoutParams(layoutParams);
     }
     private void clickerListener(){
         findViewById(R.id.textView).setVisibility(View.INVISIBLE);
@@ -55,7 +65,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
             public void onClick(View view) {
                 if (findViewById(R.id.findOff).isSelected()) {
                     findViewById(R.id.findOff).setSelected(false);
-                    translateAnimationUp.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
+                    translateAnimationTextViewUp.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
                         @Override
                         public void onAnimationStart(android.view.animation.Animation animation) {
                         }
@@ -69,27 +79,52 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
                         public void onAnimationRepeat(android.view.animation.Animation animation) {
                         }
                     });
-                    findViewById(R.id.textView).startAnimation(translateAnimationUp);
-                    translateAnimation=new TranslateAnimation(0,0,0,findViewById(R.id.recycler_view_canvas).getHeight());
-                    translateAnimation.setDuration(618);
-                    translateAnimation.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
+                    findViewById(R.id.textView).startAnimation(translateAnimationTextViewUp);
+                    translateAnimationRecyclerView =new TranslateAnimation(0,0,0,recyclerViewHeight);
+                    translateAnimationRecyclerView.setDuration(618);
+                    translateAnimationRecyclerView.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
                         @Override
                         public void onAnimationStart(android.view.animation.Animation animation) {
                         }
+
                         @Override
                         public void onAnimationEnd(android.view.animation.Animation animation) {
-                            findViewById(R.id.my_recycler_view).setVisibility(View.GONE);
+                            findViewById(R.id.my_recycler_view).setVisibility(View.INVISIBLE);
+                            findOffButton.setLayoutParams(layoutParams);
                         }
+
                         @Override
                         public void onAnimationRepeat(android.view.animation.Animation animation) {
                         }
                     });
-                    findViewById(R.id.my_recycler_view).startAnimation(translateAnimation);
-                    view.startAnimation(translateAnimation);
+                    findViewById(R.id.my_recycler_view).startAnimation(translateAnimationRecyclerView);
+                    view.startAnimation(translateAnimationRecyclerView);
+                 //   findOffButton.setY(recyclerViewHeight);
+
                 } else {
-                    findViewById(R.id.findOff).setSelected(true);
+                    findOffButton.setSelected(true);
                     findViewById(R.id.textView).setVisibility(View.VISIBLE);
-                    findViewById(R.id.my_recycler_view).setVisibility(View.VISIBLE);
+                    recyclerViewHeight=findViewById(R.id.recycler_view_canvas).getHeight();
+                    translateAnimationRecyclerViewUp=new TranslateAnimation(0,0,recyclerViewHeight,0);
+                    translateAnimationRecyclerViewUp.setDuration(618);
+                    translateAnimationRecyclerViewUp.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            findViewById(R.id.my_recycler_view).setVisibility(View.VISIBLE);
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                    findViewById(R.id.my_recycler_view).startAnimation(translateAnimationRecyclerViewUp);
+                    view.startAnimation(translateAnimationRecyclerViewUp);
+                 //   findOffButton.setY(-recyclerViewHeight);
+                    findOffButton.setLayoutParams(layoutParams2);
                 }
             }
         });
