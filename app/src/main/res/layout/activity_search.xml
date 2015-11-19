@@ -51,6 +51,16 @@
         android:layout_alignParentRight="true"
         android:layout_above="@+id/recycler_view_canvas"
 	    android:background="@drawable/btn_explore_selector"/>
+    <Button
+        android:layout_width="72dp"
+        android:layout_height="24dp"
+        android:id="@+id/select"
+        android:layout_marginLeft="8dp"
+        android:text="筛选"
+        android:layout_alignParentLeft="true"
+        android:layout_above="@+id/recycler_view_canvas"
+        android:background="@color/colorAccent"
+        android:visibility="invisible"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -61,5 +71,15 @@
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"/>
+
+    <Spinner
+        android:layout_width="72dp"
+        android:layout_height="24dp"
+        android:id="@+id/spinner"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="8dp"
+        android:layout_above="@+id/recycler_view_canvas"
+        android:background="@color/colorAccent"
+        />
 
 </RelativeLayout>
