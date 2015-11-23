@@ -144,8 +144,8 @@ public class MainActivity extends VideoDisplayActivity {
 		}
 
 		CameraSpecs camera = specs.get(preference.cameraId);
-		preference.preview = UtilVarious.closest(camera.sizePreview,640,480);
-		preference.picture = UtilVarious.closest(camera.sizePicture,640,480);
+		preference.preview = UtilVarious.closest(camera.sizePreview,352,288);
+		preference.picture = UtilVarious.closest(camera.sizePicture,352,288);
 
 		// see if there are any intrinsic parameters to load
 		loadIntrinsic();
