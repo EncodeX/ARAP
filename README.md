@@ -41,7 +41,7 @@
 ## 开发环境
 
 * Android Studio、 Android API 23 (Android 6.0 Marshmallow)
-* OpenCV 3.0
+* OpenCV 3.0 / BoofCV 0.20
 * LIRE(暂未导入)
 * 利用 git 分布协作， 参考文档： https://git-scm.com/book/zh/v2
 
