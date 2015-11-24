@@ -30,11 +30,11 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
     private String[] spinnerData={"全部","餐饮","交通","学习","住宿","娱乐","购物"};
     private boolean flag=true;
 
-	@Bind(R.id.findOff)
+	@Bind(R.id.explore_button)
 	Button findOffButton;
-    @Bind(R.id.flashOff)
+    @Bind(R.id.flashlight_button)
     Button flashOffButton;
-    @Bind(R.id.spinner)
+    @Bind(R.id.filter_spinner)
     Spinner spinner;
 
     @Override
@@ -49,7 +49,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         ButterKnife.bind(this);
         RecyclerView mRecyclerView;
         LinearLayoutManager mLayoutManager;
-        mRecyclerView = (RecyclerView)findViewById(R.id.my_recycler_view);
+        mRecyclerView = (RecyclerView)findViewById(R.id.explore_list);
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
         MyAdapter mAdapter;
@@ -73,23 +73,23 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         });
     }
     private void clickerListener(){
-        findViewById(R.id.textView).setVisibility(View.INVISIBLE);
+        findViewById(R.id.hint_text).setVisibility(View.INVISIBLE);
         findOffButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (findViewById(R.id.findOff).isSelected()) {
-                    findViewById(R.id.findOff).setSelected(false);
-                    findViewById(R.id.textView).startAnimation(translateAnimationTextViewUp);
-                    findViewById(R.id.my_recycler_view).startAnimation(translateAnimationRecyclerView);
+                if (findViewById(R.id.explore_button).isSelected()) {
+                    findViewById(R.id.explore_button).setSelected(false);
+                    findViewById(R.id.hint_text).startAnimation(translateAnimationTextViewUp);
+                    findViewById(R.id.explore_list).startAnimation(translateAnimationRecyclerView);
                     view.startAnimation(translateAnimationRecyclerView);
                 } else {
                     findOffButton.setSelected(true);
-                    findViewById(R.id.textView).setVisibility(View.VISIBLE);
+                    findViewById(R.id.hint_text).setVisibility(View.VISIBLE);
                     if(flag)
                     {
                         setLayout();
                     }
-                    findViewById(R.id.my_recycler_view).startAnimation(translateAnimationRecyclerViewUp);
+                    findViewById(R.id.explore_list).startAnimation(translateAnimationRecyclerViewUp);
                     view.startAnimation(translateAnimationRecyclerViewUp);
                     findOffButton.setLayoutParams(layoutParams2);
                 }
@@ -98,14 +98,14 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         flashOffButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (findViewById(R.id.flashOff).isSelected()) {
-                    findViewById(R.id.flashOff).setSelected(false);
+                if (findViewById(R.id.flashlight_button).isSelected()) {
+                    findViewById(R.id.flashlight_button).setSelected(false);
                     parameters = camera.getParameters();
                     parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                     camera.setParameters(parameters);
                     camera.release();
                 } else {
-                    findViewById(R.id.flashOff).setSelected(true);
+                    findViewById(R.id.flashlight_button).setSelected(true);
                     camera = Camera.open();
                     parameters = camera.getParameters();
                     parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
@@ -122,13 +122,13 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
 
     private void setLayout(){
         flag=false;
-        recyclerViewHeight=findViewById(R.id.recycler_view_canvas).getHeight();
+        recyclerViewHeight=findViewById(R.id.expand_area).getHeight();
         layoutParams=new RelativeLayout.LayoutParams(findOffButton.getHeight(),findOffButton.getWidth());
         layoutParams2=new RelativeLayout.LayoutParams(findOffButton.getHeight(),findOffButton.getWidth());
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         layoutParams2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        layoutParams2.addRule(RelativeLayout.ABOVE, R.id.recycler_view_canvas);
+        layoutParams2.addRule(RelativeLayout.ABOVE, R.id.expand_area);
         layoutParams.rightMargin=8;
         layoutParams2.rightMargin=8;
         translateAnimationRecyclerViewUp=new TranslateAnimation(0,0,recyclerViewHeight,0);
@@ -140,7 +140,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                findViewById(R.id.my_recycler_view).setVisibility(View.VISIBLE);
+                findViewById(R.id.explore_list).setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -154,7 +154,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
 
             @Override
             public void onAnimationEnd(android.view.animation.Animation animation) {
-                findViewById(R.id.textView).setVisibility(View.GONE);
+                findViewById(R.id.hint_text).setVisibility(View.GONE);
             }
 
             @Override
@@ -170,7 +170,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
 
             @Override
             public void onAnimationEnd(android.view.animation.Animation animation) {
-                findViewById(R.id.my_recycler_view).setVisibility(View.INVISIBLE);
+                findViewById(R.id.explore_list).setVisibility(View.INVISIBLE);
                 findOffButton.setLayoutParams(layoutParams);
             }
 

@@ -9,68 +9,61 @@
 		android:scaleType="centerCrop"
 		android:src="@drawable/demo_background" />
 	<RelativeLayout
-		android:id="@+id/recycler_view_canvas"
+		android:id="@+id/expand_area"
 		android:layout_width="match_parent"
-		android:layout_height="164dp"
+		android:layout_height="228dp"
 		android:layout_alignParentBottom="true"
 		android:layout_marginBottom="-100dp">
-		<android.support.v7.widget.RecyclerView
-			android:id="@+id/my_recycler_view"
-			android:layout_width="match_parent"
-			android:layout_height="100dp"
-			android:layout_alignParentBottom="true"
-			android:visibility="visible"
-			android:background="#99000000"/>
 		<Button
+			android:id="@+id/main_menu_button"
 			android:layout_width="48dp"
 			android:layout_height="48dp"
-			android:id="@+id/findOff"
-			android:layout_above="@id/my_recycler_view"
 			android:layout_margin="8dp"
 			android:layout_alignParentRight="true"
+			android:background="@drawable/btn_main_menu"/>
+		<Button
+			android:id="@+id/explore_button"
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:layout_margin="8dp"
+			android:layout_alignParentRight="true"
+			android:layout_below="@+id/main_menu_button"
 			android:background="@drawable/btn_explore_selector"/>
+		<android.support.v7.widget.RecyclerView
+			android:id="@+id/explore_list"
+			android:layout_width="match_parent"
+			android:layout_height="100dp"
+			android:layout_below="@id/explore_button"
+			android:visibility="visible"
+			android:background="#99000000"/>
+		<Spinner
+			android:id="@+id/filter_spinner"
+			android:layout_width="96dp"
+			android:layout_height="32dp"
+			android:layout_above="@id/explore_list"
+			android:padding="4dp"
+			android:background="@color/color"/>
 	</RelativeLayout>
 
     <Button
+	    android:id="@+id/flashlight_button"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:id="@+id/flashOff"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:background="@drawable/btn_flash_selector"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp" />
-
-    <!--<ImageButton-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/findOn"-->
-        <!--android:layout_centerVertical="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:src="@mipmap/ic_gps_fixed_black_48dp" />-->
+        android:layout_marginTop="8dp"
+	    android:background="@drawable/btn_flash_selector" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="请将手机保持平稳"
-        android:id="@+id/textView"
+        android:id="@+id/hint_text"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
         android:textColor="#FFFFFF"
         android:shadowColor="#000000"/>
-
-    <Spinner
-        android:layout_width="72dp"
-        android:layout_height="24dp"
-        android:id="@+id/spinner"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="8dp"
-        android:layout_above="@+id/recycler_view_canvas"
-        android:background="@color/color"
-        android:visibility="gone"/>
 
 </RelativeLayout>
