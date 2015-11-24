@@ -11,14 +11,16 @@
 	<RelativeLayout
 		android:id="@+id/expand_area"
 		android:layout_width="match_parent"
-		android:layout_height="228dp"
+		android:layout_height="328dp"
 		android:layout_alignParentBottom="true"
 		android:layout_marginBottom="-100dp">
 		<Button
 			android:id="@+id/main_menu_button"
 			android:layout_width="48dp"
 			android:layout_height="48dp"
-			android:layout_margin="8dp"
+			android:layout_marginBottom="8dp"
+			android:layout_marginRight="8dp"
+			android:layout_marginTop="108dp"
 			android:layout_alignParentRight="true"
 			android:background="@drawable/btn_main_menu"/>
 		<Button
@@ -60,6 +62,7 @@
         android:text="请将手机保持平稳"
         android:id="@+id/hint_text"
         android:layout_alignParentTop="true"
+		android:visibility="invisible"
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
