@@ -77,16 +77,12 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
                 } else {
                     exploreButton.setSelected(true);
                     findViewById(R.id.hint_text).setVisibility(View.VISIBLE);
-                    ObjectAnimator exploreListUp=ObjectAnimator.ofFloat(exploreList,"translationY",0,-exploreList.getHeight());
-                    exploreListUp.setDuration(600);
-                    ObjectAnimator exploreButtonUp=ObjectAnimator.ofFloat(exploreButton,"translationY",0,-exploreList.getHeight());
-                    exploreButtonUp.setDuration(600);
+                    ObjectAnimator exploreAreaUp=ObjectAnimator.ofFloat(findViewById(R.id.expand_area),"translationY",0,-exploreList.getHeight());
+                    exploreAreaUp.setDuration(600);
                     ObjectAnimator menuUp=ObjectAnimator.ofFloat(menu,"translationY",0,-exploreList.getHeight());
                     menuUp.setDuration(600);
-                    ObjectAnimator spinnerUp=ObjectAnimator.ofFloat(spinner,"translationY",0,-exploreList.getHeight());
-                    spinnerUp.setDuration(600);
                     AnimatorSet exploreUp=new AnimatorSet();
-                    exploreUp.play(exploreButtonUp).with(exploreListUp).with(menuUp).with(spinnerUp);
+                    exploreUp.play(exploreAreaUp).with(menuUp);
                     exploreUp.start();
                 }
             }
