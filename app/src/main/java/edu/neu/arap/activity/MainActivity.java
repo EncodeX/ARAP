@@ -285,13 +285,13 @@ public class MainActivity extends VideoDisplayActivity implements View.OnTouchLi
 			mode = 0;
 			this.tracker = tracker;
 
-			paintSelected.setColor(Color.argb(0xFF/2,0xFF,0,0));
+			paintSelected.setColor(Color.argb(0xFF/2,0xFF,0xFF,0xFF));
 
-			paintLine0.setColor(Color.RED);
+			paintLine0.setColor(Color.GREEN);
 			paintLine0.setStrokeWidth(3f);
-			paintLine1.setColor(Color.MAGENTA);
+			paintLine1.setColor(Color.GREEN);
 			paintLine1.setStrokeWidth(3f);
-			paintLine2.setColor(Color.BLUE);
+			paintLine2.setColor(Color.GREEN);
 			paintLine2.setStrokeWidth(3f);
 			paintLine3.setColor(Color.GREEN);
 			paintLine3.setStrokeWidth(3f);
