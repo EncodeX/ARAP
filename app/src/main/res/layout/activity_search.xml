@@ -78,16 +78,33 @@
 		android:layout_alignParentRight="true"
 		android:layout_above="@id/expand_area"
 		android:background="@drawable/btn_main_menu"/>
+<RelativeLayout
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:visibility="gone"
+	android:id="@+id/menu_background">
 
+	<ImageView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:scaleType="centerCrop"
+		android:id="@+id/menu_background_img"
+		android:src="@drawable/back"
+		/>
 	<RelativeLayout
 		android:id="@+id/menu"
-		android:visibility="visible"
 		android:layout_width="200dp"
 		android:layout_centerHorizontal="true"
 		android:layout_alignParentBottom="true"
 		android:layout_marginBottom="108dp"
 		android:layout_height="200dp"
 		android:background="#99000000">
+		<Button
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:id="@+id/menu_innerbackground_img"
+			android:background="@drawable/back"
+			/>
 		<Button
 			android:layout_width="48dp"
 			android:layout_height="48dp"
@@ -157,4 +174,7 @@
 			android:layout_marginRight="36dp"
 			android:layout_below="@+id/menu_help"/>
 	</RelativeLayout>
+
+</RelativeLayout>
+
 </RelativeLayout>
