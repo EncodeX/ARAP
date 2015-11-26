@@ -11,6 +11,8 @@ import android.widget.TextView;
  * Created by 志伟 on 2015/11/10.
  */
 class MyAdapter extends RecyclerView.Adapter {
+    private int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
+    private String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
     class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView imageButton;
         private TextView textView;
@@ -50,12 +52,12 @@ class MyAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         MyViewHolder MyViewHolder =(MyViewHolder)holder;
-        MyViewHolder.getTextView().setText("图片"+position);
-        MyViewHolder.getImageButton().setImageResource(R.mipmap.desktop);
+        MyViewHolder.getTextView().setText(resName[position]);
+        MyViewHolder.getImageButton().setImageResource(resID[position]);
     }
 
     @Override
     public int getItemCount() {
-        return 15;
+        return 10;
     }
 }
