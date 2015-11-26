@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	tools:context="edu.neu.arap.SearchActivity">
+
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -9,7 +14,6 @@
 		android:layout_height="match_parent"
 		android:scaleType="centerCrop"
 		android:src="@drawable/demo_background" />
-
 	<Button
 		android:id="@+id/flashlight_button"
 		android:layout_width="48dp"
@@ -18,19 +22,18 @@
 		android:layout_marginLeft="8dp"
 		android:layout_marginTop="8dp"
 		android:background="@drawable/btn_flash_selector" />
-
 	<TextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:text="请将手机保持平稳"
 		android:id="@+id/hint_text"
+		android:visibility="invisible"
 		android:layout_alignParentTop="true"
 		android:layout_centerHorizontal="true"
 		android:layout_marginLeft="16dp"
 		android:layout_marginTop="16dp"
 		android:textColor="#FFFFFF"
 		android:shadowColor="#000000"/>
-
 	<RelativeLayout
 		android:id="@+id/expand_area"
 		android:layout_width="match_parent"
@@ -57,7 +60,18 @@
 			android:layout_height="32dp"
 			android:layout_above="@id/explore_list"
 			android:padding="4dp"
+			android:visibility="invisible"
+			android:layout_toRightOf="@+id/select"
 			android:background="@color/color"/>
+		<Button
+			android:layout_width="96dp"
+			android:layout_height="32dp"
+			android:id="@+id/select"
+			android:text="筛选"
+			android:textColor="#ffffff"
+			android:visibility="invisible"
+			android:layout_above="@+id/explore_list"
+			android:background="@drawable/btn_select_selector"/>
 	</RelativeLayout>
 
 	<Button
@@ -68,4 +82,103 @@
 		android:layout_alignParentRight="true"
 		android:layout_above="@id/expand_area"
 		android:background="@drawable/btn_main_menu"/>
+<RelativeLayout
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:visibility="gone"
+	android:id="@+id/menu_background">
+
+	<ImageView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:scaleType="centerCrop"
+		android:id="@+id/menu_background_img"
+		android:src="@drawable/back"
+		/>
+	<RelativeLayout
+		android:id="@+id/menu"
+		android:layout_width="200dp"
+		android:layout_centerHorizontal="true"
+		android:layout_alignParentBottom="true"
+		android:layout_marginBottom="108dp"
+		android:layout_height="200dp"
+		android:background="#99000000">
+		<Button
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:id="@+id/menu_innerbackground_img"
+			android:background="@drawable/back"
+			/>
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:layout_marginLeft="26dp"
+			android:layout_marginTop="26dp"
+			android:id="@+id/menu_setting"
+			android:background="@drawable/ic_settings_black_48dp"/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/menu_setting_text"
+			android:textColor="#ffffff"
+			android:text="设置"
+			android:layout_marginLeft="36dp"
+			android:layout_below="@+id/menu_setting"/>
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:layout_below="@+id/menu_setting"
+			android:layout_marginLeft="26dp"
+			android:layout_marginTop="52dp"
+			android:id="@+id/menu_thumb"
+			android:background="@drawable/ic_thumb_up_black_48dp"
+			/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/menu_thumb_text"
+			android:textColor="#ffffff"
+			android:text="排行"
+			android:layout_marginLeft="36dp"
+			android:layout_below="@+id/menu_thumb"/>
+
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:layout_alignParentRight="true"
+			android:layout_marginRight="26dp"
+			android:layout_marginTop="26dp"
+			android:id="@+id/menu_stars"
+			android:background="@drawable/ic_stars_black_48dp"/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/menu_stars_text"
+			android:textColor="#ffffff"
+			android:text="收藏"
+			android:layout_alignParentRight="true"
+			android:layout_marginRight="36dp"
+			android:layout_below="@+id/menu_setting"/>
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:id="@+id/menu_help"
+			android:layout_below="@+id/menu_setting"
+			android:layout_alignParentRight="true"
+			android:layout_marginRight="26dp"
+			android:layout_marginTop="52dp"
+			android:background="@drawable/ic_help_black_48dp"/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/menu_help_text"
+			android:textColor="#ffffff"
+			android:text="帮助"
+			android:layout_alignParentRight="true"
+			android:layout_marginRight="36dp"
+			android:layout_below="@+id/menu_help"/>
+	</RelativeLayout>
+
+</RelativeLayout>
+
 </RelativeLayout>
