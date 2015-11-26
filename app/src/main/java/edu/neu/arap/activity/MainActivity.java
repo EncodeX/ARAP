@@ -2,12 +2,16 @@ package edu.neu.arap.activity;
 
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.nineoldandroids.animation.Animator;
@@ -22,26 +26,39 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import boofcv.abst.tracker.ConfigTld;
+import boofcv.abst.tracker.TrackerObjectQuad;
 import boofcv.android.BoofAndroidFiles;
 import boofcv.android.ConvertBitmap;
 import boofcv.android.gui.VideoDisplayActivity;
 import boofcv.android.gui.VideoImageProcessing;
+import boofcv.core.image.ConvertImage;
+import boofcv.factory.tracker.FactoryTrackerObjectQuad;
 import boofcv.struct.calib.IntrinsicParameters;
 import boofcv.struct.image.ImageBase;
-import boofcv.struct.image.ImageInterleaved;
 import boofcv.struct.image.ImageType;
 import boofcv.struct.image.ImageUInt8;
-import boofcv.struct.image.InterleavedI8;
 import boofcv.struct.image.InterleavedU8;
 import boofcv.struct.image.MultiSpectral;
 import butterknife.ButterKnife;
-import edu.neu.arap.R;
+import edu.neu.arap.tool.UtilVarious;
+import georegression.struct.point.Point2D_F64;
+import georegression.struct.point.Point2D_I32;
+import georegression.struct.shapes.Quadrilateral_F64;
 
-public class MainActivity extends VideoDisplayActivity {
+public class MainActivity extends VideoDisplayActivity implements View.OnTouchListener {
 	public static Preference preference;
 
 	// contains information on all the cameras.  less error prone and easier to deal with
 	public static List<CameraSpecs> specs = new ArrayList<CameraSpecs>();
+
+	int mode = 0;
+
+	// size of the minimum square which the user can select
+	final static int MINIMUM_MOTION = 20;
+
+	Point2D_I32 click0 = new Point2D_I32();
+	Point2D_I32 click1 = new Point2D_I32();
 
 	public MainActivity() {
 		loadCameraSpecs();
@@ -63,6 +80,8 @@ public class MainActivity extends VideoDisplayActivity {
 		ButterKnife.bind(this);
 
 //		initCamera();
+		FrameLayout iv = getViewPreview();
+		iv.setOnTouchListener(this);
 
 		setDefaultPreferences();
 		setShowFPS(preference.showFps);
@@ -71,7 +90,11 @@ public class MainActivity extends VideoDisplayActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		setProcessing(new ImageProcessing());
+//		setProcessing(new ImageProcessing(
+//				FactoryTrackerObjectQuad.tld(new ConfigTld(false),ImageUInt8.class),
+//				ImageType.single(ImageUInt8.class)));
+		setProcessing(new ImageProcessing(
+				FactoryTrackerObjectQuad.circulant(null,ImageUInt8.class),ImageType.single(ImageUInt8.class)));
 	}
 
 	@Override
@@ -144,8 +167,8 @@ public class MainActivity extends VideoDisplayActivity {
 		}
 
 		CameraSpecs camera = specs.get(preference.cameraId);
-		preference.preview = UtilVarious.closest(camera.sizePreview,352,288);
-		preference.picture = UtilVarious.closest(camera.sizePicture,352,288);
+		preference.preview = UtilVarious.closest(camera.sizePreview,320,240);
+		preference.picture = UtilVarious.closest(camera.sizePicture,320,240);
 
 		// see if there are any intrinsic parameters to load
 		loadIntrinsic();
@@ -175,6 +198,25 @@ public class MainActivity extends VideoDisplayActivity {
 		} catch (IOException e) {
 			Toast.makeText(this, "Failed to load intrinsic parameters", Toast.LENGTH_SHORT).show();
 		}
+	}
+
+	@Override
+	public boolean onTouch(View view, MotionEvent motionEvent) {
+		if( mode == 0 ) {
+			if(MotionEvent.ACTION_DOWN == motionEvent.getActionMasked()) {
+				click0.set((int) motionEvent.getX(), (int) motionEvent.getY());
+				click1.set((int) motionEvent.getX(), (int) motionEvent.getY());
+				mode = 1;
+			}
+		} else if( mode == 1 ) {
+			if(MotionEvent.ACTION_MOVE == motionEvent.getActionMasked()) {
+				click1.set((int)motionEvent.getX(),(int)motionEvent.getY());
+			} else if(MotionEvent.ACTION_UP == motionEvent.getActionMasked()) {
+				click1.set((int)motionEvent.getX(),(int)motionEvent.getY());
+				mode = 2;
+			}
+		}
+		return true;
 	}
 
 	private class Preference {
@@ -214,101 +256,146 @@ public class MainActivity extends VideoDisplayActivity {
 //		}
 //	}
 
-	private class ImageProcessing<T extends ImageBase> extends VideoImageProcessing<InterleavedU8>{
-		protected ImageProcessing() {
-			super(ImageType.il(3, InterleavedU8.class));
+	private class ImageProcessing<T extends ImageBase> extends VideoImageProcessing<MultiSpectral<ImageUInt8>>{
+
+		T input;
+		ImageType<T> inputType;
+
+		TrackerObjectQuad tracker;
+		boolean visible;
+
+		Quadrilateral_F64 location = new Quadrilateral_F64();
+
+		Paint paintSelected = new Paint();
+		Paint paintLine0 = new Paint();
+		Paint paintLine1 = new Paint();
+		Paint paintLine2 = new Paint();
+		Paint paintLine3 = new Paint();
+		private Paint textPaint = new Paint();
+
+		protected ImageProcessing(TrackerObjectQuad tracker , ImageType<T> inputType) {
+			super(ImageType.ms(3,ImageUInt8.class));
+//			super(ImageType.il(3, InterleavedU8.class));
+			this.inputType = inputType;
+
+			if( inputType.getFamily() == ImageType.Family.SINGLE_BAND ) {
+				input = inputType.createImage(1,1);
+			}
+
+			mode = 0;
+			this.tracker = tracker;
+
+			paintSelected.setColor(Color.argb(0xFF/2,0xFF,0,0));
+
+			paintLine0.setColor(Color.RED);
+			paintLine0.setStrokeWidth(3f);
+			paintLine1.setColor(Color.MAGENTA);
+			paintLine1.setStrokeWidth(3f);
+			paintLine2.setColor(Color.BLUE);
+			paintLine2.setStrokeWidth(3f);
+			paintLine3.setColor(Color.GREEN);
+			paintLine3.setStrokeWidth(3f);
+
+			// Create out paint to use for drawing
+			textPaint.setARGB(255, 200, 0, 0);
+			textPaint.setTextSize(60);
 		}
 
 		@Override
-		protected void process(InterleavedU8 image, Bitmap output, byte[] storage) {
-			ConvertBitmap.interleavedToBitmap(image, output, storage);
-		}
-	}
-
-
-	private AnimatorSet mSlideAnimation;
-	private Animator.AnimatorListener mViewToggleListener = new Animator.AnimatorListener() {
-		@Override
-		public void onAnimationStart(Animator animation) {
-
+		protected void process(MultiSpectral<ImageUInt8> image, Bitmap output, byte[] storage) {
+			updateTracker(image);
+			visualize(image, output, storage);
+//			ConvertBitmap.interleavedToBitmap(image, output, storage);
 		}
 
-		@Override
-		public void onAnimationEnd(Animator animation) {
+		private void updateTracker(MultiSpectral<ImageUInt8> color) {
+			if( inputType.getFamily() == ImageType.Family.SINGLE_BAND ) {
+				input.reshape(color.width,color.height);
+				ConvertImage.average(color,(ImageUInt8)input);
+			} else {
+				input = (T)color;
+			}
 
-		}
+			if( mode == 2 ) {
+				imageToOutput(click0.x, click0.y, location.a);
+				imageToOutput(click1.x, click1.y, location.c);
 
-		@Override
-		public void onAnimationCancel(Animator animation) {
+				// make sure the user selected a valid region
+				makeInBounds(location.a);
+				makeInBounds(location.c);
 
-		}
+				if( movedSignificantly(location.a,location.c) ) {
+					// use the selected region and start the tracker
+					location.b.set(location.c.x, location.a.y);
+					location.d.set( location.a.x, location.c.y );
 
-		@Override
-		public void onAnimationRepeat(Animator animation) {
-
-		}
-	};
-
-	private void buildSlideAnimation(View target, float targetPosY, int duration){
-		mSlideAnimation = new AnimatorSet();
-		mSlideAnimation.playTogether(
-				ObjectAnimator.ofFloat(target, "translationY", targetPosY)
-		);
-		mSlideAnimation.setInterpolator(new DecelerateInterpolator(4.0f));
-
-		mSlideAnimation.setDuration(duration);
-		mSlideAnimation.addListener(mViewToggleListener);
-	}
-
-	private void startAnimation(){
-		// sample code
-		// http://nineoldandroids.com
-		buildSlideAnimation(getViewPreview(), 0, 600);
-		mSlideAnimation.start();
-	}
-}
-
-
-class UtilVarious {
-	/** A safe way to get an instance of the Camera object. */
-	public static Camera getCameraInstance(){
-		Camera c = null;
-		try {
-			c = Camera.open(); // attempt to get a Camera instance
-		}
-		catch (Exception e){
-			// Camera is not available (in use or does not exist)
-		}
-		return c; // returns null if camera is unavailable
-	}
-
-	/**
-	 * From the list of image sizes, select the one which is closest to the specified size.
-	 */
-	public static int closest( List<Camera.Size> sizes , int width , int height ) {
-		int best = -1;
-		int bestScore = Integer.MAX_VALUE;
-
-		for( int i = 0; i < sizes.size(); i++ ) {
-			Camera.Size s = sizes.get(i);
-
-			Log.d("Camera","width: "+ s.width+" height: "+s.height);
-
-			int dx = s.width-width;
-			int dy = s.height-height;
-
-			int score = dx*dx + dy*dy;
-			if( score < bestScore ) {
-				best = i;
-				bestScore = score;
+					tracker.initialize(input, location);
+					visible = true;
+					mode = 3;
+				} else {
+					// the user screw up. Let them know what they did wrong
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(MainActivity.this, "Drag a larger region", Toast.LENGTH_SHORT).show();
+						}
+					});
+					mode = 0;
+				}
+			} else if( mode == 3 ) {
+				visible = tracker.process(input,location);
 			}
 		}
 
-		Log.d("Camera","best: "+ best);
-		return best;
-	}
+		private void visualize(MultiSpectral<ImageUInt8> color, Bitmap output, byte[] storage) {
+//			ConvertBitmap.interleavedToBitmap(color, output, storage);
+			ConvertBitmap.multiToBitmap(color, output, storage);
+			Canvas canvas = new Canvas(output);
 
-	public static Camera.Size closestS( List<Camera.Size> sizes , int width , int height ) {
-		return sizes.get( closest(sizes,width,height));
+			if( mode == 1 ) {
+				Point2D_F64 a = new Point2D_F64();
+				Point2D_F64 b = new Point2D_F64();
+
+				imageToOutput(click0.x, click0.y, a);
+				imageToOutput(click1.x, click1.y, b);
+
+				canvas.drawRect((int)a.x,(int)a.y,(int)b.x,(int)b.y,paintSelected);
+			} else if( mode >= 2 ) {
+				if( visible ) {
+					Quadrilateral_F64 q = location;
+
+					drawLine(canvas,q.a,q.b,paintLine0);
+					drawLine(canvas,q.b,q.c,paintLine1);
+					drawLine(canvas,q.c,q.d,paintLine2);
+					drawLine(canvas,q.d,q.a,paintLine3);
+				} else {
+					canvas.drawText("?",color.width/2,color.height/2,textPaint);
+				}
+			}
+		}
+
+		private void drawLine( Canvas canvas , Point2D_F64 a , Point2D_F64 b , Paint color ) {
+			canvas.drawLine((float)a.x,(float)a.y,(float)b.x,(float)b.y,color);
+		}
+
+		private void makeInBounds( Point2D_F64 p ) {
+			if( p.x < 0 ) p.x = 0;
+			else if( p.x >= input.width )
+				p.x = input.width - 1;
+
+			if( p.y < 0 ) p.y = 0;
+			else if( p.y >= input.height )
+				p.y = input.height - 1;
+
+		}
+
+		private boolean movedSignificantly( Point2D_F64 a , Point2D_F64 b ) {
+			if( Math.abs(a.x-b.x) < MINIMUM_MOTION )
+				return false;
+			if( Math.abs(a.y-b.y) < MINIMUM_MOTION )
+				return false;
+
+			return true;
+		}
 	}
 }
