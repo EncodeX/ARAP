@@ -176,5 +176,65 @@
 	</RelativeLayout>
 
 </RelativeLayout>
+	<RelativeLayout
+		android:layout_width="275"
+		android:layout_height="170dp"
+		android:id="@+id/intro"
+		android:background="#99000000"
+		android:layout_centerHorizontal="true"
+		android:layout_alignParentBottom="true"
+		android:layout_marginBottom="108dp">
+		<ImageView
+			android:layout_width="80dp"
+			android:layout_height="110dp"
+			android:id="@+id/intro_image"
+			android:src="@drawable/a"
+			android:layout_marginTop="8dp"
+			android:layout_marginLeft="8dp"
+			/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="商品名称：名称"
+			android:id="@+id/intro_title"
+			android:layout_toRightOf="@+id/intro_image"
+			android:layout_margin="10dp"
+			android:textColor="#ffffff"/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="商品描述：这是描述这是描述这是描述这是描述这是描述这是描述"
+			android:id="@+id/intro_content"
+			android:layout_toRightOf="@+id/intro_image"
+			android:layout_below="@+id/intro_title"
+			android:layout_marginLeft="10dp"
+			android:textColor="#ffffff"/>
+
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="24dp"
+			android:layout_alignParentBottom="true"
+			android:layout_marginBottom="8dp"
+			android:layout_marginLeft="24dp"
+			android:background="#CD3700"
+			android:text="到这去"
+			android:id="@+id/intro_go"
+			android:textColor="#ffffff"
+			/>
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="24dp"
+			android:layout_alignParentBottom="true"
+			android:layout_alignParentRight="true"
+			android:layout_marginBottom="8dp"
+			android:layout_marginRight="24dp"
+			android:textColor="#ffffff"
+			android:background="#363636"
+			android:id="@+id/intro_cancel"
+			android:text="算了"/>
+
+
+
+	</RelativeLayout>
 
 </RelativeLayout>
