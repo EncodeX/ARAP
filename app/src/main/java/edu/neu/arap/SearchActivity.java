@@ -9,7 +9,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nineoldandroids.animation.Animator;
@@ -49,6 +51,12 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
     Button menuButton;
     @Bind(R.id.select)
     Button select;
+    @Bind(R.id.intro_image)
+    ImageView introImage;
+    @Bind(R.id.intro_title)
+    TextView introTitle;
+    @Bind(R.id.intro_content)
+    TextView introContent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +163,13 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
             @Override
             public void onClick(View v) {
                 setMenuHideAnimation();
+            }
+        });
+
+        findViewById(R.id.intro_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.intro).setVisibility(View.GONE);
             }
         });
     }
@@ -377,6 +392,10 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
     @Override
     public void onItemClick(View view, int position) {
         String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
-        Toast.makeText(this,resName[position] , Toast.LENGTH_SHORT).show();
+      //  Toast.makeText(this,resName[position] , Toast.LENGTH_SHORT).show();
+        int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
+        introImage.setImageResource(resID[position]);
+        introTitle.setText("商品名称："+resName[position]);
+        findViewById(R.id.intro).setVisibility(View.VISIBLE);
     }
 }

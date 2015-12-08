@@ -177,13 +177,14 @@
 
 </RelativeLayout>
 	<RelativeLayout
-		android:layout_width="275"
+		android:layout_width="275dp"
 		android:layout_height="170dp"
 		android:id="@+id/intro"
+		android:visibility="gone"
 		android:background="#99000000"
 		android:layout_centerHorizontal="true"
 		android:layout_alignParentBottom="true"
-		android:layout_marginBottom="108dp">
+		android:layout_marginBottom="140dp">
 		<ImageView
 			android:layout_width="80dp"
 			android:layout_height="110dp"
