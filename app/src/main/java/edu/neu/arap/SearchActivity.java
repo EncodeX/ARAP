@@ -33,10 +33,11 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
     private ObjectAnimator selectShow,selectHide;
     private ObjectAnimator spinnerShow,spinnerHide;
     private ObjectAnimator menuShowX,menuShowY, menuShowSX,menuShowSY,menuShowA;
+    private ObjectAnimator introShowY,introShowA;
     private ObjectAnimator menuHideX,menuHideY, menuHideSX,menuHideSY,menuHideA;
     private ObjectAnimator menuBtnHideSX,menuBtnHideSY,menuBtnHideX,menuBtnHideY,menuBtnHideA;
     private ObjectAnimator menuBtnShowSX,menuBtnShowSY,menuBtnShowX,menuBtnShowY,menuBtnShowA;
-    private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide;
+    private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide,introShow;
     private float distanceX,distanceY;
 
     @Bind(R.id.explore_button)
@@ -394,8 +395,25 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
       //  Toast.makeText(this,resName[position] , Toast.LENGTH_SHORT).show();
         int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
+
+        introTitle.setText("商品名称：" + resName[position]);
         introImage.setImageResource(resID[position]);
-        introTitle.setText("商品名称："+resName[position]);
-        findViewById(R.id.intro).setVisibility(View.VISIBLE);
+        if(findViewById(R.id.intro).getVisibility()!=View.VISIBLE)
+        {
+            findViewById(R.id.intro).setVisibility(View.VISIBLE);
+            int t=0;
+            if(t==0)
+            {
+                t++;
+                introShowY=ObjectAnimator.ofFloat(findViewById(R.id.intro),"translationY",-200,0);
+                introShowY.setDuration(200);
+                introShowA=ObjectAnimator.ofFloat(findViewById(R.id.intro),"alpha",0f,1f);
+                introShowA.setDuration(200);
+                introShow=new AnimatorSet();
+                introShow.playTogether(introShowA, introShowY);
+            }
+            introShow.start();
+        }
+
     }
 }
