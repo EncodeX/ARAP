@@ -1,20 +1,54 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.model.application'
 
-android {
-	compileSdkVersion 23
-	buildToolsVersion "23.0.1"
+model{
+	android {
+		compileSdkVersion =  23
+		buildToolsVersion =  "23.0.2"
 
-	defaultConfig {
-		applicationId "edu.neu.arap"
-		minSdkVersion 16
-		targetSdkVersion 23
-		versionCode 1
-		versionName "1.0"
+		defaultConfig.with {
+			applicationId = "edu.neu.arap"
+			minSdkVersion.apiLevel = 16
+			targetSdkVersion.apiLevel = 23
+			versionCode = 1
+			versionName = "1.0"
+		}
 	}
-	buildTypes {
+
+	compileOptions.with {
+		sourceCompatibility=JavaVersion.VERSION_1_7
+		targetCompatibility=JavaVersion.VERSION_1_7
+	}
+
+	android.buildTypes {
 		release {
-			minifyEnabled false
-			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+			minifyEnabled = false
+			proguardFiles.add(file("proguard-rules.pro"))
+		}
+	}
+	android.productFlavors {
+		create("arm") {
+			ndk.with {
+				abiFilters.add("armeabi-v7a")
+			}
+		}
+	}
+	android.ndk {
+		moduleName = "HelloARNative"
+		cppFlags.add("-I${file("src/include")}".toString())
+		cppFlags.add("-DANDROID")
+		cppFlags.add("-fexceptions")
+		cppFlags.add("-frtti")
+		stl = "gnustl_static"
+		ldLibs.add("log")
+		ldLibs.add("GLESv2")
+	}
+	android.sources {
+		main {
+			jni {
+				dependencies {
+					library file("src/main/jniLibs/armeabi-v7a/libEasyAR.so") abi "armeabi-v7a"
+				}
+			}
 		}
 	}
 }
