@@ -214,6 +214,25 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
                 introHide.start();
             }
         });
+
+        findViewById(R.id.core_Button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.expand_area).setVisibility(View.GONE);
+                findViewById(R.id.core).setVisibility(View.VISIBLE);
+                menuButton.setVisibility(View.GONE);
+                findViewById(R.id.core_Button).setVisibility(View.GONE);
+            }
+        });
+        findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
+                findViewById(R.id.core).setVisibility(View.GONE);
+                menuButton.setVisibility(View.VISIBLE);
+                findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void setAnimation(){
