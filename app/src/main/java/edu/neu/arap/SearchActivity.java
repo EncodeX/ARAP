@@ -198,6 +198,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
             @Override
             public void onClick(View v) {
                 setMenuShowAnimation();
+                introHide.start();
             }
         });
         findViewById(R.id.menu_background_img).setOnClickListener(new View.OnClickListener() {
