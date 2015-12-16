@@ -1,5 +1,6 @@
 package edu.neu.arap;
 
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,13 +10,16 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 
+import java.io.FileOutputStream;
 import java.util.Objects;
 
 import butterknife.Bind;
@@ -31,11 +35,15 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
     private ObjectAnimator selectShow,selectHide;
     private ObjectAnimator spinnerShow,spinnerHide;
     private ObjectAnimator menuShowX,menuShowY, menuShowSX,menuShowSY,menuShowA;
+    private ObjectAnimator introShowY,introShowA,introHideY,introHideA,introChange;
     private ObjectAnimator menuHideX,menuHideY, menuHideSX,menuHideSY,menuHideA;
     private ObjectAnimator menuBtnHideSX,menuBtnHideSY,menuBtnHideX,menuBtnHideY,menuBtnHideA;
     private ObjectAnimator menuBtnShowSX,menuBtnShowSY,menuBtnShowX,menuBtnShowY,menuBtnShowA;
-    private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide;
+    private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide,introShow,introHide;
     private float distanceX,distanceY;
+    private  String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
+    private  int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
+
 
     @Bind(R.id.explore_button)
     Button exploreButton;
@@ -49,6 +57,12 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
     Button menuButton;
     @Bind(R.id.select)
     Button select;
+    @Bind(R.id.intro_image)
+    ImageView introImage;
+    @Bind(R.id.intro_title)
+    TextView introTitle;
+    @Bind(R.id.intro_content)
+    TextView introContent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +70,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         initView();
         clickerListener();
     }
+
     private void initView()
     {
         ButterKnife.bind(this);
@@ -81,13 +96,48 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
 
             }
         });
+        introHideAnimator();
     }
+
+    //这个动画本不需要在启动时初始化，但为了在多个控件的点击事件中共同使用，才放到这里。
+    private void introHideAnimator()
+    {
+        introHideY=ObjectAnimator.ofFloat(findViewById(R.id.intro),"translationY",0,-200);
+        introHideY.setDuration(200);
+        introHideY.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                findViewById(R.id.intro).setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        introHideA=ObjectAnimator.ofFloat(findViewById(R.id.intro),"alpha",1f,0f);
+        introHideA.setDuration(200);
+        introHide=new AnimatorSet();
+        introHide.playTogether(introHideA, introHideY);
+    }
+
     private void clickerListener(){
         exploreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (findViewById(R.id.explore_button).isSelected()) {
                     findViewById(R.id.explore_button).setSelected(false);
+                    introHide.start();
                     if (spinner.getVisibility() != View.VISIBLE) {
                         selectHide.start();
                     } else {
@@ -141,6 +191,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
                     selectDown.play(menuDown).with(exploreAreaDown);
                     selectDown.play(spinnerHide).before(menuDown);
                     selectDown.start();
+                    introHide.start();
                 }
             }
         });
@@ -149,12 +200,56 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
             @Override
             public void onClick(View v) {
                 setMenuShowAnimation();
+                introHide.start();
             }
         });
         findViewById(R.id.menu_background_img).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 setMenuHideAnimation();
+            }
+        });
+
+        findViewById(R.id.intro_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                introHide.start();
+            }
+        });
+
+        findViewById(R.id.core_Button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.expand_area).setVisibility(View.GONE);
+                findViewById(R.id.core).setVisibility(View.VISIBLE);
+                menuButton.setVisibility(View.GONE);
+                findViewById(R.id.core_Button).setVisibility(View.GONE);
+            }
+        });
+        findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
+                findViewById(R.id.core).setVisibility(View.GONE);
+                menuButton.setVisibility(View.VISIBLE);
+                findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+            }
+        });
+        findViewById(R.id.core_camera).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = v.getRootView();
+                view.setDrawingCacheEnabled(true);
+                view.buildDrawingCache();
+                String fname = "/sdcard/myPic.png";
+                Bitmap bitmap = view.getDrawingCache();
+                try{
+                    FileOutputStream out = new FileOutputStream(fname);
+                    bitmap.compress(Bitmap.CompressFormat.PNG,100, out);
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(SearchActivity.this,"图片已保存至./myPic.png" , Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -257,6 +352,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
                 select.setVisibility(View.INVISIBLE);
                 select.setSelected(false);
                 findViewById(R.id.hint_text).setVisibility(View.INVISIBLE);
+              //  findViewById(R.id.intro).setVisibility(View.GONE);
             }
 
             @Override
@@ -304,6 +400,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
             @Override
             public void onAnimationEnd(Animator animation) {
                 findViewById(R.id.menu_background).setVisibility(View.GONE);
+              //  findViewById(R.id.intro).setVisibility(View.GONE);
             }
 
             @Override
@@ -376,7 +473,30 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
     }
     @Override
     public void onItemClick(View view, int position) {
-        String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
-        Toast.makeText(this,resName[position] , Toast.LENGTH_SHORT).show();
+        if(findViewById(R.id.intro).getVisibility()==View.VISIBLE)
+        {
+            introChange=ObjectAnimator.ofFloat(findViewById(R.id.intro),"translationX",0,20,-20,0);
+            introChange.setDuration(100);
+            introChange.start();
+        }
+        introTitle.setText("商品名称：" + resName[position]);
+        introImage.setImageResource(resID[position]);
+        if(findViewById(R.id.intro).getVisibility()!=View.VISIBLE)
+        {
+            findViewById(R.id.intro).setVisibility(View.VISIBLE);
+            int t=0;
+            if(t==0)
+            {
+                t++;
+                introShowY=ObjectAnimator.ofFloat(findViewById(R.id.intro),"translationY",-200,0);
+                introShowY.setDuration(200);
+                introShowA=ObjectAnimator.ofFloat(findViewById(R.id.intro),"alpha",0f,1f);
+                introShowA.setDuration(200);
+                introShow=new AnimatorSet();
+                introShow.playTogether(introShowA, introShowY);
+            }
+            introShow.start();
+        }
+
     }
 }

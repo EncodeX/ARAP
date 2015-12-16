@@ -180,5 +180,109 @@
 	</RelativeLayout>
 
 </RelativeLayout>
+	<RelativeLayout
+		android:layout_width="275dp"
+		android:layout_height="170dp"
+		android:id="@+id/intro"
+		android:visibility="gone"
+		android:background="#99000000"
+		android:layout_centerHorizontal="true"
+		android:layout_alignParentBottom="true"
+		android:layout_marginBottom="140dp">
+		<ImageView
+			android:layout_width="80dp"
+			android:layout_height="110dp"
+			android:id="@+id/intro_image"
+			android:src="@drawable/a"
+			android:layout_marginTop="8dp"
+			android:layout_marginLeft="8dp"
+			/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="商品名称：名称"
+			android:id="@+id/intro_title"
+			android:layout_toRightOf="@+id/intro_image"
+			android:layout_margin="10dp"
+			android:textColor="#ffffff"/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="商品描述：这是描述这是描述这是描述这是描述这是描述这是描述"
+			android:id="@+id/intro_content"
+			android:layout_toRightOf="@+id/intro_image"
+			android:layout_below="@+id/intro_title"
+			android:layout_marginLeft="10dp"
+			android:textColor="#ffffff"/>
 
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="24dp"
+			android:layout_alignParentBottom="true"
+			android:layout_marginBottom="8dp"
+			android:layout_marginLeft="24dp"
+			android:background="#CD3700"
+			android:text="到这去"
+			android:id="@+id/intro_go"
+			android:textColor="#ffffff"
+			/>
+		<Button
+			android:layout_width="48dp"
+			android:layout_height="24dp"
+			android:layout_alignParentBottom="true"
+			android:layout_alignParentRight="true"
+			android:layout_marginBottom="8dp"
+			android:layout_marginRight="24dp"
+			android:textColor="#ffffff"
+			android:background="#363636"
+			android:id="@+id/intro_cancel"
+			android:text="算了"/>
+
+
+
+	</RelativeLayout>
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:visibility="gone"
+		android:id="@+id/core">
+		<ImageView
+			android:layout_width="300dp"
+			android:layout_height="300dp"
+			android:src="@drawable/wuyi"
+			android:layout_centerHorizontal="true"
+			android:layout_centerVertical="true"/>
+		<ImageView
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:layout_alignParentRight="true"
+			android:layout_margin="8dp"
+			android:id="@+id/core_share"
+			android:layout_above="@+id/core_camera"
+			android:src="@drawable/ic_share_black_48dp"/>
+		<ImageView
+			android:layout_alignParentBottom="true"
+			android:layout_alignParentRight="true"
+			android:id="@+id/core_camera"
+			android:layout_margin="8dp"
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:src="@drawable/ic_camera_alt_black_48dp"/>
+		<ImageView
+			android:layout_alignParentRight="true"
+			android:id="@+id/core_close"
+			android:layout_margin="8dp"
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:src="@drawable/ic_close_black_48dp"/>
+
+	</RelativeLayout>
+
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:id="@+id/core_Button"
+		android:layout_margin="8dp"
+		android:text="识别成功"
+		android:layout_alignParentRight="true"/>
 </RelativeLayout>
