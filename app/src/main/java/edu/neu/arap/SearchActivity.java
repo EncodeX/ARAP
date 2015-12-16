@@ -1,5 +1,6 @@
 package edu.neu.arap;
 
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 
+import java.io.FileOutputStream;
 import java.util.Objects;
 
 import butterknife.Bind;
@@ -231,6 +233,23 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
                 findViewById(R.id.core).setVisibility(View.GONE);
                 menuButton.setVisibility(View.VISIBLE);
                 findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+            }
+        });
+        findViewById(R.id.core_camera).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = v.getRootView();
+                view.setDrawingCacheEnabled(true);
+                view.buildDrawingCache();
+                String fname = "/sdcard/myPic.png";
+                Bitmap bitmap = view.getDrawingCache();
+                try{
+                    FileOutputStream out = new FileOutputStream(fname);
+                    bitmap.compress(Bitmap.CompressFormat.PNG,100, out);
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(SearchActivity.this,"图片已保存至./myPic.png" , Toast.LENGTH_SHORT).show();
             }
         });
     }

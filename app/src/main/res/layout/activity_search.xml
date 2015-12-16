@@ -278,6 +278,7 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:id="@+id/core_Button"
+		android:layout_margin="8dp"
 		android:text="识别成功"
 		android:layout_alignParentRight="true"/>
 </RelativeLayout>
