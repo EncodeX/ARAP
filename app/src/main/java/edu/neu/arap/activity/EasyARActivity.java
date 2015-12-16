@@ -14,16 +14,6 @@ import edu.neu.arap.easyar.GLView;
 import edu.neu.arap.easyar.Renderer;
 
 public class EasyARActivity extends AppCompatActivity {
-
-	/*
-	* Steps to create the key for this sample:
-	*  1. login www.easyar.com
-	*  2. create app with
-	*      Name: HelloAR
-	*      Package Name: cn.easyar.samples.helloar
-	*  3. find the created item in the list and show key
-	*  4. set key string bellow
-	*/
 	static String key = "595c31dd0d1a4aebaade8e21ea9654ceQ9FNgKYVtFkrzPVSXtCOApnRqz4gVOuiyDD8650IrCPlZ8l6kRyyg2BaxO4XywWqdW58vZIWRluZTQcCSGW0r1ep7h1y1UFNRWcZwAQ5lYrjvQgdCgAMB0I6QvmUBiDp2TMyU4RcV5tpTJcIkDQG95ACwP9ycV84auDCk50e";
 
 	static {
