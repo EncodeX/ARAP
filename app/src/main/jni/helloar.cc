@@ -10,7 +10,8 @@
 #include <GLES2/gl2.h>
 
 //#define JNIFUNCTION_NATIVE(sig) Java_cn_easyar_samples_helloar_MainActivity_##sig
-#define JNIFUNCTION_NATIVE(sig) Java_edu_neu_arap_activity_EasyARActivity_##sig
+//#define JNIFUNCTION_NATIVE(sig) Java_edu_neu_arap_activity_EasyARActivity_##sig
+#define JNIFUNCTION_NATIVE(sig) Java_edu_neu_arap_activity_SearchActivity_##sig
 
 extern "C" {
     JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv* env, jobject object));

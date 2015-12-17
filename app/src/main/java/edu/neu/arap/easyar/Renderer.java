@@ -11,20 +11,20 @@ import android.opengl.GLSurfaceView;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import edu.neu.arap.activity.EasyARActivity;
+import edu.neu.arap.activity.SearchActivity;
 
 public class Renderer implements GLSurfaceView.Renderer {
 
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        EasyARActivity.nativeInitGL();
+        SearchActivity.nativeInitGL();
     }
 
     public void onSurfaceChanged(GL10 gl, int w, int h) {
-        EasyARActivity.nativeResizeGL(w, h);
+        SearchActivity.nativeResizeGL(w, h);
     }
 
     public void onDrawFrame(GL10 gl) {
-        EasyARActivity.nativeRender();
+        SearchActivity.nativeRender();
     }
 
 }

@@ -10,13 +10,8 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.Toast;
-
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -26,7 +21,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import boofcv.abst.tracker.ConfigTld;
 import boofcv.abst.tracker.TrackerObjectQuad;
 import boofcv.android.BoofAndroidFiles;
 import boofcv.android.ConvertBitmap;
@@ -38,7 +32,6 @@ import boofcv.struct.calib.IntrinsicParameters;
 import boofcv.struct.image.ImageBase;
 import boofcv.struct.image.ImageType;
 import boofcv.struct.image.ImageUInt8;
-import boofcv.struct.image.InterleavedU8;
 import boofcv.struct.image.MultiSpectral;
 import butterknife.ButterKnife;
 import edu.neu.arap.tool.UtilVarious;
@@ -46,7 +39,7 @@ import georegression.struct.point.Point2D_F64;
 import georegression.struct.point.Point2D_I32;
 import georegression.struct.shapes.Quadrilateral_F64;
 
-public class MainActivity extends VideoDisplayActivity implements View.OnTouchListener {
+public class BoofCVActivity extends VideoDisplayActivity implements View.OnTouchListener {
 	public static Preference preference;
 
 	// contains information on all the cameras.  less error prone and easier to deal with
@@ -60,12 +53,12 @@ public class MainActivity extends VideoDisplayActivity implements View.OnTouchLi
 	Point2D_I32 click0 = new Point2D_I32();
 	Point2D_I32 click1 = new Point2D_I32();
 
-	public MainActivity() {
+	public BoofCVActivity() {
 		loadCameraSpecs();
 		preference = new Preference();
 	}
 
-	public MainActivity(boolean hidePreview) {
+	public BoofCVActivity(boolean hidePreview) {
 		super(hidePreview);
 
 		loadCameraSpecs();
@@ -337,7 +330,7 @@ public class MainActivity extends VideoDisplayActivity implements View.OnTouchLi
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							Toast.makeText(MainActivity.this, "Drag a larger region", Toast.LENGTH_SHORT).show();
+							Toast.makeText(BoofCVActivity.this, "Drag a larger region", Toast.LENGTH_SHORT).show();
 						}
 					});
 					mode = 0;

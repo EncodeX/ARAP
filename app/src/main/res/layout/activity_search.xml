@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	tools:context=".activity.SearchActivity">
-
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="edu.neu.arap.activity.SearchActivity">
+                tools:context=".activity.SearchActivity">
 	<ImageView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:scaleType="centerCrop"
-		android:src="@drawable/demo_background" />
+		tools:src="@drawable/demo_background"
+		android:visibility="gone"
+		tools:visibility="visible"/>
+	<FrameLayout
+		android:id="@+id/preview"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent" />
 	<Button
 		android:id="@+id/flashlight_button"
 		android:layout_width="48dp"
