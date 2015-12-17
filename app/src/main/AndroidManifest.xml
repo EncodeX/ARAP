@@ -29,11 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".activity.EasyARActivity"
-                  android:screenOrientation="landscape"
-                  android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
-                  android:label="@string/app_name">
-        </activity>
     </application>
 
 </manifest>
