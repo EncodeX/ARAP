@@ -1,4 +1,4 @@
-package edu.neu.arap;
+package edu.neu.arap.adapter;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

@@ -1,4 +1,4 @@
-package edu.neu.arap;
+package edu.neu.arap.adapter;
 
 import android.view.View;
 

@@ -1,4 +1,4 @@
-package edu.neu.arap;
+package edu.neu.arap.activity;
 
 import android.graphics.Bitmap;
 import android.hardware.Camera;
@@ -20,10 +20,13 @@ import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 
 import java.io.FileOutputStream;
-import java.util.Objects;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import edu.neu.arap.adapter.MyItemClickListener;
+import edu.neu.arap.R;
+import edu.neu.arap.adapter.SpacesItemDecoration;
+import edu.neu.arap.adapter.MyAdapter;
 
 public class SearchActivity extends AppCompatActivity implements MyItemClickListener {
     private Camera camera;
