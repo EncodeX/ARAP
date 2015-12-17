@@ -34,7 +34,7 @@ import edu.neu.arap.adapter.MyAdapter;
 import edu.neu.arap.easyar.GLView;
 import edu.neu.arap.easyar.Renderer;
 
-public class SearchActivity extends AppCompatActivity implements MyItemClickListener {
+public class MainActivity extends AppCompatActivity implements MyItemClickListener {
     private Camera camera;
     private Camera.Parameters parameters;
     private String[] spinnerData={"全部","餐饮","交通","学习","住宿","娱乐","购物"};
@@ -99,7 +99,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(SearchActivity.this, spinnerData[position], Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, spinnerData[position], Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -260,7 +260,7 @@ public class SearchActivity extends AppCompatActivity implements MyItemClickList
                 }catch(Exception e) {
                     e.printStackTrace();
                 }
-                Toast.makeText(SearchActivity.this,"图片已保存至./myPic.png" , Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"图片已保存至./myPic.png" , Toast.LENGTH_SHORT).show();
             }
         });
     }
