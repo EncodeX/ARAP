@@ -1,8 +1,10 @@
 package edu.neu.arap.activity;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,6 +24,7 @@ import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 
+import java.io.File;
 import java.io.FileOutputStream;
 
 import butterknife.Bind;
@@ -249,20 +252,37 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
         findViewById(R.id.core_camera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View view = v.getRootView();
-                view.setDrawingCacheEnabled(true);
-                view.buildDrawingCache();
-                String fname = "/sdcard/myPic.png";
-                Bitmap bitmap = view.getDrawingCache();
-                try{
-                    FileOutputStream out = new FileOutputStream(fname);
-                    bitmap.compress(Bitmap.CompressFormat.PNG,100, out);
-                }catch(Exception e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(MainActivity.this,"图片已保存至./myPic.png" , Toast.LENGTH_SHORT).show();
+                screenShot();
+                Toast.makeText(MainActivity.this, "图片已保存至./myPic.png", Toast.LENGTH_SHORT).show();
             }
         });
+        findViewById(R.id.core_share).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                screenShot();
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("image/*");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File("/sdcard/myPic.png")));
+                shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(Intent.createChooser(shareIntent, "将ARAP介绍给更多人"));
+            }
+        });
+
+    }
+    //这是获取屏幕截图代码段，本该是在截屏按钮的OnClick事件中，但是因为在分享事件中需要再次用到截图，所以单独提取为一个函数
+    private void screenShot()
+    {
+        View view = findViewById(R.id.core_share).getRootView();
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();
+        String fname = "/sdcard/myPic.png";
+        Bitmap bitmap = view.getDrawingCache();
+        try{
+            FileOutputStream out = new FileOutputStream(fname);
+            bitmap.compress(Bitmap.CompressFormat.PNG,100, out);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void setAnimation(){
