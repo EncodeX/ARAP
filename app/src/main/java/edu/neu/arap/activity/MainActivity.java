@@ -4,6 +4,10 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,7 +41,7 @@ import edu.neu.arap.adapter.MyAdapter;
 import edu.neu.arap.easyar.GLView;
 import edu.neu.arap.easyar.Renderer;
 
-public class MainActivity extends AppCompatActivity implements MyItemClickListener {
+public class MainActivity extends AppCompatActivity implements MyItemClickListener ,SensorEventListener{
     private Camera camera;
     private Camera.Parameters parameters;
     private String[] spinnerData={"全部","餐饮","交通","学习","住宿","娱乐","购物"};
@@ -53,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
     private ObjectAnimator menuBtnShowSX,menuBtnShowSY,menuBtnShowX,menuBtnShowY,menuBtnShowA;
     private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide,introShow,introHide;
     private float distanceX,distanceY;
+    private SensorManager sensorManager;
+    private double gravity[]=new double[3];
     private  String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
     private  int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
 
@@ -111,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
             }
         });
         introHideAnimator();
+        sensorManager= (SensorManager) getSystemService(SENSOR_SERVICE);
     }
 
     //这个动画本不需要在启动时初始化，但为了在多个控件的点击事件中共同使用，才放到这里。
@@ -238,6 +245,9 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 findViewById(R.id.core).setVisibility(View.VISIBLE);
                 menuButton.setVisibility(View.GONE);
                 findViewById(R.id.core_Button).setVisibility(View.GONE);
+                sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), sensorManager.SENSOR_DELAY_NORMAL);
+                sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
+
             }
         });
         findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
@@ -247,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 findViewById(R.id.core).setVisibility(View.GONE);
                 menuButton.setVisibility(View.VISIBLE);
                 findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+                sensorManager.unregisterListener(MainActivity.this);
             }
         });
         findViewById(R.id.core_camera).setOnClickListener(new View.OnClickListener() {
@@ -531,6 +542,28 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        switch (event.sensor.getType())
+        {
+            case Sensor.TYPE_GRAVITY:
+                gravity[0]=event.values[0];
+                gravity[1]=event.values[1];
+                gravity[2]=event.values[2];
+                break;
+            case Sensor.TYPE_ACCELEROMETER:
+                TextView t= (TextView) findViewById(R.id.sensor);
+                t.setText("X:"+(event.values[0]-gravity[0])+"\nY:"+(event.values[1]-gravity[1])+"\nZ:"+(event.values[2]-gravity[2]));
+                break;
+        }
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
 
 
     /**\          Easy AR           \**/
@@ -586,4 +619,6 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 		super.onPause();
 		EasyAR.onPause();
 	}
+
+
 }
