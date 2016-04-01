@@ -1,8 +1,10 @@
 package edu.neu.arap.activity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -174,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 }
             }
         });
-        flashButton.setOnClickListener(new View.OnClickListener() {
+      /*  flashButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (findViewById(R.id.flashlight_button).isSelected()) {
@@ -196,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                     camera.startPreview();
                 }
             }
-        });
+        });*/
         select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
