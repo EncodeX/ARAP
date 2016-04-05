@@ -8,6 +8,7 @@
 #include "renderer.hpp"
 #include <jni.h>
 #include <GLES2/gl2.h>
+#include <android/log.h>
 
 #define JNIFUNCTION_NATIVE(sig) Java_edu_neu_arap_activity_MainActivity_##sig
 
@@ -44,6 +45,7 @@ void HelloAR::initGL()
 {
     renderer.init();
     augmenter_ = Augmenter();
+
 }
 
 void HelloAR::resizeGL(int width, int height)
@@ -53,38 +55,67 @@ void HelloAR::resizeGL(int width, int height)
 
 void HelloAR::render()
 {
+    // 清屏
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // 获取当前帧
     Frame frame = augmenter_.newFrame(tracker_);
+    // 首次渲染重置大小？
     if(view_size[0] > 0){
         AR::resizeGL(view_size[0], view_size[1]);
         if(camera_ && camera_.isOpened())
             view_size[0] = -1;
     }
+    // 绘制相机取景内容
     augmenter_.drawVideoBackground();
 
+    // 设置追踪
     AugmentedTarget::Status status = frame.targets()[0].status();
     if(status == AugmentedTarget::kTargetStatusTracked){
+        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "成功了吗\n");
+        // Todo: 此处重要！
+        // 获取投影矩阵
         Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.2f, 500.f);
+        // 获取摄像机姿态
         Matrix44F cameraview = getPoseGL(frame.targets()[0].pose());
         ImageTarget target = frame.targets()[0].target().cast_dynamic<ImageTarget>();
         renderer.render(projectionMatrix, cameraview, target.size());
     }
+
+
 }
 
 }
 }
 EasyAR::samples::HelloAR ar;
 
-JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv*, jobject))
+JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv* env, jobject thiz))
 {
-    bool status = ar.initCamera();
+    // 读取tracker信息
+    jboolean status = (jboolean)ar.initCamera();
     ar.loadFromJsonFile("targets.json", "argame");
     ar.loadFromJsonFile("targets.json", "idback");
     ar.loadAllFromJsonFile("targets2.json");
     ar.loadFromImage("namecard.jpg");
     status &= ar.start();
+
+    jclass clazz = (*env).GetObjectClass(thiz);
+
+    if (!clazz){
+        return status;
+    }
+
+    jmethodID method = (*env).GetMethodID(clazz, "testCallback","()V");
+
+    if (!method){
+        return status;
+    }
+
+    __android_log_print(ANDROID_LOG_INFO, "EasyAR", "Success?");
+
+    (*env).CallVoidMethod(thiz, method);
+
     return status;
 }
 
@@ -95,6 +126,7 @@ JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeDestory(JNIEnv*, jobject))
 
 JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeInitGL(JNIEnv*, jobject))
 {
+    // 在static函数中使用GetObjectClass会返回Class类 得不到目标类
     ar.initGL();
 }
 

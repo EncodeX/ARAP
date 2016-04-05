@@ -11,7 +11,8 @@
 #include <GLES2/gl2.h>
 #endif
 
-const char* box_vert="uniform mat4 trans;\n"
+const char* box_vert=
+        "uniform mat4 trans;\n"
         "uniform mat4 proj;\n"
         "attribute vec4 coord;\n"
         "attribute vec4 color;\n"
@@ -25,7 +26,8 @@ const char* box_vert="uniform mat4 trans;\n"
         "\n"
 ;
 
-const char* box_frag="#ifdef GL_ES\n"
+const char* box_frag=
+        "#ifdef GL_ES\n"
         "precision highp float;\n"
         "#endif\n"
         "varying vec4 vcolor;\n"
@@ -67,9 +69,12 @@ void Renderer::init()
 
     glGenBuffers(1, &vbo_color_box);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_color_box);
+//    const GLubyte cube_vertex_colors[8][4] = {
+//        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}, {0, 0, 0, 128},
+//        {0, 255, 255, 128}, {255, 0, 255, 128}, {255, 255, 0, 128}, {255, 255, 255, 128}};
     const GLubyte cube_vertex_colors[8][4] = {
-        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}, {0, 0, 0, 128},
-        {0, 255, 255, 128}, {255, 0, 255, 128}, {255, 255, 0, 128}, {255, 255, 255, 128}};
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255},
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
     glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertex_colors), cube_vertex_colors, GL_STATIC_DRAW);
 
     glGenBuffers(1, &vbo_color_box_2);
@@ -89,6 +94,7 @@ void Renderer::init()
 
 void Renderer::render(const Matrix44F& projectionMatrix, const Matrix44F& cameraview, Vec2F size)
 {
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo_coord_box);
     float height = size[0] / 1000;
     const GLfloat cube_vertices[8][3] = {
@@ -100,14 +106,18 @@ void Renderer::render(const Matrix44F& projectionMatrix, const Matrix44F& camera
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
     glUseProgram(program_box);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo_coord_box);
     glEnableVertexAttribArray(pos_coord_box);
     glVertexAttribPointer(pos_coord_box, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo_color_box);
     glEnableVertexAttribArray(pos_color_box);
     glVertexAttribPointer(pos_color_box, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
+    // 转换坐标与变换
     glUniformMatrix4fv(pos_trans_box, 1, 0, cameraview.data);
     glUniformMatrix4fv(pos_proj_box, 1, 0, projectionMatrix.data);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_faces_box);
     for(int i = 0; i < 6; i++) {
         glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, (void*)(i * 4 * sizeof(GLushort)));
@@ -120,12 +130,15 @@ void Renderer::render(const Matrix44F& projectionMatrix, const Matrix44F& camera
     glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_2), cube_vertices_2, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(pos_coord_box);
     glVertexAttribPointer(pos_coord_box, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo_color_box_2);
     glEnableVertexAttribArray(pos_color_box);
     glVertexAttribPointer(pos_color_box, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
     for(int i = 0; i < 6; i++) {
         glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, (void*)(i * 4 * sizeof(GLushort)));
     }
+
+
 }
 
 }
