@@ -15,6 +15,12 @@
 		android:id="@+id/preview"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent" />
+
+	<android.opengl.GLSurfaceView
+		android:id="@+id/jpct_surface"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+
 	<Button
 		android:id="@+id/flashlight_button"
 		android:layout_width="48dp"
