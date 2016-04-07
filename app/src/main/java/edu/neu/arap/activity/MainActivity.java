@@ -1,29 +1,24 @@
 package edu.neu.arap.activity;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
-import android.graphics.Rect;
 import android.hardware.Camera;
-import android.opengl.GLSurfaceView;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -622,7 +617,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 		GLView glView = new GLView(this);
 		glView.setRenderer(new EasyARRenderer());
-		glView.setZOrderMediaOverlay(true);
+//		glView.setZOrderMediaOverlay(true);
 
 		((ViewGroup) findViewById(R.id.preview)).addView(glView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		nativeRotationChange(getWindowManager().getDefaultDisplay().getRotation() == android.view.Surface.ROTATION_0);
@@ -650,8 +645,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 	/**\          jPCT - AE           \**/
 
-	@Bind(R.id.jpct_surface)
-	GLSurfaceView mJpctSurface;
+	private GLSurfaceView mJpctSurface;
 
 	private static MainActivity master = null;
 
@@ -675,6 +669,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 	public void initJPCT(){
 		mGL2 = isAboveGL2();
+
+		mJpctSurface = new GLSurfaceView(this);
 
 		if (mGL2) {
 			mJpctSurface.setEGLContextClientVersion(2);
@@ -700,7 +696,9 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 		mJpctSurface.setRenderer(renderer);
 		mJpctSurface.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-		mJpctSurface.setZOrderOnTop(true);
+		mJpctSurface.setZOrderMediaOverlay(true);
+
+		((ViewGroup) findViewById(R.id.preview)).addView(mJpctSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 	}
 
 	private boolean isAboveGL2(){
