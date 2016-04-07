@@ -1,19 +1,29 @@
 package edu.neu.arap.activity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.opengl.GLSurfaceView;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.net.Uri;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -41,6 +51,7 @@ import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
 import com.threed.jpct.util.MemoryHelper;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 
@@ -58,7 +69,7 @@ import edu.neu.arap.adapter.MyItemClickListener;
 import edu.neu.arap.adapter.SpacesItemDecoration;
 import edu.neu.arap.easyar.GLView;
 
-public class MainActivity extends AppCompatActivity implements MyItemClickListener {
+public class MainActivity extends AppCompatActivity implements MyItemClickListener ,SensorEventListener{
     private Camera camera;
     private Camera.Parameters parameters;
     private String[] spinnerData={"全部","餐饮","交通","学习","住宿","娱乐","购物"};
@@ -74,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
     private ObjectAnimator menuBtnShowSX,menuBtnShowSY,menuBtnShowX,menuBtnShowY,menuBtnShowA;
     private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide,introShow,introHide;
     private float distanceX,distanceY;
+    private SensorManager sensorManager;
+    private double gravity[]=new double[3];
     private  String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
     private  int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
 
@@ -135,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
             }
         });
         introHideAnimator();
+        sensorManager= (SensorManager) getSystemService(SENSOR_SERVICE);
     }
 
     //这个动画本不需要在启动时初始化，但为了在多个控件的点击事件中共同使用，才放到这里。
@@ -191,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 }
             }
         });
-        flashButton.setOnClickListener(new View.OnClickListener() {
+      /*  flashButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (findViewById(R.id.flashlight_button).isSelected()) {
@@ -213,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                     camera.startPreview();
                 }
             }
-        });
+        });*/
         select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -262,6 +276,9 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 findViewById(R.id.core).setVisibility(View.VISIBLE);
                 menuButton.setVisibility(View.GONE);
                 findViewById(R.id.core_Button).setVisibility(View.GONE);
+                sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), sensorManager.SENSOR_DELAY_NORMAL);
+                sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
+
             }
         });
         findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
@@ -271,25 +288,43 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 findViewById(R.id.core).setVisibility(View.GONE);
                 menuButton.setVisibility(View.VISIBLE);
                 findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+                sensorManager.unregisterListener(MainActivity.this);
             }
         });
-        findViewById(R.id.core_camera).setOnClickListener(new View.OnClickListener() {
+	    findViewById(R.id.core_camera).setOnClickListener(new View.OnClickListener() {
+		    @Override
+		    public void onClick(View v) {
+                screenShot();
+                Toast.makeText(MainActivity.this, "图片已保存至./myPic.png", Toast.LENGTH_SHORT).show();
+            }
+        });
+        findViewById(R.id.core_share).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View view = v.getRootView();
-                view.setDrawingCacheEnabled(true);
-                view.buildDrawingCache();
-                String fname = "/sdcard/myPic.png";
-                Bitmap bitmap = view.getDrawingCache();
-                try{
-                    FileOutputStream out = new FileOutputStream(fname);
-                    bitmap.compress(Bitmap.CompressFormat.PNG,100, out);
-                }catch(Exception e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(MainActivity.this,"图片已保存至./myPic.png" , Toast.LENGTH_SHORT).show();
+                screenShot();
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("image/*");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File("/sdcard/myPic.png")));
+                shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(Intent.createChooser(shareIntent, "将ARAP介绍给更多人"));
             }
         });
+
+    }
+    //这是获取屏幕截图代码段，本该是在截屏按钮的OnClick事件中，但是因为在分享事件中需要再次用到截图，所以单独提取为一个函数
+    private void screenShot()
+    {
+        View view = findViewById(R.id.core_share).getRootView();
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();
+        String fname = "/sdcard/myPic.png";
+        Bitmap bitmap = view.getDrawingCache();
+        try{
+            FileOutputStream out = new FileOutputStream(fname);
+            bitmap.compress(Bitmap.CompressFormat.PNG,100, out);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void setAnimation(){
@@ -535,6 +570,28 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
             }
             introShow.start();
         }
+
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        switch (event.sensor.getType())
+        {
+            case Sensor.TYPE_GRAVITY:
+                gravity[0]=event.values[0];
+                gravity[1]=event.values[1];
+                gravity[2]=event.values[2];
+                break;
+            case Sensor.TYPE_ACCELEROMETER:
+                TextView t= (TextView) findViewById(R.id.sensor);
+                t.setText("X:"+(event.values[0]-gravity[0])+"\nY:"+(event.values[1]-gravity[1])+"\nZ:"+(event.values[2]-gravity[2]));
+                break;
+        }
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
 
