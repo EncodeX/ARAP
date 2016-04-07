@@ -16,15 +16,15 @@ import edu.neu.arap.activity.MainActivity;
 public class Renderer implements GLSurfaceView.Renderer {
 
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        MainActivity.nativeInitGL();
+//        MainActivity.nativeInitGL();
     }
 
     public void onSurfaceChanged(GL10 gl, int w, int h) {
-        MainActivity.nativeResizeGL(w, h);
+//        MainActivity.nativeResizeGL(w, h);
     }
 
     public void onDrawFrame(GL10 gl) {
-        MainActivity.nativeRender();
+//        MainActivity.nativeRender();
     }
 
 }

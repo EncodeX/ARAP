@@ -57,7 +57,6 @@ import edu.neu.arap.adapter.MyAdapter;
 import edu.neu.arap.adapter.MyItemClickListener;
 import edu.neu.arap.adapter.SpacesItemDecoration;
 import edu.neu.arap.easyar.GLView;
-import edu.neu.arap.easyar.Renderer;
 
 public class MainActivity extends AppCompatActivity implements MyItemClickListener {
     private Camera camera;
@@ -553,7 +552,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     public static native void nativeInitGL();
     public static native void nativeResizeGL(int w, int h);
-    public static native void nativeRender();
+    public native void nativeRender();
     private native boolean nativeInit();
     private native void nativeDestory();
     private native void nativeRotationChange(boolean portrait);
@@ -565,15 +564,31 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 		nativeInit();
 
 		GLView glView = new GLView(this);
-		glView.setRenderer(new Renderer());
+		glView.setRenderer(new EasyARRenderer());
 		glView.setZOrderMediaOverlay(true);
 
 		((ViewGroup) findViewById(R.id.preview)).addView(glView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		nativeRotationChange(getWindowManager().getDefaultDisplay().getRotation() == android.view.Surface.ROTATION_0);
     }
 
-    public void testCallback(){
-        Log.i("EasyAR","Called Back");
+//    public void testCallback(){
+//        Log.i("EasyAR","Called Back");
+//    }
+
+    public class EasyARRenderer implements GLSurfaceView.Renderer {
+
+        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+            MainActivity.nativeInitGL();
+        }
+
+        public void onSurfaceChanged(GL10 gl, int w, int h) {
+            MainActivity.nativeResizeGL(w, h);
+        }
+
+        public void onDrawFrame(GL10 gl) {
+            nativeRender();
+        }
+
     }
 
 	/**\          jPCT - AE           \**/
@@ -598,6 +613,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private boolean mGL2;
 
 	private Light sun = null;
+
+    private boolean mIsTargetDetected = false;
 
 	public void initJPCT(){
 		mGL2 = isAboveGL2();
@@ -652,6 +669,11 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 			throw new RuntimeException(e);
 		}
 	}
+
+    public void onDetectionStateChanged(boolean isDetected){
+        mIsTargetDetected = isDetected;
+//	    Log.i("jPCT-AE","isDetected: " + isDetected);
+    }
 
 	@Override
 	public boolean onTouchEvent(MotionEvent me) {
@@ -765,9 +787,11 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 			RGBColor transparent = new RGBColor(0,0,0,0);
 
 			fb.clear(transparent);
-			world.renderScene(fb);
-			world.draw(fb);
-			fb.display();
+            if(mIsTargetDetected){
+                world.renderScene(fb);
+                world.draw(fb);
+                fb.display();
+            }
 
 			if (System.currentTimeMillis() - time >= 1000) {
 				Logger.log(mFPS + "fps");
