@@ -108,12 +108,35 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
     }
 
     if (target_detected){
-//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "Success?");
-        (*env).CallVoidMethod(thiz, method, true);
-    }else{
-        (*env).CallVoidMethod(thiz, method, false);
+        jfloatArray cameraArray = (*env).NewFloatArray(4 * 4);
+        jfloatArray projectionArray = (*env).NewFloatArray(4*4);
+        float* ptrCamera = (*env).GetFloatArrayElements(cameraArray, NULL);
+        float * ptrProjection = (*env).GetFloatArrayElements(projectionArray, NULL);
+//        (*env).SetFloatArrayRegion(cameraArray, 0, 4*4, renderer.camera_data);
+        if (ptrCamera && ptrProjection){
+            for(int i = 0; i<16; ++i){
+//                __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", renderer.camera_data[i]);
+                ptrCamera[i] = renderer.camera_data[i];
+                ptrProjection[i] = renderer.projection_data[i];
+//                __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", ptr[i]);
+            }
+            (*env).ReleaseFloatArrayElements(cameraArray, ptrCamera, JNI_COMMIT);
+            (*env).ReleaseFloatArrayElements(projectionArray, ptrProjection, JNI_COMMIT);
+        }
+
+        jmethodID methodSetCamera;
+
+        methodSetCamera = (*env).GetMethodID(clazz, "onCameraDataChanged", "([F[F)V");
+
+        if (methodSetCamera == NULL) return;
+
+        (*env).CallVoidMethod(thiz, methodSetCamera, cameraArray, projectionArray);
+//        for(int i = 0; i<16; ++i){
+//            __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", cameraArray[i]);
+//        }
     }
 
+    (*env).CallVoidMethod(thiz, method, target_detected);
 }
 
 }

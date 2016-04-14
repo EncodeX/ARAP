@@ -17,6 +17,9 @@ class Renderer
 public:
     void init();
     void render(const Matrix44F& projectionMatrix, const Matrix44F& cameraview, Vec2F size);
+
+    float camera_data[4*4];
+    float projection_data[4*4];
 private:
     unsigned int program_box;
     int pos_coord_box;

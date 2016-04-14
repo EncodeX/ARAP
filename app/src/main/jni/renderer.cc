@@ -9,6 +9,8 @@
 #include <OpenGLES/ES2/gl.h>
 #else
 #include <GLES2/gl2.h>
+#include <android/log.h>
+
 #endif
 
 const char* box_vert=
@@ -94,6 +96,12 @@ void Renderer::init()
 
 void Renderer::render(const Matrix44F& projectionMatrix, const Matrix44F& cameraview, Vec2F size)
 {
+
+    for(int i = 0; i<16; ++i){
+        camera_data[i] = cameraview.data[i];
+        projection_data[i] = projectionMatrix.data[i];
+//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", camera_data[i]);
+    }
 
 //    glBindBuffer(GL_ARRAY_BUFFER, vbo_coord_box);
 //    float height = size[0] / 1000;

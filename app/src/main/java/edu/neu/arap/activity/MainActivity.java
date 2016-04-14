@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
@@ -18,6 +19,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +36,9 @@ import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.threed.jpct.FrameBuffer;
+import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Light;
+import com.threed.jpct.Loader;
 import com.threed.jpct.Logger;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
@@ -652,6 +656,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private MyRenderer renderer = null;
 	private FrameBuffer fb = null;
 	private World world = null;
+	private GLSLShader shader = null;
 
 	private float touchTurn = 0;
 	private float touchTurnUp = 0;
@@ -666,6 +671,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private Light sun = null;
 
     private boolean mIsTargetDetected = false;
+	private float cameraMatrix[] = new float[4*4];
+	private float projectionMatrix[] = new float[4*4];
 
 	public void initJPCT(){
 		mGL2 = isAboveGL2();
@@ -729,6 +736,22 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
         mIsTargetDetected = isDetected;
 //	    Log.i("jPCT-AE","isDetected: " + isDetected);
     }
+
+	public void onCameraDataChanged(float[] cameraData, float[] projectionData){
+		for(int i = 0; i < 4*4; i++){
+			cameraMatrix[i] = cameraData[i];
+			projectionMatrix[i] = projectionData[i];
+		}
+
+//		for(int i = 0; i< 4;i++){
+//			Log.i("jPCT-AE",
+//					String.valueOf(cameraData[i*4]) + " " +
+//					String.valueOf(cameraData[i*4 + 1]) + " " +
+//					String.valueOf(cameraData[i*4 + 2]) + " " +
+//					String.valueOf(cameraData[i*4 + 3])
+//			);
+//		}
+	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent me) {
@@ -799,8 +822,16 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 				Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.ic_launcher)), 64, 64));
 				TextureManager.getInstance().addTexture("texture", texture);
 
+				Resources res = getResources();
+
+				shader = new GLSLShader(
+						Loader.loadTextFile(res.openRawResource(R.raw.vertexshader_offset)),
+						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
+				);
+
 				cube = Primitives.getCube(10);
 				cube.calcTextureWrapSpherical();
+				cube.setShader(shader);
 				cube.setTexture("texture");
 				cube.strip();
 				cube.build();
@@ -840,6 +871,10 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 			}
 
 			RGBColor transparent = new RGBColor(0,0,0,0);
+
+			shader.setUniform("modelViewMatrix", cameraMatrix);
+			shader.setUniform("modelViewProjectionMatrix", projectionMatrix);
+			shader.setUniform("heightScale", 0.05f);
 
 			fb.clear(transparent);
             if(mIsTargetDetected){
