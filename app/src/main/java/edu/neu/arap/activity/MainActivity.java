@@ -40,6 +40,7 @@ import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Logger;
+import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.RGBColor;
@@ -656,7 +657,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private MyRenderer renderer = null;
 	private FrameBuffer fb = null;
 	private World world = null;
-	private GLSLShader shader = null;
+//	private GLSLShader shader = null;
+	private com.threed.jpct.Camera worldCamera;
 
 	private float touchTurn = 0;
 	private float touchTurnUp = 0;
@@ -673,6 +675,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
     private boolean mIsTargetDetected = false;
 	private float cameraMatrix[] = new float[4*4];
 	private float projectionMatrix[] = new float[4*4];
+	private float mFovyRadians;
+	private float mFovRadians;
 
 	public void initJPCT(){
 		mGL2 = isAboveGL2();
@@ -737,21 +741,72 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //	    Log.i("jPCT-AE","isDetected: " + isDetected);
     }
 
-	public void onCameraDataChanged(float[] cameraData, float[] projectionData){
-		for(int i = 0; i < 4*4; i++){
-			cameraMatrix[i] = cameraData[i];
-			projectionMatrix[i] = projectionData[i];
+	public void onCameraDataChanged(float[] cameraData, float[] projectionData, double fovyRadians, double fovRadians){
+//		for(int i = 0; i < 4; i++){
+//			for(int j = 0; j < 4; j++){
+//				cameraMatrix[j*4 + i] = cameraData[i*4 + j];
+//				projectionMatrix[j*4 + i] = projectionData[i*4 + j];
+//			}
+//		}
+
+		for(int i = 0; i < 4; i++){
+			System.arraycopy(cameraData, i * 4, cameraMatrix, i * 4, 4);
+			System.arraycopy(projectionData, i * 4, projectionMatrix, i * 4, 4);
 		}
 
+		mFovRadians = (float) fovRadians;
+		mFovyRadians = (float) fovyRadians;
+
+//		Log.i("jPCT-AE", "Camera");
 //		for(int i = 0; i< 4;i++){
 //			Log.i("jPCT-AE",
-//					String.valueOf(cameraData[i*4]) + " " +
-//					String.valueOf(cameraData[i*4 + 1]) + " " +
-//					String.valueOf(cameraData[i*4 + 2]) + " " +
-//					String.valueOf(cameraData[i*4 + 3])
+//					String.valueOf(cameraMatrix[i*4]) + " " +
+//					String.valueOf(cameraMatrix[i*4 + 1]) + " " +
+//					String.valueOf(cameraMatrix[i*4 + 2]) + " " +
+//					String.valueOf(cameraMatrix[i*4 + 3])
+//			);
+//		}
+//
+//		Log.i("jPCT-AE", "Projection");
+//		for(int i = 0; i< 4;i++){
+//			Log.i("jPCT-AE",
+//					String.valueOf(projectionMatrix[i*4]) + " " +
+//							String.valueOf(projectionMatrix[i*4 + 1]) + " " +
+//							String.valueOf(projectionMatrix[i*4 + 2]) + " " +
+//							String.valueOf(projectionMatrix[i*4 + 3])
 //			);
 //		}
 	}
+
+	public void updateCamera() {
+		float[] m = cameraMatrix;
+//		m.setDump(cameraMatrix);
+//		worldCamera.setBack(m);
+
+		final SimpleVector camUp;
+//		if (mActivity.isPortrait()) {
+//			camUp = new SimpleVector(-m[0], -m[1], -m[2]);
+//		} else {
+//			camUp = new SimpleVector(-m[4], -m[5], -m[6]);
+//		}
+
+		camUp = new SimpleVector(-m[4], -m[5], -m[6]);
+
+		final SimpleVector camDirection = new SimpleVector(m[8], m[9], m[10]);
+		final SimpleVector camPosition = new SimpleVector(m[12], m[13], m[14]);
+
+		worldCamera.setOrientation(camDirection, camUp);
+		worldCamera.setPosition(camPosition);
+
+		worldCamera.setFovAngle(mFovRadians);
+		worldCamera.setYFovAngle(mFovyRadians);
+
+//		Log.i("jPCT-AE","------");
+//		Log.i("jPCT-AE",worldCamera.getPosition().toString());
+//		Log.i("jPCT-AE",worldCamera.getDirection().toString());
+//		Log.i("jPCT-AE","------");
+	}
+
 
 	@Override
 	public boolean onTouchEvent(MotionEvent me) {
@@ -822,25 +877,29 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 				Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.ic_launcher)), 64, 64));
 				TextureManager.getInstance().addTexture("texture", texture);
 
-				Resources res = getResources();
+//				Resources res = getResources();
+//
+//				shader = new GLSLShader(
+//						Loader.loadTextFile(res.openRawResource(R.raw.vertexshader_offset)),
+//						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
+//				);
 
-				shader = new GLSLShader(
-						Loader.loadTextFile(res.openRawResource(R.raw.vertexshader_offset)),
-						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
-				);
-
-				cube = Primitives.getCube(10);
+				cube = Primitives.getCube(2f);
 				cube.calcTextureWrapSpherical();
-				cube.setShader(shader);
+				cube.setCenter(new SimpleVector(0,0,2));
+//				cube.setShader(shader);
 				cube.setTexture("texture");
 				cube.strip();
 				cube.build();
 
 				world.addObject(cube);
 
-				com.threed.jpct.Camera cam = world.getCamera();
-				cam.moveCamera(com.threed.jpct.Camera.CAMERA_MOVEOUT, 50);
-				cam.lookAt(cube.getTransformedCenter());
+				worldCamera = world.getCamera();
+//				cam.setFOVLimits(0.5f, 100.0f);
+//				cam.moveCamera(com.threed.jpct.Camera.CAMERA_MOVEOUT, 50);
+//				cam.lookAt(new SimpleVector(0,0,0));
+//
+//				Log.i("jPCT-AE", "Cube Center = " + cube.getTransformedCenter().toString());
 
 				SimpleVector sv = new SimpleVector();
 				sv.set(cube.getTransformedCenter());
@@ -872,15 +931,24 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 			RGBColor transparent = new RGBColor(0,0,0,0);
 
-			shader.setUniform("modelViewMatrix", cameraMatrix);
-			shader.setUniform("modelViewProjectionMatrix", projectionMatrix);
-			shader.setUniform("heightScale", 0.05f);
+//			shader.setUniform("modelViewMatrix", cameraMatrix);
+//			shader.setUniform("projectionMatrix", projectionMatrix);
+//			shader.setUniform("trans", cameraMatrix);
+//			shader.setUniform("proj", projectionMatrix);
+//			shader.setUniform("heightScale", 0.05f);
 
 			fb.clear(transparent);
             if(mIsTargetDetected){
+	            updateCamera();
+
                 world.renderScene(fb);
                 world.draw(fb);
                 fb.display();
+
+//                SimpleVector center = cube.getCenter();
+//                Matrix transM = cube.getTranslationMatrix();
+//
+//                Log.i("jPCT-AE", transM.toString());
             }
 
 			if (System.currentTimeMillis() - time >= 1000) {

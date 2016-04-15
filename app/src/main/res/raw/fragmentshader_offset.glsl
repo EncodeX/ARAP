@@ -17,7 +17,7 @@ uniform float heightScale;
 
 void main (void)
 {
-	vec4 vAmbient = ambientColor;
+//	vec4 vAmbient = ambientColor;
 	vec3 vVec = normalize(eyeVec);
 
 	float height = texture2D(textureUnit1, texCoord).a;
@@ -29,15 +29,16 @@ void main (void)
 
 	// First light source
 
-	float distSqr = dot(lightVec[0], lightVec[0]);
-	float att = clamp(1.0 - invRadius * sqrt(distSqr), 0.0, 1.0);
-	vec3 lVec = lightVec[0] * inversesqrt(distSqr);
+//	float distSqr = dot(lightVec[0], lightVec[0]);
+//	float att = clamp(1.0 - invRadius * sqrt(distSqr), 0.0, 1.0);
+//	vec3 lVec = lightVec[0] * inversesqrt(distSqr);
+//
+//	float diffuse = max(dot(lVec, bump), 0.0);
+//	vec4 vDiffuse = vec4(diffuseColors[0],0) * diffuse;
+//
+//	float specular = pow(clamp(dot(reflect(-lVec, bump), vVec), 0.0, 1.0), 0.85);
+//	vec4 vSpecular = vec4(specularColors[0],0) * specular;
 
-	float diffuse = max(dot(lVec, bump), 0.0);
-	vec4 vDiffuse = vec4(diffuseColors[0],0) * diffuse;
-
-	float specular = pow(clamp(dot(reflect(-lVec, bump), vVec), 0.0, 1.0), 0.85);
-	vec4 vSpecular = vec4(specularColors[0],0) * specular;
-
-	gl_FragColor = (vAmbient*base + vDiffuse*base + vSpecular) * att*2.0;
+//	gl_FragColor = (vAmbient*base + vDiffuse*base + vSpecular) * att*2.0;
+	gl_FragColor = base;
 }

@@ -7,6 +7,7 @@
 #include "ar.hpp"
 #include "renderer.hpp"
 #include <jni.h>
+#include <math.h>
 #include <GLES2/gl2.h>
 #include <android/log.h>
 
@@ -36,6 +37,8 @@ private:
     Vec2I view_size;
     Renderer renderer;
     bool target_detected;
+    double fovyRadians;
+    double fovRadians;
 };
 
 HelloAR::HelloAR()
@@ -82,8 +85,39 @@ void HelloAR::render()
         Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.2f, 500.f);
         // 获取摄像机姿态
         Matrix44F cameraview = getPoseGL(frame.targets()[0].pose());
+
+//        Matrix44F rotateMatrix;
+//        for(int i = 0;i<16;i++){
+//            rotateMatrix.data[i] = 0;
+//        }
+//        rotateMatrix.data[0] = 1; rotateMatrix.data[5] = -1;
+//        rotateMatrix.data[10] = -1; rotateMatrix.data[15] = 1;
+
+//        for(int i = 1; i < 3; i++){
+//            for (int j = 0; j < 4; j++){
+////                cameraview.data[j*4 + i] = - cameraview.data[j*4 + i];
+//                cameraview.data[i*4 + j] = - cameraview.data[i*4 + j];
+//            }
+//        }
+
         ImageTarget target = frame.targets()[0].target().cast_dynamic<ImageTarget>();
         renderer.render(projectionMatrix, cameraview, target.size());
+
+        CameraCalibration cameraCalibration = camera_.cameraCalibration();
+
+        Vec2I size = cameraCalibration.size();
+        Vec2F focalLength = cameraCalibration.focalLength();
+
+        fovyRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
+        fovRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
+
+
+
+
+//        __android_log_print(ANDROID_LOG_INFO, "EasyARCamera", "_______");
+//        for(int i = 0; i<2;i++){
+//            __android_log_print(ANDROID_LOG_INFO, "EasyARCamera", "[%f]", cameraCalibration.principalPoint().data[i]);
+//        }
 
         target_detected = true;
     }else{
@@ -126,11 +160,11 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
 
         jmethodID methodSetCamera;
 
-        methodSetCamera = (*env).GetMethodID(clazz, "onCameraDataChanged", "([F[F)V");
+        methodSetCamera = (*env).GetMethodID(clazz, "onCameraDataChanged", "([F[FDD)V");
 
         if (methodSetCamera == NULL) return;
 
-        (*env).CallVoidMethod(thiz, methodSetCamera, cameraArray, projectionArray);
+        (*env).CallVoidMethod(thiz, methodSetCamera, cameraArray, projectionArray, fovyRadians, fovRadians);
 //        for(int i = 0; i<16; ++i){
 //            __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", cameraArray[i]);
 //        }
