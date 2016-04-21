@@ -595,11 +595,11 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     private void onARStateChanged(boolean isTargetDetected){
         // 在这里输入相关代码
+        Toast.makeText(MainActivity.this, "hello world!", Toast.LENGTH_SHORT).show();
     }
 
 
