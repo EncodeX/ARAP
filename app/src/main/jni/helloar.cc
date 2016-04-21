@@ -82,7 +82,7 @@ void HelloAR::render()
 //        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "成功了吗\n");
         // Todo: 此处重要！
         // 获取投影矩阵
-        Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.2f, 500.f);
+        Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 1.0f, 500.f);
         // 获取摄像机姿态
         Matrix44F cameraview = getPoseGL(frame.targets()[0].pose());
 
@@ -95,8 +95,8 @@ void HelloAR::render()
 
 //        for(int i = 1; i < 3; i++){
 //            for (int j = 0; j < 4; j++){
-////                cameraview.data[j*4 + i] = - cameraview.data[j*4 + i];
-//                cameraview.data[i*4 + j] = - cameraview.data[i*4 + j];
+//                cameraview.data[j*4 + i] = - cameraview.data[j*4 + i];
+////                cameraview.data[i*4 + j] = - cameraview.data[i*4 + j];
 //            }
 //        }
 
@@ -111,8 +111,9 @@ void HelloAR::render()
         fovyRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
         fovRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
 
-
-
+//        __android_log_print(ANDROID_LOG_INFO, "EasyARCamera", "focalLength: [%f, %f]", focalLength.data[0], focalLength.data[1]);
+//        __android_log_print(ANDROID_LOG_INFO, "EasyARCamera", "size: [%d, %d]", size.data[0], size.data[1]);
+//        __android_log_print(ANDROID_LOG_INFO, "EasyARCamera", "fovyRadians: %f, fovRadians: %f", fovRadians, fovyRadians);
 
 //        __android_log_print(ANDROID_LOG_INFO, "EasyARCamera", "_______");
 //        for(int i = 0; i<2;i++){
@@ -146,13 +147,10 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
         jfloatArray projectionArray = (*env).NewFloatArray(4*4);
         float* ptrCamera = (*env).GetFloatArrayElements(cameraArray, NULL);
         float * ptrProjection = (*env).GetFloatArrayElements(projectionArray, NULL);
-//        (*env).SetFloatArrayRegion(cameraArray, 0, 4*4, renderer.camera_data);
         if (ptrCamera && ptrProjection){
             for(int i = 0; i<16; ++i){
-//                __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", renderer.camera_data[i]);
                 ptrCamera[i] = renderer.camera_data[i];
                 ptrProjection[i] = renderer.projection_data[i];
-//                __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", ptr[i]);
             }
             (*env).ReleaseFloatArrayElements(cameraArray, ptrCamera, JNI_COMMIT);
             (*env).ReleaseFloatArrayElements(projectionArray, ptrProjection, JNI_COMMIT);
@@ -165,9 +163,6 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
         if (methodSetCamera == NULL) return;
 
         (*env).CallVoidMethod(thiz, methodSetCamera, cameraArray, projectionArray, fovyRadians, fovRadians);
-//        for(int i = 0; i<16; ++i){
-//            __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f", cameraArray[i]);
-//        }
     }
 
     (*env).CallVoidMethod(thiz, method, target_detected);

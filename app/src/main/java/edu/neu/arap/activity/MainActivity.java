@@ -35,6 +35,7 @@ import android.widget.Toast;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
+import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.GLSLShader;
 import com.threed.jpct.Light;
@@ -54,11 +55,13 @@ import com.threed.jpct.util.MemoryHelper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
+import javax.vecmath.Matrix4f;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -595,6 +598,10 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     }
 
+    private void onARStateChanged(boolean isTargetDetected){
+        // 在这里输入相关代码
+    }
+
 
 
     /**\          Easy AR           \**/
@@ -737,6 +744,9 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	}
 
     public void onDetectionStateChanged(boolean isDetected){
+        if(mIsTargetDetected != isDetected){
+            onARStateChanged(isDetected);
+        }
         mIsTargetDetected = isDetected;
 //	    Log.i("jPCT-AE","isDetected: " + isDetected);
     }
@@ -753,6 +763,12 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 			System.arraycopy(cameraData, i * 4, cameraMatrix, i * 4, 4);
 			System.arraycopy(projectionData, i * 4, projectionMatrix, i * 4, 4);
 		}
+
+//		for(int i = 1; i < 3; i++){
+//            for (int j = 0; j < 4; j++){
+//	            projectionMatrix[j*4 + i] = - projectionMatrix[j*4 + i];
+//            }
+//        }
 
 		mFovRadians = (float) fovRadians;
 		mFovyRadians = (float) fovyRadians;
@@ -790,16 +806,67 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //			camUp = new SimpleVector(-m[4], -m[5], -m[6]);
 //		}
 
-		camUp = new SimpleVector(-m[4], -m[5], -m[6]);
+		Matrix4f matrix = new Matrix4f(m);
 
-		final SimpleVector camDirection = new SimpleVector(m[8], m[9], m[10]);
-		final SimpleVector camPosition = new SimpleVector(m[12], m[13], m[14]);
+//		Log.i("jPCT-AE", "Matrix before:\n" + matrix.toString());
+
+//		matrix.invert();
+
+		Log.i("jPCT-AE", "Matrix after:\n" + matrix.toString());
+
+//		m[0] = matrix.m00; m[1] = matrix.m01; m[2] = matrix.m02; m[3] = matrix.m03;
+//		m[4] = matrix.m10; m[5] = matrix.m11; m[6] = matrix.m12; m[7] = matrix.m13;
+//		m[8] = matrix.m20; m[9] = matrix.m21; m[10] = matrix.m22; m[11] = matrix.m23;
+//		m[12] = matrix.m30; m[13] = matrix.m31; m[14] = matrix.m32; m[15] = matrix.m33;
+
+//		camUp = new SimpleVector(-m[4], -m[5], -m[6]);
+//
+//		final SimpleVector camDirection = new SimpleVector(m[8], m[9], m[10]);
+//		final SimpleVector camPosition = new SimpleVector(m[12], m[13], m[14]);
+
+		camUp = new SimpleVector(matrix.m10, matrix.m11, matrix.m12);
+
+		final SimpleVector camDirection = new SimpleVector(-matrix.m20, -matrix.m21, -matrix.m22);
+		final SimpleVector camPosition = new SimpleVector(-matrix.m30, -matrix.m31, -matrix.m32);
 
 		worldCamera.setOrientation(camDirection, camUp);
 		worldCamera.setPosition(camPosition);
 
 		worldCamera.setFovAngle(mFovRadians);
 		worldCamera.setYFovAngle(mFovyRadians);
+
+		Log.i("jPCT-AE", "Camera Position: " + worldCamera.getPosition());
+		Log.i("jPCT-AE", "Camera Direction: " + worldCamera.getDirection());
+		Log.i("jPCT-AE", "Camera Back: " + worldCamera.getBack());
+		Log.i("jPCT-AE", "Camera Up: " + worldCamera.getUpVector());
+
+//		m = projectionMatrix;
+
+//		float near = m[14] * 2.0f / (2.0f * m[10] - 2.0f);
+//		float far = near * (m[10] - 1.0f) / (m[10] + 1.0f);
+
+//		Log.i("jPCT-AE", "near: " + near + " far: " + far);
+
+		Config.setParameterValue("nearPlane", 1.0f);
+		Config.setParameterValue("farPlane", 500.0f);
+//		Config.setParameterValue("glIgnoreNearPlane", false);
+
+//		worldCamera.setFOVLimits(near, far);
+
+//        Log.i("jPCT-AE", "fov: " + mFovRadians + " yfov: " + mFovyRadians);
+
+//		Log.i("jPCT-AE", "Projection_0 \n" + worldCamera.getProjectionMatrix(fb).toString());
+//
+//		Log.i("jPCT-AE", "Projection");
+//		for(int i = 0; i< 4;i++){
+//			Log.i("jPCT-AE",
+//					String.valueOf(projectionMatrix[i*4]) + " " +
+//							String.valueOf(projectionMatrix[i*4 + 1]) + " " +
+//							String.valueOf(projectionMatrix[i*4 + 2]) + " " +
+//							String.valueOf(projectionMatrix[i*4 + 3])
+//			);
+//		}
+
 
 //		Log.i("jPCT-AE","------");
 //		Log.i("jPCT-AE",worldCamera.getPosition().toString());
@@ -884,9 +951,10 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
 //				);
 
-				cube = Primitives.getCube(2f);
+				cube = Primitives.getCube(4f);
 				cube.calcTextureWrapSpherical();
-				cube.setCenter(new SimpleVector(0,0,2));
+				cube.setOrigin(new SimpleVector(0,0,2));
+				cube.rotateY((float)(0.25 * Math.PI));
 //				cube.setShader(shader);
 				cube.setTexture("texture");
 				cube.strip();
@@ -903,8 +971,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 				SimpleVector sv = new SimpleVector();
 				sv.set(cube.getTransformedCenter());
-				sv.y -= 100;
-				sv.z -= 100;
+				sv.y += 100;
+				sv.z += 100;
 				sun.setPosition(sv);
 				MemoryHelper.compact();
 
