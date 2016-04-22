@@ -753,6 +753,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private float ypos = -1;
 
 	private Object3D cube = null;
+	private Object3D cube2 = null;
 	private int mFPS = 0;
 	private boolean mGL2;
 
@@ -889,9 +890,9 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 //		Log.i("jPCT-AE", "Matrix before:\n" + matrix.toString());
 
-//		matrix.invert();
+		matrix.invert();
 
-		Log.i("jPCT-AE", "Matrix after:\n" + matrix.toString());
+//		Log.i("jPCT-AE", "Matrix after:\n" + matrix.toString());
 
 //		m[0] = matrix.m00; m[1] = matrix.m01; m[2] = matrix.m02; m[3] = matrix.m03;
 //		m[4] = matrix.m10; m[5] = matrix.m11; m[6] = matrix.m12; m[7] = matrix.m13;
@@ -903,10 +904,15 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //		final SimpleVector camDirection = new SimpleVector(m[8], m[9], m[10]);
 //		final SimpleVector camPosition = new SimpleVector(m[12], m[13], m[14]);
 
-		camUp = new SimpleVector(matrix.m10, matrix.m11, matrix.m12);
+		camUp = new SimpleVector(-matrix.m10, -matrix.m12, -matrix.m11);
 
-		final SimpleVector camDirection = new SimpleVector(-matrix.m20, -matrix.m21, -matrix.m22);
-		final SimpleVector camPosition = new SimpleVector(-matrix.m30, -matrix.m31, -matrix.m32);
+		final SimpleVector camDirection = new SimpleVector(matrix.m20, matrix.m22, matrix.m21);
+		final SimpleVector camPosition = new SimpleVector(matrix.m30, matrix.m32, matrix.m31);
+
+//		camUp = new SimpleVector(-matrix.m01, -matrix.m11, -matrix.m21);
+//
+//		final SimpleVector camDirection = new SimpleVector(matrix.m02, -matrix.m12, -matrix.m22);
+//		final SimpleVector camPosition = new SimpleVector(matrix.m30, matrix.m31, matrix.m32);
 
 		worldCamera.setOrientation(camDirection, camUp);
 		worldCamera.setPosition(camPosition);
@@ -914,10 +920,10 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 		worldCamera.setFovAngle(mFovRadians);
 		worldCamera.setYFovAngle(mFovyRadians);
 
-		Log.i("jPCT-AE", "Camera Position: " + worldCamera.getPosition());
-		Log.i("jPCT-AE", "Camera Direction: " + worldCamera.getDirection());
-		Log.i("jPCT-AE", "Camera Back: " + worldCamera.getBack());
-		Log.i("jPCT-AE", "Camera Up: " + worldCamera.getUpVector());
+//		Log.i("jPCT-AE", "Camera Position: " + worldCamera.getPosition());
+//		Log.i("jPCT-AE", "Camera Direction: " + worldCamera.getDirection());
+//		Log.i("jPCT-AE", "Camera Back: " + worldCamera.getBack());
+//		Log.i("jPCT-AE", "Camera Up: " + worldCamera.getUpVector());
 
 //		m = projectionMatrix;
 
@@ -926,7 +932,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 //		Log.i("jPCT-AE", "near: " + near + " far: " + far);
 
-		Config.setParameterValue("nearPlane", 1.0f);
+		Config.setParameterValue("nearPlane", 0.2f);
 		Config.setParameterValue("farPlane", 500.0f);
 //		Config.setParameterValue("glIgnoreNearPlane", false);
 
@@ -977,8 +983,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 			xpos = me.getX();
 			ypos = me.getY();
 
-			touchTurn = xd / -100f;
-			touchTurnUp = yd / -100f;
+			touchTurn = xd / 100f;
+			touchTurnUp = yd / 100f;
 			return true;
 		}
 
@@ -1014,10 +1020,10 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 			if (master == null) {
 
 				world = new World();
-				world.setAmbientLight(20, 20, 20);
+				world.setAmbientLight(180, 180, 180);
 
-				sun = new Light(world);
-				sun.setIntensity(250, 250, 250);
+//				sun = new Light(world);
+//				sun.setIntensity(250, 250, 250);
 
 				// Create a texture out of the icon...:-)
 				Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.ic_launcher)), 64, 64));
@@ -1030,16 +1036,25 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
 //				);
 
-				cube = Primitives.getCube(4f);
+				cube = Primitives.getCube(1f);
 				cube.calcTextureWrapSpherical();
-				cube.setOrigin(new SimpleVector(0,0,2));
-				cube.rotateY((float)(0.25 * Math.PI));
-//				cube.setShader(shader);
+				cube.rotateY((float)(0.75 * Math.PI));
+				cube.rotateX((float)(Math.PI));
+				cube.translate(new SimpleVector(0,1,0));    // x->x y->z z->y
 				cube.setTexture("texture");
 				cube.strip();
 				cube.build();
 
+//				cube2 = Primitives.getCube(1f);
+//				cube2.calcTextureWrapSpherical();
+//				cube2.rotateY((float)(0.25 * Math.PI));
+//				cube2.translate(new SimpleVector(0,-1,0));
+//				cube2.setTexture("texture");
+//				cube2.strip();
+//				cube2.build();
+
 				world.addObject(cube);
+//				world.addObject(cube2);
 
 				worldCamera = world.getCamera();
 //				cam.setFOVLimits(0.5f, 100.0f);
@@ -1048,11 +1063,11 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //
 //				Log.i("jPCT-AE", "Cube Center = " + cube.getTransformedCenter().toString());
 
-				SimpleVector sv = new SimpleVector();
-				sv.set(cube.getTransformedCenter());
-				sv.y += 100;
-				sv.z += 100;
-				sun.setPosition(sv);
+//				SimpleVector sv = new SimpleVector();
+//				sv.set(cube.getTransformedCenter());
+//				sv.y -= 100;
+//				sv.z -= 100;
+//				sun.setPosition(sv);
 				MemoryHelper.compact();
 
 				if (master == null) {
