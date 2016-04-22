@@ -54,6 +54,8 @@ import com.threed.jpct.util.MemoryHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -674,7 +676,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private float ypos = -1;
 
 	private Object3D cube = null;
-	private Object3D cube2 = null;
+	private Object3D mTestObject = null;
 	private int mFPS = 0;
 	private boolean mGL2;
 
@@ -957,25 +959,59 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
 //				);
 
-				cube = Primitives.getCube(1f);
+				cube = Primitives.getCube(1.5f);
 				cube.calcTextureWrapSpherical();
 				cube.rotateY((float)(0.75 * Math.PI));
 				cube.rotateX((float)(Math.PI));
-				cube.translate(new SimpleVector(0,1,0));    // x->x y->z z->y
+				cube.translate(new SimpleVector(0,1.5,0));    // x->x y->z z->y
 				cube.setTexture("texture");
 				cube.strip();
 				cube.build();
-
-//				cube2 = Primitives.getCube(1f);
-//				cube2.calcTextureWrapSpherical();
-//				cube2.rotateY((float)(0.25 * Math.PI));
-//				cube2.translate(new SimpleVector(0,-1,0));
-//				cube2.setTexture("texture");
-//				cube2.strip();
-//				cube2.build();
-
 				world.addObject(cube);
-//				world.addObject(cube2);
+
+//				try {
+//					mTestObject = loadModel(getAssets().open("cctv/CCTV+Headquarters.3ds"), 0.0005f);
+//					mTestObject.rotateX((float)(Math.PI));
+//
+//					TextureManager.getInstance().addTexture("28135401.jpg", new Texture(getAssets().open("cctv/28135401.jpg")));
+//					TextureManager.getInstance().addTexture("28135402.jpg", new Texture(getAssets().open("cctv/28135402.jpg")));
+//					TextureManager.getInstance().addTexture("28135403.jpg", new Texture(getAssets().open("cctv/28135403.jpg")));
+//					TextureManager.getInstance().addTexture("28135490.jpg", new Texture(getAssets().open("cctv/28135490.jpg")));
+//					TextureManager.getInstance().addTexture("32056955.jpg", new Texture(getAssets().open("cctv/32056955.jpg")));
+//					TextureManager.getInstance().addTexture("arch_7WO.jpg", new Texture(getAssets().open("cctv/arch_7WO.jpg")));
+//					TextureManager.getInstance().addTexture("arch_701.jpg", new Texture(getAssets().open("cctv/arch_701.jpg")));
+//					TextureManager.getInstance().addTexture("b_str_01.jpg", new Texture(getAssets().open("cctv/b_str_01.jpg")));
+//					TextureManager.getInstance().addTexture("b_str_02.jpg", new Texture(getAssets().open("cctv/b_str_02.jpg")));
+//					TextureManager.getInstance().addTexture("b_str_fr.jpg", new Texture(getAssets().open("cctv/b_str_fr.jpg")));
+//					TextureManager.getInstance().addTexture("CCTV_901.jpg", new Texture(getAssets().open("cctv/CCTV_901.jpg")));
+//					TextureManager.getInstance().addTexture("CCTV_902.jpg", new Texture(getAssets().open("cctv/CCTV_902.jpg")));
+//					TextureManager.getInstance().addTexture("CCTV_918.jpg", new Texture(getAssets().open("cctv/CCTV_918.jpg")));
+//					TextureManager.getInstance().addTexture("Fencing_.jpg", new Texture(getAssets().open("cctv/Fencing_.jpg")));
+//					TextureManager.getInstance().addTexture("Google01.jpg", new Texture(getAssets().open("cctv/Google01.jpg")));
+//					TextureManager.getInstance().addTexture("Google02.jpg", new Texture(getAssets().open("cctv/Google02.jpg")));
+//					TextureManager.getInstance().addTexture("Google03.jpg", new Texture(getAssets().open("cctv/Google03_z.jpg")));
+//					TextureManager.getInstance().addTexture("Google04.jpg", new Texture(getAssets().open("cctv/Google04.jpg")));
+//					TextureManager.getInstance().addTexture("Google05.jpg", new Texture(getAssets().open("cctv/Google05.jpg")));
+//					TextureManager.getInstance().addTexture("Google_E.jpg", new Texture(getAssets().open("cctv/Google_E.jpg")));
+//					TextureManager.getInstance().addTexture("grndek01.jpg", new Texture(getAssets().open("cctv/grndek01.jpg")));
+//					TextureManager.getInstance().addTexture("grndek02.jpg", new Texture(getAssets().open("cctv/grndek02.jpg")));
+//					TextureManager.getInstance().addTexture("grndek03.jpg", new Texture(getAssets().open("cctv/grndek03.jpg")));
+//					TextureManager.getInstance().addTexture("grndek04.jpg", new Texture(getAssets().open("cctv/grndek04.jpg")));
+//					TextureManager.getInstance().addTexture("grndek_f.jpg", new Texture(getAssets().open("cctv/grndek_f.jpg")));
+//					TextureManager.getInstance().addTexture("grndek_s.jpg", new Texture(getAssets().open("cctv/grndek_s.jpg")));
+//					TextureManager.getInstance().addTexture("lo_rrtt.jpg", new Texture(getAssets().open("cctv/lo_rrtt.jpg")));
+//					TextureManager.getInstance().addTexture("OMA_CCTV.jpg", new Texture(getAssets().open("cctv/OMA_CCTV.jpg")));
+//					TextureManager.getInstance().addTexture("south_01.jpg", new Texture(getAssets().open("cctv/south_01.jpg")));
+//					TextureManager.getInstance().addTexture("south_1_.jpg", new Texture(getAssets().open("cctv/south_1_.jpg")));
+//
+//
+//
+//					mTestObject.build();
+//
+//					world.addObject(mTestObject);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 
 				worldCamera = world.getCamera();
 //				cam.setFOVLimits(0.5f, 100.0f);
@@ -1040,6 +1076,22 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 				time = System.currentTimeMillis();
 			}
 			mFPS++;
+		}
+
+		private Object3D loadModel(InputStream stream, float scale) throws IOException {
+			Object3D[] model = Loader.load3DS(stream, scale);
+			Object3D o3d = new Object3D(0);
+			Object3D temp = null;
+			for (int i = 0; i < model.length; i++) {
+				temp = model[i];
+				temp.setCenter(SimpleVector.ORIGIN);
+				temp.rotateX((float)( -.5*Math.PI));
+				temp.rotateMesh();
+				temp.setRotationMatrix(new Matrix());
+				o3d = Object3D.mergeObjects(o3d, temp);
+				o3d.build();
+			}
+			return o3d;
 		}
 	}
 
