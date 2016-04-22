@@ -82,7 +82,7 @@ void HelloAR::render()
 //        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "成功了吗\n");
         // Todo: 此处重要！
         // 获取投影矩阵
-        Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 1.0f, 500.f);
+        Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.2f, 500.f);
         // 获取摄像机姿态
         Matrix44F cameraview = getPoseGL(frame.targets()[0].pose());
 
@@ -152,6 +152,12 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
                 ptrCamera[i] = renderer.camera_data[i];
                 ptrProjection[i] = renderer.projection_data[i];
             }
+
+            ptrCamera[1] = -ptrCamera[1]; ptrCamera[2] = -ptrCamera[2];
+            ptrCamera[5] = -ptrCamera[5]; ptrCamera[6] = -ptrCamera[6];
+            ptrCamera[9] = -ptrCamera[9]; ptrCamera[10] = -ptrCamera[10];
+            ptrCamera[13] = -ptrCamera[13]; ptrCamera[14] = -ptrCamera[14];
+
             (*env).ReleaseFloatArrayElements(cameraArray, ptrCamera, JNI_COMMIT);
             (*env).ReleaseFloatArrayElements(projectionArray, ptrProjection, JNI_COMMIT);
         }
