@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
     private double gravity[]=new double[3];
     private  String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
     private  int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
+    private  int ARChangeMark;
 
     @Bind(R.id.explore_button)
     Button exploreButton;
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     private void initView()
     {
+        ARChangeMark=0;
         ButterKnife.bind(this);
         RecyclerView mRecyclerView;
         LinearLayoutManager mLayoutManager;
@@ -273,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
             }
         });
 
-        findViewById(R.id.core_Button).setOnClickListener(new View.OnClickListener() {
+        /*findViewById(R.id.core_Button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 findViewById(R.id.expand_area).setVisibility(View.GONE);
@@ -284,14 +286,14 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
 
             }
-        });
+        });*/
         findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
                 findViewById(R.id.core).setVisibility(View.GONE);
                 menuButton.setVisibility(View.VISIBLE);
-                findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+                //findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
                 sensorManager.unregisterListener(MainActivity.this);
             }
         });
@@ -652,7 +654,31 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     private void onARStateChanged(boolean isTargetDetected){
         // 在这里输入相关代码
-        Toast.makeText(MainActivity.this, "hello world!", Toast.LENGTH_SHORT).show();
+        ARChangeMark++;
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(ARChangeMark%2==0){
+                    //Toast.makeText(MainActivity.this,"gone"+ARChangeMark,Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
+                    findViewById(R.id.core).setVisibility(View.GONE);
+                    menuButton.setVisibility(View.VISIBLE);
+                    //findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+                    sensorManager.unregisterListener(MainActivity.this);
+
+                }
+                if(ARChangeMark%2==1){
+                   // Toast.makeText(MainActivity.this,"show"+ARChangeMark,Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.expand_area).setVisibility(View.GONE);
+                    findViewById(R.id.core).setVisibility(View.VISIBLE);
+                    menuButton.setVisibility(View.GONE);
+                   // findViewById(R.id.core_Button).setVisibility(View.GONE);
+                    sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), sensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
+
+                }
+            }
+        });
     }
 
 
