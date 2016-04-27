@@ -16,6 +16,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent" />
 
+
 	<Button
 		android:id="@+id/flashlight_button"
 		android:layout_width="48dp"
@@ -259,12 +260,6 @@
 			android:layout_marginTop="8dp"
 			android:text="hello"/>
 		<ImageView
-			android:layout_width="300dp"
-			android:layout_height="300dp"
-			android:src="@drawable/wuyi"
-			android:layout_centerHorizontal="true"
-			android:layout_centerVertical="true"/>
-		<ImageView
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:layout_alignParentRight="true"
@@ -291,10 +286,30 @@
 	</RelativeLayout>
 
 	<Button
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:id="@+id/core_Button"
-		android:layout_margin="8dp"
-		android:text="识别成功"
-		android:layout_alignParentRight="true"/>
+		android:layout_width="match_parent"
+		android:visibility="gone"
+		android:id="@+id/top_extend_background"
+		android:layout_height="match_parent"
+		android:background="@drawable/back"
+		/>
+	<RelativeLayout
+		android:background="#99000000"
+		android:visibility="gone"
+		android:id="@+id/help_area"
+		android:layout_centerHorizontal="true"
+		android:layout_width="match_parent"
+		android:layout_marginTop="-30dp"
+		android:layout_height="130dp">
+		<TextView
+			android:layout_margin="32dp"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:textColor="#ffffff"
+			android:text="这是帮助信息"/>
+		<Button
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:background="@drawable/back"/>
+	</RelativeLayout>
+
 </RelativeLayout>

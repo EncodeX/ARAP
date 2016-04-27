@@ -90,12 +90,14 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
     private ObjectAnimator menuHideX,menuHideY, menuHideSX,menuHideSY,menuHideA;
     private ObjectAnimator menuBtnHideSX,menuBtnHideSY,menuBtnHideX,menuBtnHideY,menuBtnHideA;
     private ObjectAnimator menuBtnShowSX,menuBtnShowSY,menuBtnShowX,menuBtnShowY,menuBtnShowA;
+    private ObjectAnimator helpShow,helpGone;
     private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide,introShow,introHide;
     private float distanceX,distanceY;
     private SensorManager sensorManager;
     private double gravity[]=new double[3];
     private  String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
     private  int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
+    private  int ARChangeMark;
 
     @Bind(R.id.explore_button)
     Button exploreButton;
@@ -131,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     private void initView()
     {
+        ARChangeMark=0;
         ButterKnife.bind(this);
         RecyclerView mRecyclerView;
         LinearLayoutManager mLayoutManager;
@@ -276,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
             }
         });
 
-        findViewById(R.id.core_Button).setOnClickListener(new View.OnClickListener() {
+        /*findViewById(R.id.core_Button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 findViewById(R.id.expand_area).setVisibility(View.GONE);
@@ -287,14 +290,14 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
 
             }
-        });
+        });*/
         findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
                 findViewById(R.id.core).setVisibility(View.GONE);
                 menuButton.setVisibility(View.VISIBLE);
-                findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+                //findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
                 sensorManager.unregisterListener(MainActivity.this);
             }
         });
@@ -317,6 +320,18 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
             }
         });
 
+        findViewById(R.id.menu_help).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setHelpShowAnimation();
+            }
+        });
+        findViewById(R.id.top_extend_background).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setHelpGoneAnimation();
+            }
+        });
     }
     //这是获取屏幕截图代码段，本该是在截屏按钮的OnClick事件中，但是因为在分享事件中需要再次用到截图，所以单独提取为一个函数
     private void screenShot()
@@ -450,6 +465,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
         exploreHide.play(menuDown).after(selectHide);
         exploreHide.play(selectHide).after(spinnerHide);
 
+
     }
     private void setMenuHideAnimation()
     {
@@ -551,6 +567,45 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
         menuShow.playTogether(menuShowSY, menuShowSX, menuShowX, menuShowY, menuShowA, menuBtnHideA, menuBtnHideX, menuBtnHideY);
         menuShow.start();
     }
+    private void setHelpShowAnimation()
+    {
+        setMenuHideAnimation();
+        findViewById(R.id.top_extend_background).setVisibility(View.VISIBLE);
+        findViewById(R.id.help_area).setVisibility(View.VISIBLE);
+        helpShow=ObjectAnimator.ofFloat(findViewById(R.id.help_area),"translationY",-100,30,0);
+        helpShow.setDuration(200);
+        helpShow.start();
+    }
+    private void setHelpGoneAnimation()
+    {
+        helpGone=ObjectAnimator.ofFloat(findViewById(R.id.help_area),"translationY",0,30,-100);
+        helpGone.setDuration(200);
+        helpGone.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                findViewById(R.id.help_area).setVisibility(View.GONE);
+                findViewById(R.id.top_extend_background).setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        helpGone.start();
+    }
+
+
     @Override
     public void onItemClick(View view, int position) {
         if(findViewById(R.id.intro).getVisibility()==View.VISIBLE)
@@ -599,11 +654,35 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     private void onARStateChanged(boolean isTargetDetected){
         // 在这里输入相关代码
+        ARChangeMark++;
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(ARChangeMark%2==0){
+                    //Toast.makeText(MainActivity.this,"gone"+ARChangeMark,Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
+                    findViewById(R.id.core).setVisibility(View.GONE);
+                    menuButton.setVisibility(View.VISIBLE);
+                    //findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
+                    sensorManager.unregisterListener(MainActivity.this);
+
+                }
+                if(ARChangeMark%2==1){
+                   // Toast.makeText(MainActivity.this,"show"+ARChangeMark,Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.expand_area).setVisibility(View.GONE);
+                    findViewById(R.id.core).setVisibility(View.VISIBLE);
+                    menuButton.setVisibility(View.GONE);
+                   // findViewById(R.id.core_Button).setVisibility(View.GONE);
+                    sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), sensorManager.SENSOR_DELAY_NORMAL);
+                    sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
+
+                }
+            }
+        });
     }
 
 
