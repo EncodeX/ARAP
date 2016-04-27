@@ -42,11 +42,13 @@ import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Logger;
 import com.threed.jpct.Matrix;
+import com.threed.jpct.Mesh;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.RGBColor;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.Texture;
+import com.threed.jpct.TextureInfo;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
@@ -54,6 +56,8 @@ import com.threed.jpct.util.MemoryHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -753,7 +757,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private float ypos = -1;
 
 	private Object3D cube = null;
-	private Object3D cube2 = null;
+	private Object3D mTestObject = null;
 	private int mFPS = 0;
 	private boolean mGL2;
 
@@ -1026,8 +1030,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //				sun.setIntensity(250, 250, 250);
 
 				// Create a texture out of the icon...:-)
-				Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.ic_launcher)), 64, 64));
-				TextureManager.getInstance().addTexture("texture", texture);
+//				Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.ic_launcher)), 64, 64));
+//				TextureManager.getInstance().addTexture("texture", texture);
 
 //				Resources res = getResources();
 //
@@ -1036,25 +1040,47 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
 //				);
 
-				cube = Primitives.getCube(1f);
-				cube.calcTextureWrapSpherical();
-				cube.rotateY((float)(0.75 * Math.PI));
-				cube.rotateX((float)(Math.PI));
-				cube.translate(new SimpleVector(0,1,0));    // x->x y->z z->y
-				cube.setTexture("texture");
-				cube.strip();
-				cube.build();
+//				cube = Primitives.getCube(1.5f);
+//				cube.calcTextureWrapSpherical();
+//				cube.rotateY((float)(0.75 * Math.PI));
+//				cube.rotateX((float)(Math.PI));
+//				cube.translate(new SimpleVector(0,1.5,0));    // x->x y->z z->y
+//				cube.setTexture("texture");
+//				cube.strip();
+//				cube.build();
+//				world.addObject(cube);
 
-//				cube2 = Primitives.getCube(1f);
-//				cube2.calcTextureWrapSpherical();
-//				cube2.rotateY((float)(0.25 * Math.PI));
-//				cube2.translate(new SimpleVector(0,-1,0));
-//				cube2.setTexture("texture");
-//				cube2.strip();
-//				cube2.build();
+				try {
+					TextureManager.getInstance().addTexture("disco", new Texture(getAssets().open("disco.jpg")));
+					mTestObject = Loader.loadMD2(getAssets().open("snork.md2"),0.2f);
+                    mTestObject.rotateY((float)(-0.5 * Math.PI));
+                    mTestObject.rotateX((float)(Math.PI));
+					mTestObject.setTexture("disco");
 
-				world.addObject(cube);
-//				world.addObject(cube2);
+//					TextureManager.getInstance().addTexture("rock", new Texture(getAssets().open("rock.jpg")));
+//					TextureManager.getInstance().addTexture("normals", new Texture(getAssets().open("normals.jpg")));
+//					TextureInfo stoneTex = new TextureInfo(TextureManager.getInstance().getTextureID("rock"));
+//					stoneTex.add(TextureManager.getInstance().getTextureID("normals"), TextureInfo.MODE_MODULATE);
+//					mTestObject = Loader.load3DS(getAssets().open("rock.3ds"),1.0f)[0];
+////                    mTestObject.rotateY((float)(-0.5 * Math.PI));
+//                    mTestObject.rotateX((float)(Math.PI/2));
+//					mTestObject.setTexture(stoneTex);
+
+
+					mTestObject.build();
+
+					Mesh mesh = mTestObject.getMesh();
+					float[] boundingBox = mesh.getBoundingBox();
+					Log.i("mtestobject", Arrays.toString(boundingBox));
+					mTestObject.translate(0, -boundingBox[4], 0);
+//					mTestObject.setSpecularLighting(true);
+
+					world.addObject(mTestObject);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+//				world.buildAllObjects();
 
 				worldCamera = world.getCamera();
 //				cam.setFOVLimits(0.5f, 100.0f);
@@ -1119,6 +1145,22 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 				time = System.currentTimeMillis();
 			}
 			mFPS++;
+		}
+
+		private Object3D loadModel(InputStream stream, float scale) throws IOException {
+			Object3D[] model = Loader.load3DS(stream, scale);
+			Object3D o3d = new Object3D(0);
+			Object3D temp = null;
+			for (int i = 0; i < model.length; i++) {
+				temp = model[i];
+				temp.setCenter(SimpleVector.ORIGIN);
+				temp.rotateX((float)( -.5*Math.PI));
+				temp.rotateMesh();
+				temp.setRotationMatrix(new Matrix());
+				o3d = Object3D.mergeObjects(o3d, temp);
+				o3d.build();
+			}
+			return o3d;
 		}
 	}
 
