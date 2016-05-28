@@ -248,7 +248,7 @@
 	<RelativeLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:visibility="gone"
+		android:visibility="invisible"
 		android:id="@+id/core">
 		<TextView
 			android:layout_width="wrap_content"
@@ -275,13 +275,14 @@
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:src="@drawable/ic_camera_alt_black_48dp"/>
-		<ImageView
+		<!--<ImageView
 			android:layout_alignParentRight="true"
 			android:id="@+id/core_close"
 			android:layout_margin="8dp"
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:src="@drawable/ic_close_black_48dp"/>
+			-->
 
 	</RelativeLayout>
 
