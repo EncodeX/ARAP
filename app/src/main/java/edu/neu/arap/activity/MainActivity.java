@@ -96,7 +96,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
     private ObjectAnimator menuBtnHideSX,menuBtnHideSY,menuBtnHideX,menuBtnHideY,menuBtnHideA;
     private ObjectAnimator menuBtnShowSX,menuBtnShowSY,menuBtnShowX,menuBtnShowY,menuBtnShowA;
     private ObjectAnimator helpShow,helpGone;
-    private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide,introShow,introHide;
+    private ObjectAnimator ARShowMenuBtn,ARShowExp,ARGoneMenuBtn,ARGoneExp,ARShowShare,ARGoneShare,ARShowSceen,ARGoneSceen;
+    private  AnimatorSet exploreUp,exploreHide,menuShow,menuHide,introShow,introHide,ARShowSet,ARGoneSet;
     private float distanceX,distanceY;
     private SensorManager sensorManager;
     private double gravity[]=new double[3];
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
         setContentView(R.layout.activity_main);
         initView();
         clickerListener();
+
 
         initAR();
 	    initJPCT();
@@ -296,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
             }
         });*/
-        findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
+       /* findViewById(R.id.core_close).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
@@ -305,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
                 //findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
                 sensorManager.unregisterListener(MainActivity.this);
             }
-        });
+        });*/
 	    findViewById(R.id.core_camera).setOnClickListener(new View.OnClickListener() {
 		    @Override
 		    public void onClick(View v) {
@@ -657,6 +659,93 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
     }
 
+    private void ARShow(){
+        findViewById(R.id.core).setVisibility(View.VISIBLE);
+        if(exploreButton.isSelected())
+        {
+            findViewById(R.id.explore_button).setSelected(false);
+            introHide.start();
+            if (spinner.getVisibility() != View.VISIBLE) {
+                selectHide.start();
+            } else {
+                exploreHide.start();
+            }
+        }
+        if(menuButton.getVisibility()==View.INVISIBLE)
+        {
+            setMenuHideAnimation();
+        }
+
+        ARGoneExp=ObjectAnimator.ofFloat(exploreButton,"translationX",0,exploreButton.getWidth()+20);
+        ARGoneExp.setDuration(100);
+        ARGoneExp.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                findViewById(R.id.expand_area).setVisibility(View.GONE);
+                menuButton.setVisibility(View.GONE);
+                sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), sensorManager.SENSOR_DELAY_NORMAL);
+                sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        ARGoneMenuBtn=ObjectAnimator.ofFloat(menuButton,"translationX",0,menuButton.getWidth()+20);
+        ARGoneMenuBtn.setDuration(100);
+        ARShowSet=new AnimatorSet();
+        ARShowSceen=ObjectAnimator.ofFloat(findViewById(R.id.core_camera),"translationX",4*findViewById(R.id.core_camera).getWidth()+80,0);
+        ARShowSceen.setDuration(400);
+        ARShowShare=ObjectAnimator.ofFloat(findViewById(R.id.core_share),"translationX",3*findViewById(R.id.core_share).getWidth()+60,0);
+        ARShowShare.setDuration(300);
+        ARShowSet.play(ARGoneMenuBtn).with(ARShowSceen).before(ARGoneExp).with(ARShowShare);
+        ARShowSet.start();
+        ARGoneSceen=ObjectAnimator.ofFloat(findViewById(R.id.core_camera),"translationX",0,findViewById(R.id.core_camera).getWidth()+20);
+        ARGoneSceen.setDuration(100);
+        ARGoneShare=ObjectAnimator.ofFloat(findViewById(R.id.core_share),"translationX",0,findViewById(R.id.core_camera).getWidth()+20);
+        ARGoneShare.setDuration(100);
+        ARGoneShare.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
+                findViewById(R.id.core).setVisibility(View.GONE);
+                menuButton.setVisibility(View.VISIBLE);
+                sensorManager.unregisterListener(MainActivity.this);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        ARShowExp=ObjectAnimator.ofFloat(exploreButton,"translationX",4*exploreButton.getWidth()+80,0);
+        ARShowExp.setDuration(400);
+        ARShowMenuBtn=ObjectAnimator.ofFloat(menuButton,"translationX",3*menuButton.getWidth()+60,0);
+        ARShowMenuBtn.setDuration(300);
+        ARGoneSet=new AnimatorSet();
+        ARGoneSet.play(ARGoneShare).with(ARShowExp).before(ARGoneSceen).with(ARShowMenuBtn);
+    }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
@@ -669,22 +758,19 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
             public void run() {
                 if(ARChangeMark%2==0){
                     //Toast.makeText(MainActivity.this,"gone"+ARChangeMark,Toast.LENGTH_SHORT).show();
-                    findViewById(R.id.expand_area).setVisibility(View.VISIBLE);
-                    findViewById(R.id.core).setVisibility(View.GONE);
-                    menuButton.setVisibility(View.VISIBLE);
-                    //findViewById(R.id.core_Button).setVisibility(View.VISIBLE);
-                    sensorManager.unregisterListener(MainActivity.this);
+                ARGoneSet.start();
 
                 }
                 if(ARChangeMark%2==1){
                    // Toast.makeText(MainActivity.this,"show"+ARChangeMark,Toast.LENGTH_SHORT).show();
-                    findViewById(R.id.expand_area).setVisibility(View.GONE);
+                 /*   findViewById(R.id.expand_area).setVisibility(View.GONE);
                     findViewById(R.id.core).setVisibility(View.VISIBLE);
                     menuButton.setVisibility(View.GONE);
                    // findViewById(R.id.core_Button).setVisibility(View.GONE);
                     sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), sensorManager.SENSOR_DELAY_NORMAL);
                     sensorManager.registerListener(MainActivity.this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorManager.SENSOR_DELAY_NORMAL);
-
+*/
+                    ARShow();
                 }
             }
         });
