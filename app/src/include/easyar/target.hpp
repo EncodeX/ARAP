@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2015 VisionStar Information Technology (Shanghai) Co., Ltd. All Rights Reserved.
+* Copyright (c) 2015-2016 VisionStar Information Technology (Shanghai) Co., Ltd. All Rights Reserved.
 * EasyAR is the registered trademark or trademark of VisionStar Information Technology (Shanghai) Co., Ltd in China
 * and other countries for the augmented reality technology developed by VisionStar Information Technology (Shanghai) Co., Ltd.
 */
@@ -11,9 +11,10 @@
 #include "easyar/storage.hpp"
 #include "easyar/matrix.hpp"
 
-namespace EasyAR{
+namespace EasyAR {
 
 class ImageList;
+class TargetList;
 
 class Target : public RefBase
 {
@@ -39,23 +40,11 @@ public:
     TargetList();
     virtual ~TargetList();
 
-    bool load(const char* path, int storageType);
     int size() const;
     Target operator [](int idx);
     Target at(int idx);
     bool insert(const Target& target);
     bool erase(const Target& target);
-};
-
-class ImageTarget : public Target
-{
-public:
-    ImageTarget();
-    virtual ~ImageTarget();
-
-    virtual bool load(const char* path, int storageType, const char* name = 0);
-    Vec2F size() const;
-    bool setSize(const Vec2F& size);
 };
 
 class AugmentedTarget : public RefBase

@@ -62,21 +62,20 @@ void AR::loadFromImage(const std::string& path)
     tracker_.loadTarget(target, new HelloCallBack());
 }
 
-void AR::loadFromJsonFile(const std::string& path, const std::string& targetname)
-{
-    ImageTarget target;
-    target.load(path.c_str(), EasyAR::kStorageAssets, targetname.c_str());
-    tracker_.loadTarget(target, new HelloCallBack());
-}
-
-void AR::loadAllFromJsonFile(const std::string& path)
-{
-    TargetList targets;
-    targets.load(path.c_str(), EasyAR::kStorageAssets);
-    for (int i = 0; i < targets.size(); ++i) {
-        tracker_.loadTarget(targets[i], new HelloCallBack());
+    void AR::loadFromJsonFile(const std::string& path, const std::string& targetname)
+    {
+        ImageTarget target;
+        target.load(path.c_str(), EasyAR::kStorageAssets, targetname.c_str());
+        tracker_.loadTarget(target, new HelloCallBack());
     }
-}
+
+    void AR::loadAllFromJsonFile(const std::string& path)
+    {
+        TargetList targets = ImageTarget::loadAll(path.c_str(), EasyAR::kStorageAssets);
+        for (int i = 0; i < targets.size(); ++i) {
+            tracker_.loadTarget(targets[i], new HelloCallBack());
+        }
+    }
 
 bool AR::start()
 {
@@ -117,7 +116,7 @@ void AR::resizeGL(int width, int height)
         std::swap(size[0], size[1]);
     float scaleRatio = std::max((float)width / (float)size[0], (float)height / (float)size[1]);
     Vec2I viewport_size = Vec2I((int)(size[0] * scaleRatio), (int)(size[1] * scaleRatio));
-    augmenter_.setViewPort(Vec4I(0, height - viewport_size[1], viewport_size[0], viewport_size[1]));
+    viewport_ = Vec4I(0, height - viewport_size[1], viewport_size[0], viewport_size[1]);
 }
 
 void AR::initGL()
@@ -133,6 +132,94 @@ void AR::render()
 void AR::setPortrait(bool portrait)
 {
     portrait_ = portrait;
+}
+
+ARVideo::ARVideo()
+{
+    prepared_ = false;
+    found_ = false;
+    callback_ = NULL;
+}
+
+ARVideo::~ARVideo()
+{
+    player_.close();
+    if(callback_)
+        delete callback_;
+}
+
+void ARVideo::openVideoFile(const std::string& path, int texid)
+{
+    if(!callback_)
+        callback_ = new CallBack(this);
+    path_ = path;
+    player_.setRenderTexture(texid);
+    player_.setVideoType(VideoPlayer::kVideoTypeNormal);
+    player_.open(path.c_str(), kStorageAssets, callback_);
+}
+
+void ARVideo::openTransparentVideoFile(const std::string& path, int texid)
+{
+    if(!callback_)
+        callback_ = new CallBack(this);
+    path_ = path;
+    player_.setRenderTexture(texid);
+    player_.setVideoType(VideoPlayer::kVideoTypeTransparentSideBySide);
+    player_.open(path.c_str(), kStorageAssets, callback_);
+}
+
+void ARVideo::openStreamingVideo(const std::string& url, int texid)
+{
+    if(!callback_)
+        callback_ = new CallBack(this);
+    path_ = url;
+    player_.setRenderTexture(texid);
+    player_.setVideoType(VideoPlayer::kVideoTypeNormal);
+    player_.open(url.c_str(), kStorageAbsolute, callback_);
+}
+
+void ARVideo::setVideoStatus(VideoPlayer::Status status)
+{
+    LOGI("video: %s (%d)\n", path_.c_str(), status);
+    if (status == VideoPlayer::kVideoReady) {
+        prepared_ = true;
+        if (found_)
+            player_.play();
+    }
+    if (status == VideoPlayer::kVideoCompleted) {
+        if (found_)
+            player_.play();
+    }
+}
+
+void ARVideo::onFound()
+{
+    found_ = true;
+    if (prepared_) {
+        player_.play();
+    }
+}
+
+void ARVideo::onLost()
+{
+    found_ = false;
+    if (prepared_)
+        player_.pause();
+}
+
+void ARVideo::update()
+{
+    player_.updateFrame();
+}
+
+ARVideo::CallBack::CallBack(ARVideo* video)
+{
+    video_ = video;
+}
+
+void ARVideo::CallBack::operator() (VideoPlayer::Status status)
+{
+    video_->setVideoStatus(status);
 }
 
 }

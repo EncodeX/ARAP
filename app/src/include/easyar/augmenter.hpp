@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2015 VisionStar Information Technology (Shanghai) Co., Ltd. All Rights Reserved.
+* Copyright (c) 2015-2016 VisionStar Information Technology (Shanghai) Co., Ltd. All Rights Reserved.
 * EasyAR is the registered trademark or trademark of VisionStar Information Technology (Shanghai) Co., Ltd in China
 * and other countries for the augmented reality technology developed by VisionStar Information Technology (Shanghai) Co., Ltd.
 */
@@ -11,10 +11,9 @@
 #include "easyar/matrix.hpp"
 #include "easyar/image.hpp"
 
-namespace EasyAR{
+namespace EasyAR {
 
-class ImageTracker;
-class BarCodeScanner;
+class CameraDevice;
 class Frame;
 
 class Augmenter : public RefBase
@@ -32,19 +31,19 @@ public:
     Augmenter();
     virtual ~Augmenter();
 
+    virtual bool attachCamera(const CameraDevice& obj);
+    virtual bool detachCamera(const CameraDevice& obj);
+
     void chooseAPI(API api = kAugmenterAPIDefault, void* device = 0);
-    Frame newFrame(const ImageTracker& obj);
-    Frame newFrame(const BarCodeScanner& obj);
+    Frame newFrame();
     void setViewPort(const Vec4I& viewport);
     Vec4I viewPort() const;
     bool drawVideoBackground();
 
     Vec2I videoBackgroundTextureSize();
     PixelFormat videoBackgroundTextureFormat();
-    bool setVideoBackgroundTextureID(int id);
-    bool setVideoBackgroundTextureID(void* id);
-    bool retrieveVideoBackground(int id);
-    bool retrieveVideoBackground(void* id);
+    void setVideoBackgroundTextureID(int id);
+    void setVideoBackgroundTextureID(void* id);
 
     int id() const;
 };
