@@ -10,6 +10,14 @@
       "name" : "idback",
       "size" : [8.56, 5.4],
       "uid" : "uid-string"
+    },
+    {
+      "image" : "scene_day.jpg",
+      "name" : "scene_day"
+    },
+    {
+      "image" : "scene_night.jpg",
+      "name" : "scene_night"
     }
   ]
 }

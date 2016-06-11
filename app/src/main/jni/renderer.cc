@@ -154,10 +154,10 @@ void Renderer::render(const Matrix44F& projectionMatrix, const Matrix44F& camera
     glUniformMatrix4fv(pos_trans_box, 1, 0, cameraview.data);
     glUniformMatrix4fv(pos_proj_box, 1, 0, projectionMatrix.data);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_faces_box);
-    for(int i = 0; i < 6; i++) {
-        glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, (void*)(i * 4 * sizeof(GLushort)));
-    }
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_faces_box);
+//    for(int i = 0; i < 6; i++) {
+//        glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, (void*)(i * 4 * sizeof(GLushort)));
+//    }
 //
 //    glBindBuffer(GL_ARRAY_BUFFER, vbo_coord_box);
 //    const GLfloat cube_vertices_2[8][3] = {

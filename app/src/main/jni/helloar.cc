@@ -44,6 +44,8 @@ private:
     bool new_image_captured;
     double fovyRadians;
     double fovRadians;
+    double targetWidth;
+    double targetHeight;
     char imageReplica[1382400];
 
     VideoRenderer* videoRenderer[3];
@@ -66,6 +68,8 @@ HelloAR::HelloAR()
     }
     video = NULL;
     video_renderer = NULL;
+    targetWidth = 0;
+    targetHeight = 0;
 }
 
 HelloAR::~HelloAR()
@@ -116,26 +120,26 @@ void HelloAR::render()
 
     // 设置追踪
 
-    if (target_last_state != target_detected && target_detected){
-        ImageList imageList = frame.images();
-//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d", imageList.size());
-        Image image = imageList[0];
-
-        const char * imageData = (const char*)image.data();
-
-//        int size = sizeof(imageData);
-//        char string[1280*720];
-//        strncpy(imageReplica, imageData, 1382400);
-        strcpy(imageReplica, imageData);
-
-//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "成功了吗?\n");
-//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d %d", image.width(), image.height());
-//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d", strlen(imageData));
-//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%c", imageData[1382401]);
-//        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d %d %d %d", imageData[0], imageData[1], imageData[2], imageData[3]);
-
+//    if (target_last_state != target_detected && target_detected){
+//        ImageList imageList = frame.images();
+////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d", imageList.size());
+//        Image image = imageList[0];
+//
+//        const char * imageData = (const char*)image.data();
+//
+////        int size = sizeof(imageData);
+////        char string[1280*720];
+////        strncpy(imageReplica, imageData, 1382400);
+//        strcpy(imageReplica, imageData);
+//
+////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "成功了吗?\n");
+////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d %d", image.width(), image.height());
+////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d", strlen(imageData));
+////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%c", imageData[1382401]);
+////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d %d %d %d", imageData[0], imageData[1], imageData[2], imageData[3]);
+//
 //        new_image_captured = true;
-    }
+//    }
 
 
 //    ImageList imageList = frame.images();
@@ -225,11 +229,16 @@ void HelloAR::render()
                     video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
                     video_renderer = videoRenderer[1];
                 }
-                else if(frame.targets()[0].target().name() == std::string("idback") && texid[2]) {
+                else if(frame.targets()[0].target().name() == std::string("scene_day")) {
 //                    video = new ARVideo;
 //                    video->openStreamingVideo("http://7xl1ve.com5.z0.glb.clouddn.com/sdkvideo/EasyARSDKShow201520.mp4", texid[2]);
 //                    video_renderer = videoRenderer[2];
                     target_detected = true;
+                }
+                else if(frame.targets()[0].target().name() == std::string("scene_night") && texid[2]) {
+                    video = new ARVideo;
+                    video->openVideoFile("scene_movie.mp4", texid[2]);
+                    video_renderer = videoRenderer[2];
                 }
             }
             if (video) {
@@ -249,6 +258,9 @@ void HelloAR::render()
 
             Vec2I size = cameraCalibration.size();
             Vec2F focalLength = cameraCalibration.focalLength();
+            Vec2F targetSize = target.size();
+
+            targetWidth = targetSize[0]; targetHeight = targetSize[1];
 
             fovyRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
             fovRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
@@ -307,10 +319,10 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
 
         jmethodID methodSetCamera;
 
-        methodSetCamera = (*env).GetMethodID(clazz, "onCameraDataChanged", "([F[FDD)V");
+        methodSetCamera = (*env).GetMethodID(clazz, "onCameraDataChanged", "([F[FDDDD)V");
 
         if (methodSetCamera != NULL){
-            (*env).CallVoidMethod(thiz, methodSetCamera, cameraArray, projectionArray, fovyRadians, fovRadians);
+            (*env).CallVoidMethod(thiz, methodSetCamera, cameraArray, projectionArray, fovyRadians, fovRadians, targetWidth, targetHeight);
         }
     }
 
@@ -362,6 +374,8 @@ JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv*, jobject))
     jboolean status = (jboolean)ar.initCamera();
     ar.loadFromJsonFile("targets.json", "argame");
     ar.loadFromJsonFile("targets.json", "idback");
+    ar.loadFromJsonFile("targets.json", "scene_day");
+    ar.loadFromJsonFile("targets.json", "scene_night");
     ar.loadAllFromJsonFile("targets2.json");
     ar.loadFromImage("namecard.jpg");
     status &= ar.start();

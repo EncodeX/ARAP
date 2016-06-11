@@ -71,6 +71,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 import javax.vecmath.Matrix4f;
+import javax.vecmath.SingularMatrixException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -859,6 +860,9 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	private float projectionMatrix[] = new float[4*4];
 	private float mFovyRadians;
 	private float mFovRadians;
+	private float mTargetWidth = 0;
+	private float mTargetHeight = 0;
+	private boolean mTargetSizeChanged = false;
 
 	@Bind(R.id.test_image)
 	ImageView mTestImage;
@@ -929,7 +933,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //	    Log.i("jPCT-AE","isDetected: " + isDetected);
     }
 
-	public void onCameraDataChanged(float[] cameraData, float[] projectionData, double fovyRadians, double fovRadians){
+	public void onCameraDataChanged(float[] cameraData, float[] projectionData, double fovyRadians, double fovRadians, double targetWidth, double targetHeight){
 //		for(int i = 0; i < 4; i++){
 //			for(int j = 0; j < 4; j++){
 //				cameraMatrix[j*4 + i] = cameraData[i*4 + j];
@@ -950,13 +954,18 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 		mFovRadians = (float) fovRadians;
 		mFovyRadians = (float) fovyRadians;
+		if(mTargetHeight != targetHeight){
+			Log.i("EasyAR", targetHeight +" "+ targetWidth);
+			mTargetWidth = (float) targetWidth;
+			mTargetHeight = (float) targetHeight;
+		}
 	}
 
     public void onNewImageCaptured(char[] imageData){
 		Log.i("EasyAR","Image Sent size: " + imageData.length);
 	    byte[] data = new String(imageData).getBytes();
 //		Bitmap image = BitmapFactory.decodeByteArray(data, 0, imageData.length);
-	    YuvImage image = new YuvImage(data, ImageFormat.YUY2, 1280, 720, null);
+	    YuvImage image = new YuvImage(data, ImageFormat.NV21, 1280, 720, null);
 	    ByteArrayOutputStream out = new ByteArrayOutputStream();
 	    image.compressToJpeg(new Rect(0, 0, 1280, 720), 50, out);
 	    byte[] imageBytes = out.toByteArray();
@@ -986,7 +995,11 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 //		Log.i("jPCT-AE", "Matrix before:\n" + matrix.toString());
 
-		matrix.invert();
+		try{
+			matrix.invert();
+		}catch (SingularMatrixException e){
+			return;
+		}
 
 //		Log.i("jPCT-AE", "Matrix after:\n" + matrix.toString());
 
@@ -1053,6 +1066,34 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //		Log.i("jPCT-AE",worldCamera.getPosition().toString());
 //		Log.i("jPCT-AE",worldCamera.getDirection().toString());
 //		Log.i("jPCT-AE","------");
+
+		if (mTargetSizeChanged){
+			world.removeObject(cube);
+			cube = new Object3D(2);
+
+			cube.addTriangle(
+					new SimpleVector(-2,-1.125,0), 0.0f, 0.0f,
+					new SimpleVector(2,-1.125,0), 1.0f, 0.0f,
+					new SimpleVector(-2,1.125,0), 0.0f, 1.0f,
+					TextureManager.getInstance().getTextureID("texture")
+			);
+			cube.addTriangle(
+					new SimpleVector(2,-1.125,0), 1.0f, 0.0f,
+					new SimpleVector(2,1.125,0), 1.0f, 1.0f,
+					new SimpleVector(-2,1.125,0), 0.0f, 1.0f,
+					TextureManager.getInstance().getTextureID("texture")
+			);
+
+//				cube = Primitives.getCube(1.5f);
+//				cube.calcTextureWrapSpherical();
+			cube.rotateX((float)(0.5 * Math.PI));
+//				cube.rotateX((float)(Math.PI));
+//				cube.translate(new SimpleVector(0,1.5,0));    // x->x y->z z->y
+//				cube.setTexture("texture");
+			cube.strip();
+			cube.build();
+			world.addObject(cube);
+		}
 	}
 
 
@@ -1122,7 +1163,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //				sun.setIntensity(250, 250, 250);
 
 				// Create a texture out of the icon...:-)
-				Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.ic_launcher)), 64, 64));
+				Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.scene_night)), 1024, 1024));
 				TextureManager.getInstance().addTexture("texture", texture);
 
 //				Resources res = getResources();
@@ -1134,24 +1175,26 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
                 cube = new Object3D(2);
                 cube.addTriangle(
-                        new SimpleVector(-2,-2,0), 0.0f, 0.0f,
-                        new SimpleVector(2,-2,0), 1.0f, 0.0f,
-                        new SimpleVector(-2,2,0), 0.0f, 1.0f,
+		                new SimpleVector(-2,-1.125,0), 1.0f, 1.0f,
+		                new SimpleVector(-2,1.125,0), 1.0f, 0.0f,
+		                new SimpleVector(2,-1.125,0), 0.0f, 1.0f,
                         TextureManager.getInstance().getTextureID("texture")
                         );
                 cube.addTriangle(
-                        new SimpleVector(2,-2,0), 1.0f, 0.0f,
-                        new SimpleVector(2,2,0), 1.0f, 1.0f,
-                        new SimpleVector(-2,2,0), 0.0f, 1.0f,
+		                new SimpleVector(-2,1.125,0), 1.0f, 0.0f,
+		                new SimpleVector(2,1.125,0), 0.0f, 0.0f,
+		                new SimpleVector(2,-1.125,0), 0.0f, 1.0f,
                         TextureManager.getInstance().getTextureID("texture")
                 );
 
 //				cube = Primitives.getCube(1.5f);
 //				cube.calcTextureWrapSpherical();
-				cube.rotateX((float)(0.5 * Math.PI));
+				cube.rotateX((float)(-0.5 * Math.PI));
+//				cube.rotateZ((float)(Math.PI));
 //				cube.rotateX((float)(Math.PI));
 //				cube.translate(new SimpleVector(0,1.5,0));    // x->x y->z z->y
 //				cube.setTexture("texture");
+				cube.scale(0.26f);
 				cube.strip();
 				cube.build();
 				world.addObject(cube);
