@@ -136,6 +136,14 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
         initAR();
 	    initJPCT();
+        //////////跳转到新加入的界面new_activity_main
+        findViewById(R.id.newDesign).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,MainActivityNew.class));
+            }
+        });
+
     }
 
     private void initView()

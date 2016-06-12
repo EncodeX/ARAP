@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:focusable="true" android:focusableInTouchMode="true"
+        android:layout_width="0px" android:layout_height="0px">
+        <requestFocus />
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/sub_actionBar"
+        android:orientation="horizontal"
+        android:background="#009788">
+        <ImageButton
+            android:layout_width="32dp"
+            android:layout_marginLeft="8dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="9dp"
+            android:id="@+id/sub_back"
+            android:background="@drawable/ic_chevron_left_white_36dp"/>
+        <EditText
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toRightOf="@+id/sub_back"
+            android:background="@drawable/shape"
+            android:text="搜索商户名、地点"
+            android:gravity="center"
+            android:id="@+id/sub_editText"
+            android:textColor="#5b7977"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
+
+    <ListView
+        android:id="@android:id/list"
+        android:background="#ffffff"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dip"/>
+</LinearLayout>
+
+
+
+
+

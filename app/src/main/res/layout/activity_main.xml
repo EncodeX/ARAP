@@ -4,6 +4,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:context=".activity.MainActivity">
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="new_design"
+		android:id="@+id/newDesign"/>
 	<ImageView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
