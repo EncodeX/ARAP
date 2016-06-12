@@ -20,6 +20,7 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,9 +40,11 @@ import android.widget.Toast;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
+import com.threed.jpct.Animation;
 import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.GLSLShader;
+import com.threed.jpct.Interact2D;
 import com.threed.jpct.Light;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Logger;
@@ -65,6 +68,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -81,6 +86,13 @@ import edu.neu.arap.adapter.MyAdapter;
 import edu.neu.arap.adapter.MyItemClickListener;
 import edu.neu.arap.adapter.SpacesItemDecoration;
 import edu.neu.arap.easyar.GLView;
+import edu.neu.arap.tool.CameraOrbitController;
+import edu.neu.arap.tool.glfont.GLFont;
+import raft.jpct.bones.Animated3D;
+import raft.jpct.bones.AnimatedGroup;
+import raft.jpct.bones.BonesIO;
+import raft.jpct.bones.SkeletonPose;
+import raft.jpct.bones.SkinClip;
 
 public class MainActivity extends AppCompatActivity implements MyItemClickListener ,SensorEventListener{
     private Camera camera;
@@ -875,6 +887,39 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 	@Bind(R.id.test_image)
 	ImageView mTestImage;
 
+	private static final int MENU_STOP_ANIM = 1;
+	private static final int MENU_USE_MESH_ANIM = 2;
+
+	private static final int GRANULARITY = 25;
+
+	/** ninja placement locations. values are in angles */
+	private static final float[] LOCATIONS = new float[] {0, 180, 90, 270, 45, 225, 315, 135};
+
+	private static final Rect[] BUTTON_BOUNDS = new Rect[2];
+
+	private CameraOrbitController cameraController;
+
+	private PowerManager.WakeLock wakeLock;
+
+	private long frameTime = System.currentTimeMillis();
+	private long aggregatedTime = 0;
+	private float animateSeconds  = 0f;
+	private float speed = 1f;
+
+	private int animation = -1;
+	private boolean useMeshAnim = false;
+
+	private AnimatedGroup masterNinja;
+	private final List<AnimatedGroup> ninjas = new LinkedList<AnimatedGroup>();
+
+	private long lastTouchTime;
+
+	/** Ninja **/
+
+	/** set this to true to allow mesh keyframe animation */
+	private static final boolean MESH_ANIM_ALLOWED = false;
+
+
 	public void initJPCT(){
 		mGL2 = isAboveGL2();
 
@@ -907,6 +952,54 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 		mJpctSurface.setZOrderMediaOverlay(true);
 
 		((ViewGroup) findViewById(R.id.preview)).addView(mJpctSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+		/* Init JPCT */
+		world = new World();
+		world.setAmbientLight(180, 180, 180);
+
+		try {
+			Resources res = getResources();
+			masterNinja = BonesIO.loadGroup(res.openRawResource(R.raw.ninja));//R.raw.ninja);
+			if (MESH_ANIM_ALLOWED)
+				createMeshKeyFrames();
+			addNinja();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+
+		try {
+			mTestObject = Loader.loadMD2(getAssets().open("snork.md2"), 0.01f);
+			mTestObject.rotateY((float)(-0.5 * Math.PI));
+			mTestObject.rotateX((float)(Math.PI));
+
+//					TextureManager.getInstance().addTexture("rock", new Texture(getAssets().open("rock.jpg")));
+//					TextureManager.getInstance().addTexture("normals", new Texture(getAssets().open("normals.jpg")));
+//					TextureInfo stoneTex = new TextureInfo(TextureManager.getInstance().getTextureID("rock"));
+//					stoneTex.add(TextureManager.getInstance().getTextureID("normals"), TextureInfo.MODE_MODULATE);
+//					mTestObject = Loader.load3DS(getAssets().open("rock.3ds"),1.0f)[0];
+////                    mTestObject.rotateY((float)(-0.5 * Math.PI));
+//                    mTestObject.rotateX((float)(Math.PI/2));
+//					mTestObject.setTexture(stoneTex);
+
+			Mesh mesh = mTestObject.getMesh();
+			float[] boundingBox = mesh.getBoundingBox();
+			Log.i("mtestobject", Arrays.toString(boundingBox));
+			mTestObject.translate(0, -boundingBox[4], 0);
+
+			mTestObject.build();
+//					mTestObject.setSpecularLighting(true);
+
+			world.addObject(mTestObject);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		cameraController = new CameraOrbitController(world.getCamera());
+		cameraController.cameraAngle = 0;
+
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Bones-Demo");
 	}
 
 	private boolean isAboveGL2(){
@@ -1146,6 +1239,16 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 		private long time = System.currentTimeMillis();
 
+		private FrameBuffer frameBuffer = null;
+
+		private int fps = 0;
+		private int lfps = 0;
+
+		private long fpsTime = System.currentTimeMillis();
+
+		private GLFont glFont;
+		private GLFont buttonFont;
+
 		public MyRenderer() {
 		}
 
@@ -1164,9 +1267,6 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 
 			if (master == null) {
 
-				world = new World();
-				world.setAmbientLight(180, 180, 180);
-
 //				sun = new Light(world);
 //				sun.setIntensity(250, 250, 250);
 
@@ -1181,63 +1281,55 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 //						Loader.loadTextFile(res.openRawResource(R.raw.fragmentshader_offset))
 //				);
 
-                cube = new Object3D(2);
-                cube.addTriangle(
-		                new SimpleVector(-2,-1.125,0), 1.0f, 1.0f,
-		                new SimpleVector(-2,1.125,0), 1.0f, 0.0f,
-		                new SimpleVector(2,-1.125,0), 0.0f, 1.0f,
-                        TextureManager.getInstance().getTextureID("texture")
-                        );
-                cube.addTriangle(
-		                new SimpleVector(-2,1.125,0), 1.0f, 0.0f,
-		                new SimpleVector(2,1.125,0), 0.0f, 0.0f,
-		                new SimpleVector(2,-1.125,0), 0.0f, 1.0f,
-                        TextureManager.getInstance().getTextureID("texture")
-                );
-
-//				cube = Primitives.getCube(1.5f);
-//				cube.calcTextureWrapSpherical();
-				cube.rotateX((float)(-0.5 * Math.PI));
-//				cube.rotateZ((float)(Math.PI));
-//				cube.rotateX((float)(Math.PI));
-//				cube.translate(new SimpleVector(0,1.5,0));    // x->x y->z z->y
-//				cube.setTexture("texture");
-				cube.scale(0.26f);
-				cube.strip();
-				cube.build();
-				world.addObject(cube);
-
-//				try {
-//					TextureManager.getInstance().addTexture("disco", new Texture(getAssets().open("disco.jpg")));
-//					mTestObject = Loader.loadMD2(getAssets().open("snork.md2"),0.2f);
-//                    mTestObject.rotateY((float)(-0.5 * Math.PI));
-//                    mTestObject.rotateX((float)(Math.PI));
-//					mTestObject.setTexture("disco");
+//                cube = new Object3D(2);
+//                cube.addTriangle(
+//		                new SimpleVector(-2,-1.125,0), 1.0f, 1.0f,
+//		                new SimpleVector(-2,1.125,0), 1.0f, 0.0f,
+//		                new SimpleVector(2,-1.125,0), 0.0f, 1.0f,
+//                        TextureManager.getInstance().getTextureID("texture")
+//                        );
+//                cube.addTriangle(
+//		                new SimpleVector(-2,1.125,0), 1.0f, 0.0f,
+//		                new SimpleVector(2,1.125,0), 0.0f, 0.0f,
+//		                new SimpleVector(2,-1.125,0), 0.0f, 1.0f,
+//                        TextureManager.getInstance().getTextureID("texture")
+//                );
 //
-////					TextureManager.getInstance().addTexture("rock", new Texture(getAssets().open("rock.jpg")));
-////					TextureManager.getInstance().addTexture("normals", new Texture(getAssets().open("normals.jpg")));
-////					TextureInfo stoneTex = new TextureInfo(TextureManager.getInstance().getTextureID("rock"));
-////					stoneTex.add(TextureManager.getInstance().getTextureID("normals"), TextureInfo.MODE_MODULATE);
-////					mTestObject = Loader.load3DS(getAssets().open("rock.3ds"),1.0f)[0];
-//////                    mTestObject.rotateY((float)(-0.5 * Math.PI));
-////                    mTestObject.rotateX((float)(Math.PI/2));
-////					mTestObject.setTexture(stoneTex);
-//
-//
-//					mTestObject.build();
-//
-//					Mesh mesh = mTestObject.getMesh();
-//					float[] boundingBox = mesh.getBoundingBox();
-//					Log.i("mtestobject", Arrays.toString(boundingBox));
-//					mTestObject.translate(0, -boundingBox[4], 0);
-////					mTestObject.setSpecularLighting(true);
-//
-//					world.addObject(mTestObject);
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
+////				cube = Primitives.getCube(1.5f);
+////				cube.calcTextureWrapSpherical();
+//				cube.rotateX((float)(-0.5 * Math.PI));
+////				cube.rotateZ((float)(Math.PI));
+////				cube.rotateX((float)(Math.PI));
+////				cube.translate(new SimpleVector(0,1.5,0));    // x->x y->z z->y
+////				cube.setTexture("texture");
+//				cube.scale(0.26f);
+//				cube.strip();
+//				cube.build();
+//				world.addObject(cube);
 
 //				world.buildAllObjects();
+
+				TextureManager.getInstance().flush();
+				Resources res = getResources();
+
+				Texture tex = new Texture(res.openRawResource(R.raw.ninja_texture));
+				texture.keepPixelData(true);
+				TextureManager.getInstance().addTexture("ninja", tex);
+
+				try {
+					TextureManager.getInstance().addTexture("disco", new Texture(getAssets().open("disco.jpg")));
+					mTestObject.setTexture("disco");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				for (Animated3D a : masterNinja)
+					a.setTexture("ninja");
+
+				for (AnimatedGroup group : ninjas) {
+					for (Animated3D a : group)
+						a.setTexture("ninja");
+				}
 
 				worldCamera = world.getCamera();
 //				cam.setFOVLimits(0.5f, 100.0f);
@@ -1264,6 +1356,37 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 		}
 
 		public void onDrawFrame(GL10 gl) {
+			long now = System.currentTimeMillis();
+			aggregatedTime += (now - frameTime);
+			frameTime = now;
+
+			if (aggregatedTime > 1000) {
+				aggregatedTime = 0;
+			}
+
+			if (animation > 0 && masterNinja.getSkinClipSequence().getSize() >= animation) {
+				float clipTime = masterNinja.getSkinClipSequence().getClip(animation-1).getTime();
+				if (animateSeconds > clipTime) {
+					animateSeconds = 0;
+				}
+				float index = animateSeconds / clipTime;
+				if (useMeshAnim) {
+					for (AnimatedGroup group : ninjas) {
+						for (Animated3D a : group)
+							a.animate(index, animation);
+					}
+				} else {
+					for (AnimatedGroup group : ninjas) {
+						group.animateSkin(index, animation);
+//							if (!group.isAutoApplyAnimation())
+//								group.applyAnimation();
+					}
+				}
+
+			} else {
+				animateSeconds = 0f;
+			}
+
 			if (touchTurn != 0) {
 //				cube.rotateY(touchTurn);
 				touchTurn = 0;
@@ -1318,7 +1441,146 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 				o3d.build();
 			}
 			return o3d;
+		}/** adjusts camera based on current mesh of skinned group.
+		 * camera looks at mid point of height and placed at a distance
+		 * such that group height occupies 2/3 of screen height. */
+		protected void autoAdjustCamera() {
+			float[] bb = calcBoundingBox();
+			float groupHeight = bb[3] - bb[2];
+			cameraController.cameraRadius = calcDistance(world.getCamera(), frameBuffer,
+					frameBuffer.getHeight() / 1.5f , groupHeight);
+			cameraController.minCameraRadius = groupHeight / 10f;
+			cameraController.cameraTarget.y = (bb[3] + bb[2]) / 2;
+			cameraController.placeCamera();
 		}
+
+		/** calculates and returns whole bounding box of skinned group */
+		protected float[] calcBoundingBox() {
+			float[] box = null;
+
+			for (Animated3D skin : masterNinja) {
+				float[] skinBB = skin.getMesh().getBoundingBox();
+
+				if (box == null) {
+					box = skinBB;
+				} else {
+					// x
+					box[0] = Math.min(box[0], skinBB[0]);
+					box[1] = Math.max(box[1], skinBB[1]);
+					// y
+					box[2] = Math.min(box[2], skinBB[2]);
+					box[3] = Math.max(box[3], skinBB[3]);
+					// z
+					box[4] = Math.min(box[4], skinBB[4]);
+					box[5] = Math.max(box[5], skinBB[5]);
+				}
+			}
+			return box;
+		}
+
+		/**
+		 * calculates a camera distance to make object look height pixels on screen
+		 * @author EgonOlsen
+		 * */
+		protected float calcDistance(com.threed.jpct.Camera c, FrameBuffer buffer, float height, float objectHeight) {
+			float h = height / 2f;
+			float os = objectHeight / 2f;
+
+			com.threed.jpct.Camera cam = new com.threed.jpct.Camera();
+			cam.setFOV(c.getFOV());
+			SimpleVector p1 = Interact2D.project3D2D(cam, buffer, new SimpleVector(0f, os, 1f));
+			float y1 = p1.y - buffer.getCenterY();
+			float z = (1f/h) * y1;
+
+			return z;
+		}
+	}
+
+	private void createMeshKeyFrames() {
+		Config.maxAnimationSubSequences = masterNinja.getSkinClipSequence().getSize() + 1; // +1 for whole sequence
+
+		int keyframeCount = 0;
+		final float deltaTime = 0.2f; // max time between frames
+
+		for (SkinClip clip : masterNinja.getSkinClipSequence()) {
+			float clipTime = clip.getTime();
+			int frames = (int) Math.ceil(clipTime / deltaTime) + 1;
+			keyframeCount += frames;
+		}
+
+		Animation[] animations = new Animation[masterNinja.getSize()];
+		for (int i = 0; i < masterNinja.getSize(); i++) {
+			animations[i] = new Animation(keyframeCount);
+			animations[i].setClampingMode(Animation.USE_CLAMPING);
+		}
+		//System.out.println("------------ keyframeCount: " + keyframeCount + ", mesh size: " + masterNinja.getSize());
+		int count = 0;
+
+		int sequence = 0;
+		for (SkinClip clip : masterNinja.getSkinClipSequence()) {
+			float clipTime = clip.getTime();
+			int frames = (int) Math.ceil(clipTime / deltaTime) + 1;
+			float dIndex = 1f / (frames - 1);
+
+			for (int i = 0; i < masterNinja.getSize(); i++) {
+				animations[i].createSubSequence(clip.getName());
+			}
+			//System.out.println(sequence + ": " + clip.getName() + ", frames: " + frames);
+			for (int i = 0; i < frames; i++) {
+				masterNinja.animateSkin(dIndex * i, sequence + 1);
+
+				for (int j = 0; j < masterNinja.getSize(); j++) {
+					Mesh keyframe = masterNinja.get(j).getMesh().cloneMesh(true);
+					keyframe.strip();
+					animations[j].addKeyFrame(keyframe);
+					count++;
+					//System.out.println("added " + (i + 1) + " of " + sequence + " to " + j + " total: " + count);
+				}
+			}
+			sequence++;
+		}
+		for (int i = 0; i < masterNinja.getSize(); i++) {
+			masterNinja.get(i).setAnimationSequence(animations[i]);
+		}
+		masterNinja.get(0).getSkeletonPose().setToBindPose();
+		masterNinja.get(0).getSkeletonPose().updateTransforms();
+		masterNinja.applySkeletonPose();
+		masterNinja.applyAnimation();
+
+		Logger.log("created mesh keyframes, " + keyframeCount + "x" + masterNinja.getSize());
+	}
+
+	private void addNinja() {
+		if (ninjas.size() == LOCATIONS.length)
+			return;
+
+		AnimatedGroup ninja = masterNinja.clone(AnimatedGroup.MESH_DONT_REUSE);
+		float[] bb = renderer.calcBoundingBox();
+		float radius = (bb[3] - bb[2]) * 0.5f; // half of height
+		double angle = Math.toRadians(LOCATIONS[ninjas.size()]);
+
+		ninja.setSkeletonPose(new SkeletonPose(ninja.get(0).getSkeleton()));
+//		ninja.getRoot().translate((float)(Math.cos(angle) * radius), 0, (float)(Math.sin(angle) * radius));
+		ninja.getRoot().rotateY((float)(-0.5 * Math.PI));
+		ninja.getRoot().rotateX((float)(Math.PI));
+//		ninja.getRoot().scale(0.2f);
+
+		Mesh mesh = ninja.getRoot().getMesh();
+		float[] boundingBox = mesh.getBoundingBox();
+		ninja.getRoot().translate(0, -boundingBox[4], 0);
+
+		ninja.addToWorld(world);
+		ninjas.add(ninja);
+		Logger.log("added new ninja: " + ninjas.size());
+	}
+
+	private void removeNinja() {
+		if (ninjas.size() == 1)
+			return;
+
+		AnimatedGroup ninja = ninjas.remove(ninjas.size()-1);
+		ninja.removeFromWorld(world);
+		Logger.log("removed ninja: " + (ninjas.size() + 1));
 	}
 
 	/*************************************/
@@ -1339,6 +1601,12 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 		super.onResume();
 		EasyAR.onResume();
 		mJpctSurface.onResume();
+
+		frameTime = System.currentTimeMillis();
+		aggregatedTime = 0;
+
+		if (!wakeLock.isHeld())
+			wakeLock.acquire();
 	}
 
 	@Override
@@ -1346,5 +1614,8 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
 		super.onPause();
 		EasyAR.onPause();
 		mJpctSurface.onPause();
+
+		if (wakeLock.isHeld())
+			wakeLock.release();
 	}
 }
