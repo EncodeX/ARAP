@@ -44,7 +44,7 @@ public class MyAdapter extends RecyclerView.Adapter {
     private MyItemClickListener mItemClickListener;
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list,null);
+        View view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_new,null);
         return new MyViewHolder(view,mItemClickListener);
     }
     public void setOnItemClickListener(MyItemClickListener listener){
