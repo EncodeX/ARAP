@@ -1,6 +1,7 @@
 package edu.neu.arap.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +13,9 @@ import edu.neu.arap.R;
 /**
  * Created by 志伟 on 2015/11/10.
  */
-public class MyAdapter extends RecyclerView.Adapter {
-    private int[] resID={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,R.drawable.h,R.drawable.i,R.drawable.j};
-    private String[] resName={"蚁人","火星救援","捉妖记","秦时明月","完美的世界","港囧","重返20岁","移动迷宫","澳门风云","九层妖塔"};
+public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
+    private int[] resID={0,R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,0};
+    private String[] resName={"useless","欧洲玻璃艺术展","明清瓷器展","明清玉器展","万历海贸传奇","辽宁民间绣品展","拿破仑文物展","中国古代货币展","useless"};
     class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView imageButton;
         private TextView textView;
@@ -42,17 +43,39 @@ public class MyAdapter extends RecyclerView.Adapter {
     }
 
     private MyItemClickListener mItemClickListener;
+
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_new,null);
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View view;
+        if (i==1)
+        {
+            view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_new,null);
+        }
+        else {
+            view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.empty,null);
+        }
         return new MyViewHolder(view,mItemClickListener);
     }
+
+
     public void setOnItemClickListener(MyItemClickListener listener){
         this.mItemClickListener = listener;
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public int getItemViewType(int position) {
+        if (position==0||position==resID.length-1)
+            return 0;
+        else return 1;
+    }
+
+
+
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        if (position==0||position==resID.length-1)
+            return;
         MyViewHolder MyViewHolder =(MyViewHolder)holder;
         MyViewHolder.getTextView().setText(resName[position]);
         MyViewHolder.getImageButton().setImageResource(resID[position]);
@@ -60,6 +83,10 @@ public class MyAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return 10;
+        return resID.length;
     }
+    public int[] getResID(){
+        return  resID;
+    }
+    public String[] getResName(){return resName;}
 }
