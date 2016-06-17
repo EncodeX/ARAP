@@ -41,8 +41,10 @@
                 android:text="评分：4.9"/>
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="90dp"
                 android:text="展览简介"
+                android:isScrollContainer="true"
+                android:maxLines="5"
                 android:paddingRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
