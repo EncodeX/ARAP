@@ -12,7 +12,7 @@
 #include <android/log.h>
 #include <string.h>
 
-#define JNIFUNCTION_NATIVE(sig) Java_edu_neu_arap_activity_MainActivity_##sig
+#define JNIFUNCTION_NATIVE(sig) Java_edu_neu_arap_activity_AugmentedActivity_##sig
 
 extern "C" {
     JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv* env, jobject object));
@@ -247,7 +247,7 @@ void HelloAR::render()
                 active_target = id;
             }
         }
-        Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.2f, 500.f);
+        Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.00001f, 10.f);
         Matrix44F cameraview = getPoseGL(frame.targets()[0].pose());
         ImageTarget target = frame.targets()[0].target().cast_dynamic<ImageTarget>();
 
@@ -262,8 +262,13 @@ void HelloAR::render()
 
             targetWidth = targetSize[0]; targetHeight = targetSize[1];
 
-            fovyRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
-            fovRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
+//            fovyRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
+//            fovRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
+
+            fovRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
+            fovyRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
+//            __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d %d", size.data[0], size.data[1]);
+//            __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f %f", targetWidth, targetHeight);
         }
 
         if(tracked_target) {
@@ -298,6 +303,7 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
     }
 
     if (target_detected){
+        // 此处cameraArray实际上是目标的姿态描述矩阵
         jfloatArray cameraArray = (*env).NewFloatArray(4 * 4);
         jfloatArray projectionArray = (*env).NewFloatArray(4*4);
         float* ptrCamera = (*env).GetFloatArrayElements(cameraArray, NULL);
@@ -307,6 +313,12 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
                 ptrCamera[i] = renderer.camera_data[i];
                 ptrProjection[i] = renderer.projection_data[i];
             }
+
+            float temp;
+
+            temp = ptrCamera[0]; ptrCamera[0] = -ptrCamera[4]; ptrCamera[4] = temp;
+            temp = ptrCamera[1]; ptrCamera[1] = -ptrCamera[5]; ptrCamera[5] = temp;
+            temp = ptrCamera[2]; ptrCamera[2] = -ptrCamera[6]; ptrCamera[6] = temp;
 
             ptrCamera[1] = -ptrCamera[1]; ptrCamera[2] = -ptrCamera[2];
             ptrCamera[5] = -ptrCamera[5]; ptrCamera[6] = -ptrCamera[6];
@@ -326,28 +338,28 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
         }
     }
 
-    if (new_image_captured){
-        jcharArray dataArray = (*env).NewCharArray(1382400);
-        jchar * ptrArray = (*env).GetCharArrayElements(dataArray, NULL);
-
-        if (ptrArray){
-            for(int i = 0 ; i< 1382400; ++i){
-                ptrArray[i] = (jchar)imageReplica[i];
-            }
-
-            (*env).ReleaseCharArrayElements(dataArray, ptrArray, JNI_COMMIT);
-        }
-
-        jmethodID  methodSendImageData;
-
-        methodSendImageData = (*env).GetMethodID(clazz, "onNewImageCaptured", "([C)V");
-
-        if (methodSendImageData != NULL){
-            (*env).CallVoidMethod(thiz, methodSendImageData, dataArray);
-        }
-
-        new_image_captured = false;
-    }
+//    if (new_image_captured){
+//        jcharArray dataArray = (*env).NewCharArray(1382400);
+//        jchar * ptrArray = (*env).GetCharArrayElements(dataArray, NULL);
+//
+//        if (ptrArray){
+//            for(int i = 0 ; i< 1382400; ++i){
+//                ptrArray[i] = (jchar)imageReplica[i];
+//            }
+//
+//            (*env).ReleaseCharArrayElements(dataArray, ptrArray, JNI_COMMIT);
+//        }
+//
+//        jmethodID  methodSendImageData;
+//
+//        methodSendImageData = (*env).GetMethodID(clazz, "onNewImageCaptured", "([C)V");
+//
+//        if (methodSendImageData != NULL){
+//            (*env).CallVoidMethod(thiz, methodSendImageData, dataArray);
+//        }
+//
+//        new_image_captured = false;
+//    }
 
     (*env).CallVoidMethod(thiz, method, target_detected);
 }

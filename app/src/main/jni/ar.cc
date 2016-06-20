@@ -42,6 +42,14 @@ bool AR::initCamera()
     bool status = true;
     status &= camera_.open();
     camera_.setSize(Vec2I(1280, 720));
+
+    LOGI("Supported sizes: ");
+    int count = camera_.supportedSizeCount();
+    for(int i=0; i< count;++i){
+        Vec2I size = camera_.supportedSize(i);
+        LOGI("%d %d", size[0], size[1]);
+    }
+
     status &= tracker_.attachCamera(camera_);
     return status;
 }
