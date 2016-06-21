@@ -60,7 +60,6 @@ import cn.easyar.engine.EasyAR;
 import edu.neu.arap.R;
 import edu.neu.arap.adapter.ARGalleryAdapter;
 import edu.neu.arap.adapter.ARGalleryDecoration;
-import edu.neu.arap.adapter.SpacesItemDecoration;
 import edu.neu.arap.easyar.GLView;
 import edu.neu.arap.tool.AnimateBuilder;
 import jp.wasabeef.blurry.Blurry;

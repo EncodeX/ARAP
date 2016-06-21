@@ -2,7 +2,6 @@ package edu.neu.arap.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +17,7 @@ import java.util.Map;
 
 import edu.neu.arap.R;
 import edu.neu.arap.activity.AugmentedActivity;
-import edu.neu.arap.activity.MainActivity;
-import edu.neu.arap.activity.MuseumDetailActivity;
-import edu.neu.arap.activity.MuseumMainActivity;
 import edu.neu.arap.activity.ViewHolder;
-
-import static android.support.v4.app.ActivityCompat.startActivity;
 
 /**
  * Created by yuziw on 2016/6/17.
