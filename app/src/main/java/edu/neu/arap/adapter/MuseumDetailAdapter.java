@@ -2,6 +2,7 @@ package edu.neu.arap.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +84,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
         if (convertView == null) {
 
@@ -106,7 +108,10 @@ public class MuseumDetailAdapter extends BaseAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(new Intent(context,MainActivity.class));
+                Intent intent=new Intent(context,MainActivity.class);
+                intent.putExtra("museumDetailData",(Serializable)mData);//    private List<Map<String, Object>> mData;
+                intent.putExtra("museumDetailPosition",position);//position :int
+                context.startActivity(intent);
             }
         });
         return convertView;

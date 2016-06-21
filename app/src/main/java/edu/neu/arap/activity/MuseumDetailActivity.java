@@ -47,6 +47,7 @@ public class MuseumDetailActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.museum_detail_name)).setText(resName[RPosition]);
         ((TextView)findViewById(R.id.museum_detail_intro)).setText(resIntro[RPosition]);
         ((ImageView)findViewById(R.id.museum_detail_image)).setImageResource(resID[RPosition]);
+        ((TextView)findViewById(R.id.museum_detail_name_2)).setText(resName[RPosition]);
         listView=(ListView) findViewById(R.id.museum_detail_list);
         MuseumDetailAdapter adapter=new MuseumDetailAdapter(this,RPosition);
         listView.setAdapter(adapter);

@@ -71,7 +71,6 @@
                     android:text="name"/>
             </RelativeLayout>
 
-
             <android.support.v7.widget.RecyclerView
                 android:layout_marginTop="8dp"
                 android:id="@+id/explore_list"
