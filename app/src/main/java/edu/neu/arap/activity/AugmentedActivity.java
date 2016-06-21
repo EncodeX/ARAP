@@ -1,17 +1,30 @@
 package edu.neu.arap.activity;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
@@ -27,6 +40,8 @@ import com.threed.jpct.World;
 import com.threed.jpct.util.MemoryHelper;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGL10;
@@ -41,20 +56,62 @@ import butterknife.ButterKnife;
 import cn.easyar.engine.EasyAR;
 import edu.neu.arap.R;
 import edu.neu.arap.easyar.GLView;
+import edu.neu.arap.tool.AnimateBuilder;
+import jp.wasabeef.blurry.Blurry;
 
 public class AugmentedActivity extends AppCompatActivity {
 
 	@Bind(R.id.camera_preview)
 	FrameLayout mCameraPreview;
+	@Bind(R.id.scan_bar_1)
+	FrameLayout mScanBar1;
+	@Bind(R.id.scan_bar_2)
+	FrameLayout mScanBar2;
+	@Bind(R.id.ar_hint)
+	TextView mARHint;
+	@Bind(R.id.ar_info_button)
+	RelativeLayout mARInfoButton;
+	@Bind(R.id.ar_info_layout)
+	RelativeLayout mARInfoLayout;
+	@Bind(R.id.ar_blur_background)
+	ImageView mARBlurBackground;
+	@Bind(R.id.ar_info_close_button)
+	ImageButton mARInfoCloseButton;
+	@Bind(R.id.loading_indicator)
+	RelativeLayout mLoadingIndicator;
+	@Bind(R.id.ar_back_button)
+	ImageButton mARBackButton;
+	@Bind(R.id.ar_buttons)
+	FrameLayout mARButtons;
+	@Bind(R.id.ar_info_background)
+	FrameLayout mARInfoBackground;
+	@Bind(R.id.ar_info_title)
+	TextView mARInfoTitle;
+	@Bind(R.id.ar_info_gallery)
+	RecyclerView mARInfoGallery;
+	@Bind(R.id.ar_info_description)
+	TextView mARInfoDescription;
+
+	private LayoutListener mLayoutListener;
+	private ARStateListener mARStateListener;
+
+	private boolean mInfoSwitch = false;
+	private boolean mNeedScreenShot = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+
+		if (mMasterActivity != null) {
+			copy(mMasterActivity);
+		}
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_augmented);
 
 		initView();
 
 		initAR();
+
 		initJPCT();
 	}
 
@@ -86,12 +143,240 @@ public class AugmentedActivity extends AppCompatActivity {
 	private void initView(){
 		ButterKnife.bind(this);
 
+		ViewTreeObserver observer = mScanBar1.getViewTreeObserver();
+		mLayoutListener = new LayoutListener();
+		observer.addOnGlobalLayoutListener(mLayoutListener);
 
+		mARStateListener = new ARListener();
+		setARStateListener(mARStateListener);
+
+		mARInfoButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+
+				mNeedScreenShot = true;
+
+				AnimatorSet animatorSet = new AnimatorSet();
+
+				animatorSet.playTogether(
+						AnimateBuilder.buildAlphaAnimation(
+								mLoadingIndicator, 0.f, 1.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mARBackButton, 1.f, 0.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mScanBar1, 1.f, 0.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mScanBar2, 1.f, 0.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mARHint, 1.f, 0.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mARButtons, 1.f, 0.f, 500
+						)
+				);
+
+				animatorSet.addListener(new Animator.AnimatorListener() {
+					@Override
+					public void onAnimationStart(Animator animator) {
+
+					}
+
+					@Override
+					public void onAnimationEnd(Animator animator) {
+						mARBackButton.setVisibility(View.INVISIBLE);
+						mScanBar1.setVisibility(View.INVISIBLE);
+						mScanBar2.setVisibility(View.INVISIBLE);
+						mARHint.setVisibility(View.INVISIBLE);
+						mARButtons.setVisibility(View.INVISIBLE);
+					}
+
+					@Override
+					public void onAnimationCancel(Animator animator) {
+
+					}
+
+					@Override
+					public void onAnimationRepeat(Animator animator) {
+
+					}
+				});
+
+				mARInfoLayout.setAlpha(1.f);
+				mLoadingIndicator.setAlpha(0.f);
+				mLoadingIndicator.setVisibility(View.VISIBLE);
+
+				animatorSet.start();
+			}
+		});
+
+		mARInfoCloseButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mEasyARGLView.onResume();
+				mJpctSurface.onResume();
+				Blurry.delete(mARInfoBackground);
+
+				AnimatorSet animatorSet = new AnimatorSet();
+
+				animatorSet.playTogether(
+						AnimateBuilder.buildAlphaAnimation(
+								mARInfoLayout, 1.f, 0.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mARBackButton, 0.f, 1.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mScanBar1, 0.f, 1.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mScanBar2, 0.f, 1.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mARHint, 0.f, 1.f, 500
+						),
+						AnimateBuilder.buildAlphaAnimation(
+								mARButtons, 0.f, 1.f, 500
+						)
+				);
+
+				animatorSet.addListener(new Animator.AnimatorListener() {
+					@Override
+					public void onAnimationStart(Animator animator) {
+
+					}
+
+					@Override
+					public void onAnimationEnd(Animator animator) {
+						mARInfoLayout.setVisibility(View.INVISIBLE);
+						mARBackButton.setVisibility(View.VISIBLE);
+						mScanBar1.setVisibility(View.VISIBLE);
+						mScanBar2.setVisibility(View.VISIBLE);
+						mARHint.setVisibility(View.VISIBLE);
+						mARButtons.setVisibility(View.VISIBLE);
+					}
+
+					@Override
+					public void onAnimationCancel(Animator animator) {
+
+					}
+
+					@Override
+					public void onAnimationRepeat(Animator animator) {
+
+					}
+				});
+
+				animatorSet.start();
+			}
+		});
+	}
+
+	private class ARListener implements ARStateListener{
+		@Override
+		public void onARStateChanged(boolean isDetected) {
+			if(isDetected){
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						mARHint.setVisibility(View.INVISIBLE);
+						mScanBar1.setVisibility(View.INVISIBLE);
+						mScanBar2.setVisibility(View.INVISIBLE);
+					}
+				});
+			}else{
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						mARHint.setVisibility(View.VISIBLE);
+						mScanBar1.setVisibility(View.VISIBLE);
+						mScanBar2.setVisibility(View.VISIBLE);
+					}
+				});
+			}
+		}
+	}
+
+	private class LayoutListener implements ViewTreeObserver.OnGlobalLayoutListener{
+		private boolean mInitialized = false;
+
+		@Override
+		public void onGlobalLayout() {
+			if(mInitialized) return;
+
+			mInitialized = true;
+
+			double viewHeight = mCameraPreview.getHeight(), barHeight = mScanBar1.getHeight();
+			int startDuration = (int)(barHeight / viewHeight * 4000) ;
+
+			final AnimatorSet loopAnim = new AnimatorSet(), startAnim = new AnimatorSet();
+
+			startAnim.playTogether(
+					AnimateBuilder.setInterpolator(
+							AnimateBuilder.buildTranslateAnimation(
+									mScanBar1, AnimateBuilder.DIRECTION_Y,
+									-(int)barHeight, 0, startDuration
+							), new LinearInterpolator()
+					)
+			);
+
+			loopAnim.playTogether(
+					AnimateBuilder.setInterpolator(
+							AnimateBuilder.setRepeatCount(
+									AnimateBuilder.buildTranslateAnimation(
+											mScanBar1, AnimateBuilder.DIRECTION_Y,
+											0, (int)viewHeight, 4000
+									), AnimateBuilder.INFINETE
+							), new LinearInterpolator()
+					),
+					AnimateBuilder.setInterpolator(
+							AnimateBuilder.setRepeatCount(
+									AnimateBuilder.buildTranslateAnimation(
+											mScanBar2, AnimateBuilder.DIRECTION_Y,
+											-(int)viewHeight, 0, 4000
+									), AnimateBuilder.INFINETE
+							), new LinearInterpolator()
+					)
+			);
+
+			startAnim.addListener(new Animator.AnimatorListener() {
+				@Override
+				public void onAnimationStart(Animator animator) {
+
+				}
+
+				@Override
+				public void onAnimationEnd(Animator animator) {
+					loopAnim.start();
+				}
+
+				@Override
+				public void onAnimationCancel(Animator animator) {
+
+				}
+
+				@Override
+				public void onAnimationRepeat(Animator animator) {
+
+				}
+			});
+
+			mScanBar1.setVisibility(View.VISIBLE);
+			mScanBar2.setVisibility(View.VISIBLE);
+			startAnim.start();
+		}
 	}
 
 	/**\          Easy AR           \**/
 
 	private static String key = "595c31dd0d1a4aebaade8e21ea9654ceQ9FNgKYVtFkrzPVSXtCOApnRqz4gVOuiyDD8650IrCPlZ8l6kRyyg2BaxO4XywWqdW58vZIWRluZTQcCSGW0r1ep7h1y1UFNRWcZwAQ5lYrjvQgdCgAMB0I6QvmUBiDp2TMyU4RcV5tpTJcIkDQG95ACwP9ycV84auDCk50e";
+
+	private GLView mEasyARGLView;
+	private int mGLViewWidth;
+	private int mGLViewHeight;
 
 	static {
 		System.loadLibrary("EasyAR");
@@ -111,15 +396,11 @@ public class AugmentedActivity extends AppCompatActivity {
 		EasyAR.initialize(this, key);
 		nativeInit();
 
-		GLView glView = new GLView(this);
-		glView.setRenderer(new AugmentedActivity.EasyARRenderer());
+		mEasyARGLView = new GLView(this);
+		mEasyARGLView.setRenderer(new AugmentedActivity.EasyARRenderer());
 
-		mCameraPreview.addView(glView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+		mCameraPreview.addView(mEasyARGLView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		nativeRotationChange(getWindowManager().getDefaultDisplay().getRotation() == android.view.Surface.ROTATION_0);
-
-		boolean test = getWindowManager().getDefaultDisplay().getRotation() == android.view.Surface.ROTATION_0;
-
-		Log.i("Rotation", "is Portrait: " + test);
 	}
 
 	private class EasyARRenderer implements GLSurfaceView.Renderer {
@@ -130,10 +411,69 @@ public class AugmentedActivity extends AppCompatActivity {
 
 		public void onSurfaceChanged(GL10 gl, int w, int h) {
 			AugmentedActivity.nativeResizeGL(w, h);
+
+			mGLViewWidth = w; mGLViewHeight = h;
 		}
 
 		public void onDrawFrame(GL10 gl) {
 			nativeRender();
+
+			if(mNeedScreenShot){
+				mNeedScreenShot = false;
+
+				int w = mGLViewWidth;
+				int h = mGLViewHeight;
+
+				Log.i("hari", "w:" + w + "-----h:" + h);
+
+				int b[] = new int[(int) (w * h)];
+				int bt[] = new int[(int) (w * h)];
+				IntBuffer buffer = IntBuffer.wrap(b);
+				buffer.position(0);
+				GLES20.glReadPixels(0, 0, w, h, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
+
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						mEasyARGLView.onPause();
+						mJpctSurface.onPause();
+					}
+				});
+
+				for (int i = 0; i < h; i++) {
+					//remember, that OpenGL bitmap is incompatible with Android bitmap
+					//and so, some correction need.
+					for (int j = 0; j < w; j++) {
+						int pix = b[i * w + j];
+						int pb = (pix >> 16) & 0xff;
+						int pr = (pix << 16) & 0x00ff0000;
+						int pix1 = (pix & 0xff00ff00) | pr | pb;
+						bt[(h - i - 1) * w + j] = pix1;
+					}
+				}
+
+				final Bitmap finalInBitmap = Bitmap.createBitmap(bt, w, h, Bitmap.Config.ARGB_8888);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						mARBlurBackground.setImageBitmap(finalInBitmap);
+						mLoadingIndicator.setVisibility(View.GONE);
+						mARInfoLayout.setVisibility(View.VISIBLE);
+
+						Blurry.with(AugmentedActivity.this)
+								.radius(25)
+								.sampling(4)
+								.color(Color.argb(127,0,0,0))
+								.async()
+								.animate(500)
+								.onto(mARInfoBackground);
+//								.capture(mARBlurBackground)
+//								.into(mARBlurBackground);
+
+
+					}
+				});
+			}
 		}
 
 	}
@@ -165,6 +505,19 @@ public class AugmentedActivity extends AppCompatActivity {
 
 	private void setARStateListener(ARStateListener ARStateListener) {
 		this.mStateListener = ARStateListener;
+	}
+
+	private void copy(Object src) {
+		try {
+			Logger.log("Copying data from master Activity!");
+			Field[] fs = src.getClass().getDeclaredFields();
+			for (Field f : fs) {
+				f.setAccessible(true);
+				f.set(this, f.get(src));
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void initJPCT() {
@@ -201,28 +554,6 @@ public class AugmentedActivity extends AppCompatActivity {
 		mJpctSurface.setZOrderMediaOverlay(true);
 
 		mCameraPreview.addView(mJpctSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-		/* Init JPCT */
-		mWorld = new World();
-		mWorld.setAmbientLight(180, 180, 180);
-
-		try {
-			mTestObject = Loader.loadMD2(getAssets().open("snork.md2"), 0.01f);
-			mTestObject.rotateY((float)(-0.5 * Math.PI));
-			mTestObject.rotateX((float)(0.5*Math.PI));
-
-
-			Mesh mesh = mTestObject.getMesh();
-			float[] boundingBox = mesh.getBoundingBox();
-			Log.i("mtestobject", Arrays.toString(boundingBox));
-			mTestObject.translate(0, 0, -boundingBox[4]);
-
-			mTestObject.build();
-
-			mWorld.addObject(mTestObject);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private boolean isAboveGL2(){
@@ -259,7 +590,7 @@ public class AugmentedActivity extends AppCompatActivity {
 		final SimpleVector camUp;
 		Matrix4f matrix = new Matrix4f(m);
 
-		Log.i("Camera Matrix Before", matrix.toString());
+//		Log.i("Camera Matrix Before", matrix.toString());
 //
 		try{
 			matrix.transpose();
@@ -269,7 +600,7 @@ public class AugmentedActivity extends AppCompatActivity {
 			return;
 		}
 //
-		Log.i("Camera Matrix After", matrix.toString());
+//		Log.i("Camera Matrix After", matrix.toString());
 
 		camUp = new SimpleVector(-matrix.m11, -matrix.m10, -matrix.m12);
 
@@ -321,6 +652,26 @@ public class AugmentedActivity extends AppCompatActivity {
 
 		@Override
 		public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
+			mWorld = new World();
+			mWorld.setAmbientLight(180, 180, 180);
+
+			try {
+				mTestObject = Loader.loadMD2(getAssets().open("snork.md2"), 0.01f);
+				mTestObject.rotateY((float)(-0.5 * Math.PI));
+				mTestObject.rotateX((float)(0.5*Math.PI));
+
+
+				Mesh mesh = mTestObject.getMesh();
+				float[] boundingBox = mesh.getBoundingBox();
+				Log.i("mtestobject", Arrays.toString(boundingBox));
+				mTestObject.translate(0, 0, -boundingBox[4]);
+
+				mTestObject.build();
+
+				mWorld.addObject(mTestObject);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		@Override
@@ -336,6 +687,7 @@ public class AugmentedActivity extends AppCompatActivity {
 			}
 
 			if (mMasterActivity == null) {
+				TextureManager.getInstance().flush();
 				try {
 					TextureManager.getInstance().addTexture("disco", new Texture(getAssets().open("disco.jpg")));
 					mTestObject.setTexture("disco");

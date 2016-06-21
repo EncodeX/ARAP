@@ -15,4 +15,37 @@
 	<style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
 	<style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
+	<style name="AppTheme.UnboundedButton.White.Borderless" parent="Widget.AppCompat.Button.Borderless">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:background">@drawable/ripple_background_white</item>
+		<item name="android:gravity">center</item>
+		<item name="android:minWidth">0dip</item>
+		<item name="android:minHeight">0dip</item>
+	</style>
+	<style name="AppTheme.UnboundedButton.Borderless" parent="Widget.AppCompat.Button.Borderless">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:background">@drawable/ripple_background_primary</item>
+		<item name="android:gravity">center</item>
+		<item name="android:minWidth">0dip</item>
+		<item name="android:minHeight">0dip</item>
+	</style>
+	<style name="AppTheme.UnboundedButton.Transparent.Borderless" parent="Widget.AppCompat.Button.Borderless">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:background">@android:color/transparent</item>
+		<item name="android:gravity">center</item>
+		<item name="android:minWidth">0dip</item>
+		<item name="android:minHeight">0dip</item>
+	</style>
+
+	<style name="AppTheme.Transparent" parent="AppTheme">
+		<item name="android:windowBackground">@color/colorTransparent</item>
+		<item name="android:windowIsTranslucent">true</item>
+		<item name="android:windowContentOverlay">@null</item>
+		<item name="android:windowIsFloating">true</item>
+		<item name="android:backgroundDimEnabled">false</item>
+	</style>
+
 </resources>

@@ -262,11 +262,11 @@ void HelloAR::render()
 
             targetWidth = targetSize[0]; targetHeight = targetSize[1];
 
-//            fovyRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
-//            fovRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
+            fovyRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
+            fovRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
 
-            fovRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
-            fovyRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
+//            fovRadians = 2 * atan(0.5f * size.data[1] / focalLength.data[1]);
+//            fovyRadians = 2 * atan(0.5f * size.data[0] / focalLength.data[0]);
 //            __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d %d", size.data[0], size.data[1]);
 //            __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%f %f", targetWidth, targetHeight);
         }
