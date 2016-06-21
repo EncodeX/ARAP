@@ -32,15 +32,16 @@
 		<activity android:name=".activity.MainActivityNew">
 		</activity>
 		<activity android:name=".activity.SubActivity"/>
-        <activity android:name=".activity.MuseumMainActivity"/>
+        <activity android:name=".activity.MuseumMainActivity">
+	        <intent-filter>
+		        <action android:name="android.intent.action.MAIN"/>
+
+		        <category android:name="android.intent.category.LAUNCHER"/>
+	        </intent-filter>
+        </activity>
 		<activity
 			android:name=".activity.AugmentedActivity"
 			android:screenOrientation="landscape">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"/>
-
-				<category android:name="android.intent.category.LAUNCHER"/>
-			</intent-filter>
 		</activity>
         <activity android:name=".activity.MuseumDetailActivity"></activity>
 	</application>

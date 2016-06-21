@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.neu.arap.R;
+import edu.neu.arap.activity.AugmentedActivity;
 import edu.neu.arap.activity.MainActivity;
 import edu.neu.arap.activity.MuseumDetailActivity;
 import edu.neu.arap.activity.MuseumMainActivity;
@@ -106,7 +107,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(new Intent(context,MainActivity.class));
+                context.startActivity(new Intent(context,AugmentedActivity.class));
             }
         });
         return convertView;

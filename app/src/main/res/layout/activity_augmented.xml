@@ -203,10 +203,57 @@
 			android:layout_width="match_parent"
 			android:layout_height="match_parent">
 			<ImageView
+				android:id="@+id/ar_capture_background"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"/>
+			<ImageView
 				android:id="@+id/ar_blur_background"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"/>
 		</FrameLayout>
+		<ScrollView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent">
+			<RelativeLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+				<TextView
+					android:id="@+id/ar_info_title"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="32dp"
+					android:layout_marginLeft="56dp"
+					android:textSize="32sp"
+					android:textColor="@color/colorARBlue"
+					android:shadowColor="@color/colorARBlueDark"
+					android:shadowDx="0"
+					android:shadowDy="0"
+					android:shadowRadius="10"
+					android:text="波须圣母玻璃反画"
+					tools:text="展品名称"/>
+				<android.support.v7.widget.RecyclerView
+					android:id="@+id/ar_info_gallery"
+					android:layout_width="match_parent"
+					android:layout_height="152dp"
+					android:layout_below="@id/ar_info_title"
+					android:layout_marginTop="24dp"/>
+				<TextView
+					android:id="@+id/ar_info_description"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_below="@id/ar_info_gallery"
+					android:layout_marginTop="24dp"
+					android:layout_marginLeft="56dp"
+					android:layout_marginRight="56dp"
+					android:textSize="16sp"
+					android:textColor="#EEEEEE"
+					android:text="@string/ar_info_description"/>
+				<FrameLayout
+					android:layout_width="match_parent"
+					android:layout_height="32dp"
+					android:layout_below="@id/ar_info_description"/>
+			</RelativeLayout>
+		</ScrollView>
 		<RelativeLayout
 			android:layout_width="84dp"
 			android:layout_height="84dp"
@@ -225,44 +272,5 @@
 				android:padding="4dp"
 				style="@style/AppTheme.UnboundedButton.White.Borderless"/>
 		</RelativeLayout>
-		<ScrollView
-			android:layout_width="match_parent"
-			android:layout_height="match_parent">
-			<RelativeLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content">
-				<TextView
-					android:id="@+id/ar_info_title"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_marginTop="32dp"
-					android:layout_marginLeft="32dp"
-					android:textSize="32sp"
-					android:textColor="@color/colorARBlue"
-					android:shadowColor="@color/colorARBlueDark"
-					android:shadowDx="0"
-					android:shadowDy="0"
-					android:shadowRadius="10"
-					android:text="展品名称"
-					tools:text="展品名称"/>
-				<android.support.v7.widget.RecyclerView
-					android:id="@+id/ar_info_gallery"
-					android:layout_width="match_parent"
-					android:layout_height="152dp"
-					android:layout_below="@id/ar_info_title"
-					android:layout_marginTop="24dp"/>
-				<TextView
-					android:id="@+id/ar_info_description"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:layout_below="@id/ar_info_gallery"
-					android:layout_marginTop="24dp"
-					android:layout_marginLeft="32dp"
-					android:layout_marginRight="32dp"
-					android:textSize="22sp"
-					android:textColor="#EEEEEE"
-					tools:text="展品名称"/>
-			</RelativeLayout>
-		</ScrollView>
 	</RelativeLayout>
 </RelativeLayout>

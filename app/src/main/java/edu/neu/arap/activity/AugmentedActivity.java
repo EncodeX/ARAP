@@ -9,10 +9,13 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -55,6 +58,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import cn.easyar.engine.EasyAR;
 import edu.neu.arap.R;
+import edu.neu.arap.adapter.ARGalleryAdapter;
+import edu.neu.arap.adapter.ARGalleryDecoration;
+import edu.neu.arap.adapter.SpacesItemDecoration;
 import edu.neu.arap.easyar.GLView;
 import edu.neu.arap.tool.AnimateBuilder;
 import jp.wasabeef.blurry.Blurry;
@@ -73,8 +79,8 @@ public class AugmentedActivity extends AppCompatActivity {
 	RelativeLayout mARInfoButton;
 	@Bind(R.id.ar_info_layout)
 	RelativeLayout mARInfoLayout;
-	@Bind(R.id.ar_blur_background)
-	ImageView mARBlurBackground;
+	@Bind(R.id.ar_capture_background)
+	ImageView mARCaptureBackground;
 	@Bind(R.id.ar_info_close_button)
 	ImageButton mARInfoCloseButton;
 	@Bind(R.id.loading_indicator)
@@ -92,8 +98,12 @@ public class AugmentedActivity extends AppCompatActivity {
 	@Bind(R.id.ar_info_description)
 	TextView mARInfoDescription;
 
+	private View mARBlurBackground;
+
 	private LayoutListener mLayoutListener;
 	private ARStateListener mARStateListener;
+
+	private ARGalleryAdapter mGalleryAdapter;
 
 	private boolean mInfoSwitch = false;
 	private boolean mNeedScreenShot = false;
@@ -257,6 +267,8 @@ public class AugmentedActivity extends AppCompatActivity {
 						mScanBar2.setVisibility(View.VISIBLE);
 						mARHint.setVisibility(View.VISIBLE);
 						mARButtons.setVisibility(View.VISIBLE);
+
+						mARInfoBackground.removeView(mARBlurBackground);
 					}
 
 					@Override
@@ -271,6 +283,23 @@ public class AugmentedActivity extends AppCompatActivity {
 				});
 
 				animatorSet.start();
+			}
+		});
+
+		LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+		layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+		mARInfoGallery.setLayoutManager(layoutManager);
+
+		mGalleryAdapter = new ARGalleryAdapter(this);
+		mARInfoGallery.setAdapter(mGalleryAdapter);
+		mARInfoGallery.addItemDecoration(new ARGalleryDecoration(this, 8));
+
+		mARBlurBackground = new View(this);
+
+		mARBackButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onBackPressed();
 			}
 		});
 	}
@@ -456,21 +485,61 @@ public class AugmentedActivity extends AppCompatActivity {
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						mARBlurBackground.setImageBitmap(finalInBitmap);
-						mLoadingIndicator.setVisibility(View.GONE);
-						mARInfoLayout.setVisibility(View.VISIBLE);
+						mARCaptureBackground.setImageBitmap(finalInBitmap);
 
 						Blurry.with(AugmentedActivity.this)
 								.radius(25)
 								.sampling(4)
 								.color(Color.argb(127,0,0,0))
-								.async()
-								.animate(500)
-								.onto(mARInfoBackground);
-//								.capture(mARBlurBackground)
-//								.into(mARBlurBackground);
+								.async(new Blurry.ImageComposer.ImageComposerListener() {
+									@Override
+									public void onImageReady(final BitmapDrawable drawable) {
 
+										mARInfoLayout.setVisibility(View.VISIBLE);
+										mARBlurBackground.setAlpha(0.f);
+										mARInfoTitle.setAlpha(0.f);
+										mARInfoGallery.setAlpha(0.f);
+										mARInfoDescription.setAlpha(0.f);
+										mLoadingIndicator.setVisibility(View.GONE);
 
+										if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+											mARBlurBackground.setBackground(drawable);
+										} else {
+											mARBlurBackground.setBackgroundDrawable(drawable);
+										}
+										mARInfoBackground.addView(mARBlurBackground);
+										mARBlurBackground.invalidate();
+
+										final AnimatorSet animatorSet = new AnimatorSet();
+
+										animatorSet.playTogether(
+												AnimateBuilder.buildAlphaAnimation(
+														mARBlurBackground, 0.f, 1.f, 500
+												),
+												AnimateBuilder.setStartDelay(
+														AnimateBuilder.buildAlphaAnimation(
+																mARInfoTitle, 0.f, 1.f, 500
+														), 400
+												),
+												AnimateBuilder.setStartDelay(
+														AnimateBuilder.buildAlphaAnimation(
+																mARInfoGallery, 0.f, 1.f, 500
+														), 700
+												),
+												AnimateBuilder.setStartDelay(
+														AnimateBuilder.buildAlphaAnimation(
+																mARInfoDescription, 0.f, 1.f, 500
+														), 1000
+												)
+										);
+
+										animatorSet.start();
+									}
+								})
+//						.animate(500)
+//						.onto(mARInfoBackground);
+								.capture(mARInfoBackground)
+								.into(mARCaptureBackground);
 					}
 				});
 			}
