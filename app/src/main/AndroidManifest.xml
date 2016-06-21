@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="edu.neu.arap"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.neu.arap">
 
 	<uses-permission android:name="android.permission.INTERNET"/>
 	<uses-permission android:name="android.permission.CAMERA"/>
@@ -32,6 +32,7 @@
 		<activity android:name=".activity.MainActivityNew">
 		</activity>
 		<activity android:name=".activity.SubActivity"/>
+        <activity android:name=".activity.MuseumMainActivity"/>
 		<activity
 			android:name=".activity.AugmentedActivity"
 			android:screenOrientation="landscape">
@@ -41,6 +42,7 @@
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
+        <activity android:name=".activity.MuseumDetailActivity"></activity>
 	</application>
 
 </manifest>

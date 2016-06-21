@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f3f3f3"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".activity.MuseumMainActivity">
+    <LinearLayout
+        android:focusable="true" android:focusableInTouchMode="true"
+        android:layout_width="0px" android:layout_height="0px">
+        <requestFocus />
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/musemu_actionBar"
+        android:orientation="horizontal"
+        android:background="#009788">
+        <ImageButton
+            android:layout_width="32dp"
+            android:layout_marginLeft="8dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="9dp"
+            android:id="@+id/museum_back"
+            android:background="@drawable/ic_chevron_left_white_36dp"/>
+        <EditText
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toRightOf="@+id/museum_back"
+            android:background="@drawable/shape"
+            android:text="搜索展览名称"
+            android:gravity="center"
+            android:id="@+id/museum_editText"
+            android:textColor="#5b7977"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:scrollbars="none"
+        android:background="#00000000"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="vertical"
+            android:background="#00000000"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <com.bigkoo.convenientbanner.ConvenientBanner
+                    android:layout_width="wrap_content"
+                    app:canLoop="true"
+                    android:id="@+id/convenientBanner"
+                    android:layout_height="150dp">
+                </com.bigkoo.convenientbanner.ConvenientBanner>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:background="@drawable/gradient_shadow_inverse"
+                    android:id="@+id/convenientBannerIntro"
+                    android:layout_alignParentBottom="true"
+                    android:layout_height="32dp"
+                    android:textColor="#ffffff"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:text="name"/>
+            </RelativeLayout>
+
+
+            <android.support.v7.widget.RecyclerView
+                android:layout_marginTop="8dp"
+                android:id="@+id/explore_list"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:background="#00000000"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:background="#00000000"
+                android:paddingBottom="16dp"
+                android:layout_marginLeft="8dp"
+                android:text="周边展览"/>
+            <ListView
+                android:layout_width="match_parent"
+                android:id="@+id/museumListView"
+                android:background="#00000000"
+                android:dividerHeight="8dp"
+                android:divider="#00000000"
+                android:layout_height="match_parent"/>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
