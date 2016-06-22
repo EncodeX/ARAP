@@ -20,6 +20,7 @@ import java.util.Map;
 
 import edu.neu.arap.R;
 import edu.neu.arap.adapter.MuseumDetailAdapter;
+import edu.neu.arap.map.MapActivity;
 
 public class MuseumDetailActivity extends AppCompatActivity {
 
@@ -52,6 +53,12 @@ public class MuseumDetailActivity extends AppCompatActivity {
         MuseumDetailAdapter adapter=new MuseumDetailAdapter(this,RPosition);
         listView.setAdapter(adapter);
         setListViewHeightBasedOnChildren(listView);
+        findViewById(R.id.gotoMap).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MuseumDetailActivity.this, MapActivity.class));
+            }
+        });
     }
     public void setListViewHeightBasedOnChildren(ListView listView) {
         // 获取ListView对应的Adapter
