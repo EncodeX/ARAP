@@ -15,12 +15,14 @@
 #define JNIFUNCTION_NATIVE(sig) Java_edu_neu_arap_activity_AugmentedActivity_##sig
 
 extern "C" {
-    JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv* env, jobject object));
+    JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv*, jobject));
+    JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeGetVideoState(JNIEnv*, jobject));
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeDestory(JNIEnv* env, jobject object));
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeInitGL(JNIEnv* env, jobject object));
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeResizeGL(JNIEnv* env, jobject object, jint w, jint h));
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeRender(JNIEnv* env, jobject obj));
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeRotationChange(JNIEnv* env, jobject obj, jboolean portrait));
+    JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeDeleteVideo(JNIEnv*, jobject));
 };
 
 namespace EasyAR {
@@ -36,10 +38,12 @@ public:
     virtual void render();
     void render(JNIEnv*, jobject);
     virtual bool clear();
+    void deleteVideo();
+    bool isVideoNotNull();
 private:
     Vec2I view_size;
     Renderer renderer;
-    bool target_detected;
+    bool target_detect_state;
     bool target_last_state;
     bool new_image_captured;
     double fovyRadians;
@@ -48,10 +52,17 @@ private:
     double targetHeight;
     char imageReplica[1382400];
 
+    int ar_type;
+
+    Matrix44F projectionMatrix;
+    Matrix44F cameraview;
+    Vec2F imageTargetSize;
+
     VideoRenderer* videoRenderer[3];
     int tracked_target;
     int active_target;
     int texid[3];
+    int target_id;
     ARVideo* video;
     VideoRenderer* video_renderer;
 };
@@ -70,6 +81,8 @@ HelloAR::HelloAR()
     video_renderer = NULL;
     targetWidth = 0;
     targetHeight = 0;
+
+    ar_type = 0;
 }
 
 HelloAR::~HelloAR()
@@ -84,7 +97,7 @@ void HelloAR::initGL()
     renderer.init();
     augmenter_ = Augmenter();
     augmenter_.attachCamera(camera_);
-    target_detected = false;
+    target_detect_state = false;
     target_last_state = false;
     new_image_captured = false;
 
@@ -120,7 +133,7 @@ void HelloAR::render()
 
     // 设置追踪
 
-//    if (target_last_state != target_detected && target_detected){
+//    if (target_last_state != target_detect_state && target_detect_state){
 //        ImageList imageList = frame.images();
 ////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d", imageList.size());
 //        Image image = imageList[0];
@@ -160,7 +173,7 @@ void HelloAR::render()
 ////        __android_log_print(ANDROID_LOG_INFO, "EasyAR", "%d %d %d %d", imageData[0], imageData[1], imageData[2], imageData[3]);
 //    }
 
-    target_last_state = target_detected;
+    target_last_state = target_detect_state;
 
     AugmentedTarget::Status status = frame.targets()[0].status();
     if(status == AugmentedTarget::kTargetStatusTracked){
@@ -205,53 +218,57 @@ void HelloAR::render()
 ////            __android_log_print(ANDROID_LOG_INFO, "EasyARCamera", "[%f]", cameraCalibration.principalPoint().data[i]);
 ////        }
 //
-//        target_detected = true;
+//        target_detect_state = true;
 
 
         /// Video ///
-        int id = frame.targets()[0].target().id();
-        if(active_target && active_target != id) {
-            video->onLost();
-            delete video;
-            video = NULL;
-            tracked_target = 0;
-            active_target = 0;
+        target_id = frame.targets()[0].target().id();
+        if(ar_type != 2 && active_target && active_target != target_id) {
+            if (video != NULL){
+                deleteVideo();
+            }
         }
         if (!tracked_target) {
-            if (video == NULL) {
+//            if (video == NULL) {
                 if(frame.targets()[0].target().name() == std::string("argame") && texid[0]) {
-                    video = new ARVideo;
-                    video->openVideoFile("video.mp4", texid[0]);
-                    video_renderer = videoRenderer[0];
+                    if (video == NULL) {
+                        video = new ARVideo;
+                        video->openVideoFile("video.mp4", texid[0]);
+                        video_renderer = videoRenderer[0];
+                    }
                 }
                 else if(frame.targets()[0].target().name() == std::string("namecard") && texid[1]) {
-                    video = new ARVideo;
-                    video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
-                    video_renderer = videoRenderer[1];
+                    if (video == NULL) {
+                        video = new ARVideo;
+                        video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
+                        video_renderer = videoRenderer[1];
+                    }
                 }
                 else if(frame.targets()[0].target().name() == std::string("scene_day")) {
 //                    video = new ARVideo;
 //                    video->openStreamingVideo("http://7xl1ve.com5.z0.glb.clouddn.com/sdkvideo/EasyARSDKShow201520.mp4", texid[2]);
 //                    video_renderer = videoRenderer[2];
-                    target_detected = true;
+                    target_detect_state = true;
                 }
                 else if(frame.targets()[0].target().name() == std::string("scene_night") && texid[2]) {
                     video = new ARVideo;
                     video->openVideoFile("scene_movie.mp4", texid[2]);
                     video_renderer = videoRenderer[2];
                 }
-            }
+//            }
+
+            tracked_target = target_id;
             if (video) {
                 video->onFound();
-                tracked_target = id;
-                active_target = id;
+                active_target = target_id;
             }
         }
-        Matrix44F projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.00001f, 10.f);
-        Matrix44F cameraview = getPoseGL(frame.targets()[0].pose());
+        projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.00001f, 10.f);
+        cameraview = getPoseGL(frame.targets()[0].pose());
         ImageTarget target = frame.targets()[0].target().cast_dynamic<ImageTarget>();
 
-        if (target_detected){
+        if (target_detect_state){
+            imageTargetSize = target.size();
             renderer.render(projectionMatrix, cameraview, target.size());
 
             CameraCalibration cameraCalibration = camera_.cameraCalibration();
@@ -272,15 +289,35 @@ void HelloAR::render()
         }
 
         if(tracked_target) {
-            video->update();
-            video_renderer->render(projectionMatrix, cameraview, target.size());
+            if (ar_type == 2){
+                if (video == NULL){
+                    video = new ARVideo;
+                    video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
+                    video_renderer = videoRenderer[1];
+
+                    if (video) {
+                        video->onFound();
+                        active_target = target_id;
+                    }
+                }
+
+                if (video) {
+                    video->update();
+                    video_renderer->render(projectionMatrix, cameraview, target.size());
+                }
+            }
+            if(frame.targets()[0].target().name() == std::string("scene_day")){
+                target_detect_state = true;
+            }
         }
 
     }else{
-        target_detected = false;
+        target_detect_state = false;
 
         if (tracked_target) {
-            video->onLost();
+            if (video != NULL){
+                video->onLost();
+            }
             tracked_target = 0;
         }
     }
@@ -302,7 +339,7 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
         return;
     }
 
-    if (target_detected){
+    if (target_detect_state){
         // 此处cameraArray实际上是目标的姿态描述矩阵
         jfloatArray cameraArray = (*env).NewFloatArray(4 * 4);
         jfloatArray projectionArray = (*env).NewFloatArray(4*4);
@@ -361,7 +398,15 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
 //        new_image_captured = false;
 //    }
 
-    (*env).CallVoidMethod(thiz, method, target_detected);
+    (*env).CallVoidMethod(thiz, method, target_detect_state);
+
+    jmethodID methodGetARType;
+
+    methodGetARType = (*env).GetMethodID(clazz, "getCurrentARType", "()I");
+
+    if (methodGetARType!=NULL){
+        ar_type = (*env).CallIntMethod(thiz, methodGetARType);
+    }
 }
 
     bool HelloAR::clear()
@@ -374,6 +419,18 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
             active_target = 0;
         }
         return true;
+    }
+
+    void HelloAR::deleteVideo()
+    {
+        video->onLost();
+        delete video;
+        video = NULL;
+        active_target = 0;
+    }
+
+    bool HelloAR::isVideoNotNull(){
+        return video != NULL;
     }
 
 }
@@ -420,4 +477,14 @@ JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeRender(JNIEnv* env, jobject thiz
 JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeRotationChange(JNIEnv*, jobject, jboolean portrait))
 {
     ar.setPortrait(portrait);
+}
+
+JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeDeleteVideo(JNIEnv*, jobject))
+{
+    ar.deleteVideo();
+}
+
+JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeGetVideoState(JNIEnv*, jobject))
+{
+    return (jboolean) ar.isVideoNotNull();
 }

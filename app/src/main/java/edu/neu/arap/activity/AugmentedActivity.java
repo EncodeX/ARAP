@@ -18,6 +18,8 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -96,6 +98,12 @@ public class AugmentedActivity extends AppCompatActivity {
 	RecyclerView mARInfoGallery;
 	@Bind(R.id.ar_info_description)
 	TextView mARInfoDescription;
+	@Bind(R.id.ar_type_model_button)
+	ImageButton mARTypeModelButton;
+	@Bind(R.id.ar_type_image_button)
+	ImageButton mARTypeImageButton;
+	@Bind(R.id.ar_type_video_button)
+	ImageButton mARTypeVideoButton;
 
 	private View mARBlurBackground;
 
@@ -106,6 +114,7 @@ public class AugmentedActivity extends AppCompatActivity {
 
 	private boolean mInfoSwitch = false;
 	private boolean mNeedScreenShot = false;
+	private int mARType = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +156,17 @@ public class AugmentedActivity extends AppCompatActivity {
 		super.onPause();
 		EasyAR.onPause();
 		mJpctSurface.onPause();
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if(keyCode == KeyEvent.KEYCODE_BACK){
+			if (mARInfoLayout.getVisibility() == View.VISIBLE){
+				mARInfoCloseButton.performClick();
+				return false;
+			}
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 
 	private void initView(){
@@ -214,6 +234,10 @@ public class AugmentedActivity extends AppCompatActivity {
 					}
 				});
 
+				mARTypeModelButton.setVisibility(View.INVISIBLE);
+				mARTypeImageButton.setVisibility(View.INVISIBLE);
+				mARTypeVideoButton.setVisibility(View.INVISIBLE);
+
 				mARInfoLayout.setAlpha(1.f);
 				mLoadingIndicator.setAlpha(0.f);
 				mLoadingIndicator.setVisibility(View.VISIBLE);
@@ -226,7 +250,7 @@ public class AugmentedActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View view) {
 				mEasyARGLView.onResume();
-				mJpctSurface.onResume();
+//				mJpctSurface.onResume();
 				Blurry.delete(mARInfoBackground);
 
 				AnimatorSet animatorSet = new AnimatorSet();
@@ -261,11 +285,6 @@ public class AugmentedActivity extends AppCompatActivity {
 					@Override
 					public void onAnimationEnd(Animator animator) {
 						mARInfoLayout.setVisibility(View.INVISIBLE);
-						mARBackButton.setVisibility(View.VISIBLE);
-						mScanBar1.setVisibility(View.VISIBLE);
-						mScanBar2.setVisibility(View.VISIBLE);
-						mARHint.setVisibility(View.VISIBLE);
-						mARButtons.setVisibility(View.VISIBLE);
 
 						mARInfoBackground.removeView(mARBlurBackground);
 					}
@@ -281,6 +300,18 @@ public class AugmentedActivity extends AppCompatActivity {
 					}
 				});
 
+				mARBackButton.setVisibility(View.VISIBLE);
+				mARButtons.setVisibility(View.VISIBLE);
+
+				mARTypeModelButton.setVisibility(View.VISIBLE);
+				mARTypeImageButton.setVisibility(View.VISIBLE);
+				mARTypeVideoButton.setVisibility(View.VISIBLE);
+
+				if(!mIsTargetDetected){
+					mScanBar1.setVisibility(View.VISIBLE);
+					mScanBar2.setVisibility(View.VISIBLE);
+					mARHint.setVisibility(View.VISIBLE);
+				}
 				animatorSet.start();
 			}
 		});
@@ -301,11 +332,88 @@ public class AugmentedActivity extends AppCompatActivity {
 				onBackPressed();
 			}
 		});
+
+		mCameraPreview.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View view, MotionEvent me) {
+				if (me.getAction() == MotionEvent.ACTION_DOWN) {
+					mTouchX = me.getX();
+					mTouchY = me.getY();
+					return true;
+				}
+
+				if (me.getAction() == MotionEvent.ACTION_UP) {
+					mTouchX = -1;
+					mTouchY = -1;
+					mRotateHorizontal = 0;
+					mRotateVertical = 0;
+					return true;
+				}
+
+				if (me.getAction() == MotionEvent.ACTION_MOVE) {
+					float xd = me.getX() - mTouchX;
+					float yd = me.getY() - mTouchY;
+
+					mTouchX = me.getX();
+					mTouchY = me.getY();
+
+					mRotateHorizontal = xd / -100f;
+					mRotateVertical = yd / -100f;
+					return true;
+				}
+
+				try {
+					Thread.sleep(15);
+				} catch (Exception e) {
+					// No need for this...
+				}
+
+				return false;
+			}
+		});
+
+		mARTypeModelButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mARTypeModelButton.setImageResource(R.drawable.ic_ar_model_selected);
+				mARTypeImageButton.setImageResource(R.drawable.ic_ar_picture);
+				mARTypeVideoButton.setImageResource(R.drawable.ic_ar_video);
+
+				mARType = 0;
+			}
+		});
+
+		mARTypeImageButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mARTypeModelButton.setImageResource(R.drawable.ic_ar_model);
+				mARTypeImageButton.setImageResource(R.drawable.ic_ar_picture_selected);
+				mARTypeVideoButton.setImageResource(R.drawable.ic_ar_video);
+
+				mARType = 1;
+			}
+		});
+
+		mARTypeVideoButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mARTypeModelButton.setImageResource(R.drawable.ic_ar_model);
+				mARTypeImageButton.setImageResource(R.drawable.ic_ar_picture);
+				mARTypeVideoButton.setImageResource(R.drawable.ic_ar_video_selected);
+
+				mARType = 2;
+			}
+		});
+	}
+
+	public int getCurrentARType(){
+		return mARType;
 	}
 
 	private class ARListener implements ARStateListener{
 		@Override
 		public void onARStateChanged(boolean isDetected) {
+			Log.i("ARState", "isDetected: " + isDetected);
 			if(isDetected){
 				runOnUiThread(new Runnable() {
 					@Override
@@ -417,6 +525,8 @@ public class AugmentedActivity extends AppCompatActivity {
 	private native boolean nativeInit();
 	private native void nativeDestory();
 	private native void nativeRotationChange(boolean portrait);
+	private native void nativeDeleteVideo();
+	private native boolean nativeGetVideoState();
 
 	private void initAR(){
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -464,7 +574,10 @@ public class AugmentedActivity extends AppCompatActivity {
 					@Override
 					public void run() {
 						mEasyARGLView.onPause();
-						mJpctSurface.onPause();
+						if(nativeGetVideoState()){
+							nativeDeleteVideo();
+						}
+//						mJpctSurface.onPause();
 					}
 				});
 
@@ -568,6 +681,10 @@ public class AugmentedActivity extends AppCompatActivity {
 	private float mTargetWidth = 0;
 	private float mTargetHeight = 0;
 	private boolean mTargetSizeChanged = false;
+	private float mTouchX;
+	private float mTouchY;
+	private float mRotateHorizontal;
+	private float mRotateVertical;
 
 	private ARStateListener mStateListener = null;
 
@@ -726,8 +843,7 @@ public class AugmentedActivity extends AppCompatActivity {
 			try {
 				mTestObject = Loader.loadMD2(getAssets().open("snork.md2"), 0.01f);
 				mTestObject.rotateY((float)(-0.5 * Math.PI));
-				mTestObject.rotateX((float)(0.5*Math.PI));
-
+//				mTestObject.rotateX((float)(0.5*Math.PI));
 
 				Mesh mesh = mTestObject.getMesh();
 				float[] boundingBox = mesh.getBoundingBox();
@@ -775,10 +891,20 @@ public class AugmentedActivity extends AppCompatActivity {
 
 		@Override
 		public void onDrawFrame(GL10 gl10) {
+			if (mRotateHorizontal != 0) {
+				mTestObject.rotateY(mRotateHorizontal);
+				mRotateHorizontal = 0;
+			}
+
+			if (mRotateVertical != 0) {
+				mTestObject.rotateX(-mRotateVertical);
+				mRotateVertical = 0;
+			}
+
 			RGBColor transparent = new RGBColor(0,0,0,0);
 
 			mFrameBuffer.clear(transparent);
-			if(mIsTargetDetected){
+			if(mIsTargetDetected && mARType == 0){
 				updateCamera();
 
 				mWorld.renderScene(mFrameBuffer);
