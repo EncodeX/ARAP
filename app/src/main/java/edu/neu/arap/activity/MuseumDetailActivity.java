@@ -29,6 +29,7 @@ public class MuseumDetailActivity extends AppCompatActivity {
     private String[] resName;
     private String[] resIntro;
     private ListView listView;
+    private double[] locationInfoLatitude,locationInfoLongtitude;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +39,8 @@ public class MuseumDetailActivity extends AppCompatActivity {
         resID=intent.getIntArrayExtra("resID");
         resName=intent.getStringArrayExtra("resName");
         resIntro=intent.getStringArrayExtra("resIntro");
+        locationInfoLatitude= intent.getDoubleArrayExtra("locationInfoLatitude");
+        locationInfoLongtitude= intent.getDoubleArrayExtra("locationInfoLongtitude");
         findViewById(R.id.museum_detail_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,7 +59,12 @@ public class MuseumDetailActivity extends AppCompatActivity {
         findViewById(R.id.gotoMap).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MuseumDetailActivity.this, MapActivity.class));
+                Intent intent1=new Intent(MuseumDetailActivity.this, MapActivity.class);
+                intent1.putExtra("RPosition",RPosition);
+                intent1.putExtra("resName",resName);
+                intent1.putExtra("locationInfoLatitude",locationInfoLatitude);
+                intent1.putExtra("locationInfoLongtitude",locationInfoLongtitude);
+                startActivity(intent1);
             }
         });
     }

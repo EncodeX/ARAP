@@ -20,6 +20,7 @@ import com.bigkoo.convenientbanner.ConvenientBanner;
 import com.bigkoo.convenientbanner.holder.CBViewHolderCreator;
 import com.bigkoo.convenientbanner.listener.OnItemClickListener;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
@@ -186,6 +187,8 @@ public class MuseumMainActivity extends AppCompatActivity implements AdapterView
        // Toast.makeText(this,t[postion] , Toast.LENGTH_SHORT).show();
         Intent intent=new Intent(this,MuseumDetailActivity.class);
         intent.putExtra("RPosition",postion);
+        intent.putExtra("locationInfoLatitude",mAdapter.getLocationInfoLatitude());
+        intent.putExtra("locationInfoLongtitude",mAdapter.getGetLocationInfoLongtitude());
         intent.putExtra("resID",mAdapter.getResID());
         intent.putExtra("resName",mAdapter.getResName());
         intent.putExtra("resIntro",mAdapter.getResIntro());
