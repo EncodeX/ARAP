@@ -44,6 +44,8 @@ model {
 				jni {
 					dependencies {
 						library "easyar"
+						library "libgdinamapv4sdk752"
+						library "libgdinamapv4sdk752ex"
 					}
 
 					source {
@@ -65,6 +67,16 @@ model {
 				headers.srcDir "src/main/include/easyar"
 				binaries.withType(SharedLibraryBinary) {
 					sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libEasyAR.so")
+				}
+			}
+			libgdinamapv4sdk752 {
+				binaries.withType(SharedLibraryBinary) {
+					sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libgdinamapv4sdk752.so")
+				}
+			}
+			libgdinamapv4sdk752ex {
+				binaries.withType(SharedLibraryBinary) {
+					sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libgdinamapv4sdk752ex.so")
 				}
 			}
 		}
