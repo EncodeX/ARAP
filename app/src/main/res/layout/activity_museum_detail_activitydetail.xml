@@ -99,7 +99,7 @@
                     android:layout_below="@id/museum_detail_name_2"
                     android:layout_width="match_parent"
                     android:orientation="horizontal"
-                    android:layout_height="16dp">
+                    android:layout_height="wrap_content">
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -110,6 +110,7 @@
                         android:layout_below="@+id/museum_detail_name_2"
                         android:layout_marginLeft="8dp"
                         android:layout_marginRight="4dp"
+                        android:layout_marginTop="8dp"
                         android:text="室内导航"/>
                     <Button
                         android:layout_width="match_parent"
