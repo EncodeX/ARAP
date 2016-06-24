@@ -15,6 +15,7 @@
 
     <color name="colorARBlue">#90caf9</color>
     <color name="colorARBlueDark">#2196f3</color>
+    <color name="ia_blue">#ff00a5f5</color>
 
     <color name="grey"> #ebebeb</color>
     <color name="black"> #000000</color>

@@ -2,6 +2,9 @@
     <string name="app_name">ARAP</string>
     <string name="action_settings">Settings</string>
 
+    <string name="atlas_api_key">412a56b4-9a1f-4781-96e4-85c127981252</string>
+    <string name="atlas_api_secret">nK4QXcXp7cKKNvnWhfTWdWENj6s2HoMUtNTG2RrhWKtb0Mugx8gdc2ZWs5SIQEGfU+KALtQqfnu7b40JWtXOhiigcGQ+DWyXZ67kSHjp3X0+ACuim//7aQSP6FokDg==</string>
+
     <string name="ar_info_description">约1700年\n\n东波希米亚，库恩斯塔特（德语：克朗斯塔特），丹尼尔和伊格纳茨·普莱斯勒工坊制作\n\n画芯24.5×18.5 外框27.5×21 厚1.9\n\n黑色和不透明色料绘制，玻璃背面贴金，鎏金木框。\n\n这件玻璃反画是复制品，原件是一件17世纪圣母玛利亚像，神圣罗马帝国皇帝利奥波德一世的皇后埃利诺·玛格达莱妮称之为蔷薇圣母，原件至今仍摆放在维也纳圣史蒂芬大教堂中殿西南角的圣坛上。在此之前，波须圣母像曾为上匈牙利（现在的乌克兰）一座罗马天主教堂所有。传说1696年2月4日至12月8日画像上的圣母真的流泪了，随后就发生了两件奇事并且有人身体康复。1697年，利奥波德一世让人把这幅玻璃画搬到维也纳，希望圣母守护维也纳，守护帝国，并帮助打败土耳其。</string>
 
     <string name="basic_map">基本地图</string>
