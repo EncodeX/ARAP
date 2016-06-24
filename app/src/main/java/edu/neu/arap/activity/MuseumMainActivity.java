@@ -9,8 +9,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +36,7 @@ public class MuseumMainActivity extends AppCompatActivity implements AdapterView
     private ConvenientBanner convenientBanner;
     private ListView listView;
     MyAdapter mAdapter;
+    private String[] spinnerData={"全部","距离优先","好评优先"};
     private ArrayList<String> ADName=new ArrayList<String>();
     private ArrayList<Integer> localImages = new ArrayList<Integer>();
     @Override
@@ -89,6 +92,8 @@ public class MuseumMainActivity extends AppCompatActivity implements AdapterView
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
         mAdapter.setOnItemClickListener(this);
 
+        Spinner spinner= (Spinner) findViewById(R.id.museum_spinner);
+        spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, spinnerData));
 
     }
 

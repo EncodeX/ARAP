@@ -39,28 +39,38 @@
                 android:id="@+id/museumMark"
                 android:textColor="#000000"
                 android:text="评分：4.9"/>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="90dp"
                 android:text="展览简介"
                 android:isScrollContainer="true"
-                android:maxLines="5"
+                android:maxLines="4"
                 android:paddingRight="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
+                android:id="@+id/museumListViewIntro"
                 android:layout_below="@+id/museumListViewName"
-                android:id="@+id/museumListViewIntro"/>
-          <!--  <Button
+                android:layout_alignLeft="@+id/museumListViewName"
+                android:layout_alignStart="@+id/museumListViewName" />
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:text="到这去"
-                android:id="@+id/museumListViewBtn"
-                android:textColor="#ffffff"
-                android:background="#009788"
+                android:text="3.1km"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentBottom="true"/>
-                -->
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="8dp"
+                android:layout_marginRight="8dp"
+                android:id="@+id/museumListView_distance"/>
+            <!--  <Button
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_margin="8dp"
+                  android:text="到这去"
+                  android:id="@+id/museumListViewBtn"
+                  android:textColor="#ffffff"
+                  android:background="#009788"
+                  android:layout_alignParentRight="true"
+                  android:layout_alignParentBottom="true"/>
+                  -->
         </RelativeLayout>
     </LinearLayout>
 </android.support.v7.widget.CardView>
