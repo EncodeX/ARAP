@@ -3,41 +3,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.yuziw.testmap.MainActivity">
+    tools:context=".map.MapActivity">
     <RelativeLayout
-        android:id="@+id/testRoute"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/beizhan"
-            android:text="北站"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:id="@+id/benbu"
-            android:text="本部"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="桃仙"
+        android:layout_height="50dp"
+        android:id="@+id/map_actionBar"
+        android:orientation="horizontal"
+        android:background="#009788">
+        <ImageButton
+            android:layout_width="32dp"
+            android:layout_marginLeft="8dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="9dp"
+            android:id="@+id/map_back"
+            android:background="@drawable/ic_chevron_left_white_36dp"/>
+        <ImageButton
+            android:layout_width="32dp"
+            android:layout_marginRight="8dp"
             android:layout_alignParentRight="true"
-            android:id="@+id/taoxian"/>
-
+            android:layout_height="32dp"
+            android:id="@+id/forNameCenter"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="9dp"
+            android:background="@drawable/back"
+            />
+        <TextView
+            android:textColor="#ffffff"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:text="展览名称"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_toLeftOf="@id/forNameCenter"
+            android:id="@+id/map_museum_name"
+            android:layout_toRightOf="@+id/museum_detail_back"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
     </RelativeLayout>
     <RelativeLayout
-        android:layout_below="@id/testRoute"
+        android:layout_below="@+id/map_actionBar"
         android:id="@+id/routemap_header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#ADEAEA" >
+        android:layout_height="wrap_content">
         <LinearLayout
             android:id="@+id/routemap_choose"
             android:layout_width="match_parent"
             android:layout_height="44dp"
-            android:background="#ADEAEA"
+            android:background="#f3f3f3"
             android:paddingLeft="10dp"
             android:paddingRight="10dp" >
 
@@ -119,7 +134,7 @@
         android:layout_height="70dp"
         android:layout_alignParentBottom="true"
         android:padding="5dp"
-        android:background="#ADEAEA"
+        android:background="#f3f3f3"
         android:gravity="center_vertical"
         android:visibility="gone" >
 

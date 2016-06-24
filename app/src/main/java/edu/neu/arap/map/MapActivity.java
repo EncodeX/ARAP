@@ -40,12 +40,20 @@ import com.amap.api.services.route.DriveRouteResult;
 import com.amap.api.services.route.RouteSearch;
 import com.amap.api.services.route.WalkPath;
 import com.amap.api.services.route.WalkRouteResult;
+
+import java.util.TooManyListenersException;
+
 import edu.neu.arap.R;
+import edu.neu.arap.activity.MuseumDetailActivity;
 import edu.neu.arap.map.util.AMapUtil;
 import edu.neu.arap.map.util.ToastUtil;
 
 public class MapActivity extends Activity implements LocationSource,AMapLocationListener,AMap.OnMapClickListener,
         AMap.OnMarkerClickListener, AMap.OnInfoWindowClickListener, AMap.InfoWindowAdapter, RouteSearch.OnRouteSearchListener{
+
+    private String[] resName;
+    private int RPosition;
+    private double[] locationInfoLatitude,locationInfoLongtitude;
     private AMap aMap;
     private MapView mapView;
     private OnLocationChangedListener mListener;
@@ -59,11 +67,11 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
     private BusRouteResult mBusRouteResult;
     private WalkRouteResult mWalkRouteResult;
     //private LatLonPoint mStartPoint = new LatLonPoint(41.862182, 123.432373);//起点，
-    private LatLonPoint mEndPoint = new LatLonPoint(41.772285, 123.432370);//终点，
-    private LatLonPoint beizhan = new LatLonPoint(41.825176,123.44247);//终点，
-    private LatLonPoint benbu = new LatLonPoint(41.774112,123.426148);//终点，
-    private LatLonPoint taoxian = new LatLonPoint(41.645675,123.500563);//终点，
-
+  //  private LatLonPoint mEndPoint = new LatLonPoint(41.67779212, 123.45861554);//终点，
+//    private LatLonPoint beizhan = new LatLonPoint(41.825176,123.44247);//终点，
+//    private LatLonPoint benbu = new LatLonPoint(41.774112,123.426148);//终点，
+//    private LatLonPoint taoxian = new LatLonPoint(41.645675,123.500563);//终点，
+    private LatLonPoint mEndPoint;
     private LatLonPoint mStartPoint;//起点，
     private String mCurrentCityName = "北京";
     private final int ROUTE_TYPE_BUS = 1;
@@ -82,6 +90,22 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         mContext = this.getApplicationContext();
+
+        Intent intent=getIntent();
+        RPosition=intent.getIntExtra("RPosition",0);
+        resName=intent.getStringArrayExtra("resName");
+        locationInfoLatitude=intent.getDoubleArrayExtra("locationInfoLatitude");
+        locationInfoLongtitude=intent.getDoubleArrayExtra("locationInfoLongtitude");
+        ((TextView)findViewById(R.id.map_museum_name)).setText(resName[RPosition]);
+        findViewById(R.id.map_back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MapActivity.this,MuseumDetailActivity.class));
+                finish();
+            }
+        });
+      //  mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
+        mEndPoint=new LatLonPoint(locationInfoLatitude[RPosition],locationInfoLongtitude[RPosition]);
         mapView = (MapView) findViewById(R.id.map);
         textViewX=(TextView) findViewById(R.id.textX);
         textViewY=(TextView) findViewById(R.id.textY);
@@ -97,28 +121,29 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
         mLocationErrText = (TextView)findViewById(R.id.location_errInfo_text);
         mLocationErrText.setVisibility(View.GONE);
         init();
+       // findViewById(R.id.driveButton).performClick();
         // setfromandtoMarker();
-        findViewById(R.id.taoxian).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mEndPoint=taoxian;
-                findViewById(R.id.driveButton).performClick();
-            }
-        });
-        findViewById(R.id.benbu).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mEndPoint=benbu;
-                findViewById(R.id.driveButton).performClick();
-            }
-        });
-        findViewById(R.id.beizhan).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mEndPoint=beizhan;
-                findViewById(R.id.driveButton).performClick();
-            }
-        });
+//        findViewById(R.id.taoxian).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mEndPoint=taoxian;
+//                findViewById(R.id.driveButton).performClick();
+//            }
+//        });
+//        findViewById(R.id.benbu).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mEndPoint=benbu;
+//                findViewById(R.id.driveButton).performClick();
+//            }
+//        });
+//        findViewById(R.id.beizhan).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mEndPoint=beizhan;
+//                findViewById(R.id.driveButton).performClick();
+//            }
+//        });
 
     }
     private void init() {
@@ -148,7 +173,12 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
 
     }
     public void onBusClick(View view) {
-        mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
+        try {
+            mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
+        }
+        catch (Exception e){
+            Toast.makeText(view.getContext(),"定位失败！",Toast.LENGTH_LONG).show();
+        }
         searchRouteResult(ROUTE_TYPE_BUS, RouteSearch.BusDefault);
         mDrive.setImageResource(R.drawable.route_drive_normal);
         mBus.setImageResource(R.drawable.route_bus_select);
@@ -158,7 +188,12 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
     }
 
     public void onDriveClick(View view) {
-        mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
+        try {
+            mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
+        }
+        catch (Exception e){
+            Toast.makeText(view.getContext(),"定位失败！",Toast.LENGTH_LONG).show();
+        }
         searchRouteResult(ROUTE_TYPE_DRIVE, RouteSearch.DrivingDefault);
         mDrive.setImageResource(R.drawable.route_drive_select);
         mBus.setImageResource(R.drawable.route_bus_normal);
@@ -168,7 +203,12 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
     }
 
     public void onWalkClick(View view) {
-        mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
+        try {
+            mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
+        }
+        catch (Exception e){
+            Toast.makeText(view.getContext(),"定位失败！",Toast.LENGTH_LONG).show();
+        }
         searchRouteResult(ROUTE_TYPE_WALK, RouteSearch.WalkDefault);
         mDrive.setImageResource(R.drawable.route_drive_normal);
         mBus.setImageResource(R.drawable.route_bus_normal);
