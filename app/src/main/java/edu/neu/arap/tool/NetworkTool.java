@@ -30,7 +30,7 @@ public class NetworkTool {
 		requestQueue = Volley.newRequestQueue(context);
 	}
 
-	public void requestMuseumMainData(final int code, double lat, double lng, OnResponseListener listener){
+	public void requestMuseumMainData(double lat, double lng, OnResponseListener listener){
 		// http://219.216.125.72:8080/AugumentReality/getInfo.html?longitude=123.425&latitude=41.77
 
 		final Request req = new Request();
@@ -50,7 +50,7 @@ public class NetworkTool {
 					@Override
 					public void onResponse(JSONObject response) {
 						if(req.mOnResponseListener!=null){
-							req.mOnResponseListener.onResponse(code, response);
+							req.mOnResponseListener.onResponse(response);
 						}
 					}
 				},
@@ -58,7 +58,7 @@ public class NetworkTool {
 					@Override
 					public void onErrorResponse(VolleyError error) {
 						if(req.mOnResponseListener!=null){
-							req.mOnResponseListener.onError(code, error);
+							req.mOnResponseListener.onError(error);
 						}
 					}
 				}
@@ -67,7 +67,7 @@ public class NetworkTool {
 		requestQueue.add(request);
 	}
 
-	public void requestMuseumData(final int code, int id, OnResponseListener listener){
+	public void requestMuseumData(int id, OnResponseListener listener){
 		// http://219.216.125.72:8080/AugumentReality/getInfo/14.html
 
 		final Request req = new Request();
@@ -86,7 +86,7 @@ public class NetworkTool {
 					@Override
 					public void onResponse(JSONObject response) {
 						if(req.mOnResponseListener!=null){
-							req.mOnResponseListener.onResponse(code, response);
+							req.mOnResponseListener.onResponse(response);
 						}
 					}
 				},
@@ -94,7 +94,7 @@ public class NetworkTool {
 					@Override
 					public void onErrorResponse(VolleyError error) {
 						if(req.mOnResponseListener!=null){
-							req.mOnResponseListener.onError(code, error);
+							req.mOnResponseListener.onError(error);
 						}
 					}
 				}
@@ -103,7 +103,7 @@ public class NetworkTool {
 		requestQueue.add(request);
 	}
 
-	public void getImageResource(final int code, String url, ImageView targetView, OnResponseListener listener){
+	public void getImageResource(String url, ImageView targetView, OnResponseListener listener){
 
 		final Request req = new Request();
 
@@ -113,22 +113,22 @@ public class NetworkTool {
 			@Override
 			public void onSuccess() {
 				if(req.mOnResponseListener!=null){
-					req.mOnResponseListener.onResponse(code, null);
+					req.mOnResponseListener.onResponse(null);
 				}
 			}
 
 			@Override
 			public void onError() {
 				if(req.mOnResponseListener!=null){
-					req.mOnResponseListener.onError(code, null);
+					req.mOnResponseListener.onError(null);
 				}
 			}
 		});
 	}
 
 	public interface OnResponseListener{
-		void onResponse(int code, JSONObject response);
-		void onError(int code, VolleyError error);
+		void onResponse(JSONObject response);
+		void onError(VolleyError error);
 	}
 
 	class Request{
