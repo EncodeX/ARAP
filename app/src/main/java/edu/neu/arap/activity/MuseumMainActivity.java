@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -26,9 +27,12 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.MapView;
+import com.android.volley.VolleyError;
 import com.bigkoo.convenientbanner.ConvenientBanner;
 import com.bigkoo.convenientbanner.holder.CBViewHolderCreator;
 import com.bigkoo.convenientbanner.listener.OnItemClickListener;
+
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -39,12 +43,14 @@ import edu.neu.arap.adapter.MyAdapter;
 import edu.neu.arap.adapter.MyItemClickListener;
 import edu.neu.arap.adapter.MuseumListAdapter;
 import edu.neu.arap.adapter.SpacesItemDecoration;
+import edu.neu.arap.tool.NetworkTool;
 
 public class MuseumMainActivity extends AppCompatActivity implements LocationSource, AMapLocationListener,AdapterView.OnItemClickListener, ViewPager.OnPageChangeListener, OnItemClickListener,MyItemClickListener{
     private ConvenientBanner convenientBanner;
+    private NetworkTool networkTool;
     private ListView listView;
     MyAdapter mAdapter;
-    private String[] spinnerData={"全部","距离优先","好评优先"};
+    private String[] spinnerData={"距离优先","好评优先"};
     private ArrayList<String> ADName=new ArrayList<String>();
     private ArrayList<Integer> localImages = new ArrayList<Integer>();
     private AMap aMap2;
@@ -107,6 +113,8 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 
         Spinner spinner= (Spinner) findViewById(R.id.museum_spinner);
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, spinnerData));
+        networkTool=new NetworkTool(this);
+
 
         mapView=new MapView(this);
         aMap2=mapView.getMap();
@@ -114,6 +122,23 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         aMap2.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
         aMap2.setMyLocationEnabled(true);
         aMap2.setMyLocationType(AMap.LOCATION_TYPE_LOCATE);
+
+        networkTool.setOnResponseListener(new NetworkTool.OnResponseListener() {
+            @Override
+            public void onResponse(int code, JSONObject response) {
+                switch (code)
+                {
+                    case 0:
+                        ((EditText)findViewById(R.id.museum_editText)).setText(response.toString());
+                }
+            }
+
+            @Override
+            public void onError(int code, VolleyError error) {
+
+            }
+        });
+
         final Thread thread=new Thread(new Runnable()
         {
             @Override
@@ -123,6 +148,7 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        networkTool.requestMuseumMainData(0,aMap2.getMyLocation().getLatitude(),aMap2.getMyLocation().getLongitude());
                         Toast.makeText(MuseumMainActivity.this,"Latitude:"+aMap2.getMyLocation().getLatitude()+"Longtitude:"+aMap2.getMyLocation().getLongitude(),Toast.LENGTH_SHORT).show();
                     }
                 });

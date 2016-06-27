@@ -116,7 +116,7 @@ public class NetworkTool {
 		});
 	}
 
-	interface OnResponseListener{
+	public interface OnResponseListener{
 		void onResponse(int code, JSONObject response);
 		void onError(int code, VolleyError error);
 	}
