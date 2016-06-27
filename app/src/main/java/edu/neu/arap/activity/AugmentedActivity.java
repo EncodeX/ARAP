@@ -766,6 +766,8 @@ public class AugmentedActivity extends AppCompatActivity {
 		if(mTargetHeight != targetHeight){
 			mTargetWidth = (float) targetWidth;
 			mTargetHeight = (float) targetHeight;
+
+			mTargetSizeChanged = true;
 		}
 	}
 
@@ -899,6 +901,34 @@ public class AugmentedActivity extends AppCompatActivity {
 			if (mRotateVertical != 0) {
 				mTestObject.rotateX(-mRotateVertical);
 				mRotateVertical = 0;
+			}
+
+			if(mTargetSizeChanged){
+				mTargetSizeChanged = false;
+
+				Log.i("Scale", mTargetHeight + " "+ mTargetWidth);
+				Mesh mesh = mTestObject.getMesh();
+				float[] boundingBox = mesh.getBoundingBox();
+				Log.i("Scale", Arrays.toString(boundingBox));
+
+				float objectWidth = boundingBox[1] - boundingBox[0];
+				float objectHeight = boundingBox[3] - boundingBox[2];
+
+				float targetRatio = mTargetWidth / mTargetHeight;
+				float objectRatio = objectWidth / objectHeight;
+
+				Log.i("Scale", targetRatio + " "+ objectRatio);
+				Log.i("Scale", mTargetHeight/objectHeight + " " + mTargetWidth/objectWidth);
+
+				if(mTargetWidth / mTargetHeight > objectWidth / objectHeight){
+					// 高度对齐
+					mTestObject.scale(mTargetHeight/objectHeight);
+					Log.i("Scale", mTestObject.getScale()+"");
+				}else{
+					// 宽度对齐
+					mTestObject.scale(mTargetWidth/objectWidth);
+					Log.i("Scale", mTestObject.getScale()+"");
+				}
 			}
 
 			RGBColor transparent = new RGBColor(0,0,0,0);
