@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -18,6 +19,13 @@ import android.widget.Toast;
 
 import com.ToxicBakery.viewpager.transforms.ABaseTransformer;
 import com.ToxicBakery.viewpager.transforms.DefaultTransformer;
+import com.amap.api.location.AMapLocation;
+import com.amap.api.location.AMapLocationClient;
+import com.amap.api.location.AMapLocationClientOption;
+import com.amap.api.location.AMapLocationListener;
+import com.amap.api.maps.AMap;
+import com.amap.api.maps.LocationSource;
+import com.amap.api.maps.MapView;
 import com.bigkoo.convenientbanner.ConvenientBanner;
 import com.bigkoo.convenientbanner.holder.CBViewHolderCreator;
 import com.bigkoo.convenientbanner.listener.OnItemClickListener;
@@ -32,13 +40,18 @@ import edu.neu.arap.adapter.MyItemClickListener;
 import edu.neu.arap.adapter.MuseumListAdapter;
 import edu.neu.arap.adapter.SpacesItemDecoration;
 
-public class MuseumMainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, ViewPager.OnPageChangeListener, OnItemClickListener,MyItemClickListener{
+public class MuseumMainActivity extends AppCompatActivity implements LocationSource, AMapLocationListener,AdapterView.OnItemClickListener, ViewPager.OnPageChangeListener, OnItemClickListener,MyItemClickListener{
     private ConvenientBanner convenientBanner;
     private ListView listView;
     MyAdapter mAdapter;
     private String[] spinnerData={"全部","距离优先","好评优先"};
     private ArrayList<String> ADName=new ArrayList<String>();
     private ArrayList<Integer> localImages = new ArrayList<Integer>();
+    private AMap aMap2;
+    private MapView mapView;
+    private OnLocationChangedListener mListener;
+    private AMapLocationClient mlocationClient;
+    private AMapLocationClientOption mLocationOption;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +108,27 @@ public class MuseumMainActivity extends AppCompatActivity implements AdapterView
         Spinner spinner= (Spinner) findViewById(R.id.museum_spinner);
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, spinnerData));
 
+        mapView=new MapView(this);
+        aMap2=mapView.getMap();
+        aMap2.setLocationSource(this);// 设置定位监听
+        aMap2.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
+        aMap2.setMyLocationEnabled(true);
+        aMap2.setMyLocationType(AMap.LOCATION_TYPE_LOCATE);
+        final Thread thread=new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                while (aMap2.getMyLocation()==null);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MuseumMainActivity.this,"Latitude:"+aMap2.getMyLocation().getLatitude()+"Longtitude:"+aMap2.getMyLocation().getLongitude(),Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+        thread.start();
     }
 
 
@@ -118,6 +152,7 @@ public class MuseumMainActivity extends AppCompatActivity implements AdapterView
     @Override
     protected void onResume() {
         super.onResume();
+        mapView.onResume();
         //开始自动翻页
         convenientBanner.startTurning(5000);
     }
@@ -126,6 +161,8 @@ public class MuseumMainActivity extends AppCompatActivity implements AdapterView
     @Override
     protected void onPause() {
         super.onPause();
+        mapView.onPause();
+        deactivate();
         //停止翻页
         convenientBanner.stopTurning();
     }
@@ -226,4 +263,59 @@ public class MuseumMainActivity extends AppCompatActivity implements AdapterView
     }
 
 
+    @Override
+    public void onLocationChanged(AMapLocation amapLocation) {
+        if (mListener != null && amapLocation != null) {
+            if (amapLocation != null
+                    && amapLocation.getErrorCode() == 0) {
+                mListener.onLocationChanged(amapLocation);
+            } else {
+                String errText = "定位失败," + amapLocation.getErrorCode()+ ": " + amapLocation.getErrorInfo();
+                Log.e("AmapErr",errText);
+            }
+        }
+    }
+
+    @Override
+    public void activate(OnLocationChangedListener onLocationChangedListener) {
+        mListener = onLocationChangedListener;
+        if (mlocationClient == null) {
+            mlocationClient = new AMapLocationClient(this);
+            mLocationOption = new AMapLocationClientOption();
+            mlocationClient.setLocationListener(this);
+            mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+            mlocationClient.setLocationOption(mLocationOption);
+            mlocationClient.startLocation();
+        }
+    }
+
+    /**
+     * 方法必须重写
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mapView.onSaveInstanceState(outState);
+    }
+
+    /**
+     * 方法必须重写
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+        if(null != mlocationClient){
+            mlocationClient.onDestroy();
+        }
+    }
+    @Override
+    public void deactivate() {
+        mListener = null;
+        if (mlocationClient != null) {
+            mlocationClient.stopLocation();
+            mlocationClient.onDestroy();
+        }
+        mlocationClient = null;
+    }
 }

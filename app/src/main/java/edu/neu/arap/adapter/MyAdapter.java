@@ -16,8 +16,8 @@ import edu.neu.arap.R;
  * Created by 志伟 on 2015/11/10.
  */
 public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
-    private  double[] locationInfoLatitude={41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212};
-    private  double[] getLocationInfoLongtitude={123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554};
+    private  double[] locationInfoLatitude={41.67779212,41.65592365,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212};
+    private  double[] getLocationInfoLongtitude={123.45861554,123.42680576,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554};
     private int[] resID={0,R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,0};
     private String[] resName={"useless","晶火传奇艺术展","明清瓷器展","明清玉器展","万历海贸传奇","辽宁民间绣品展","拿破仑文物展","中国古代货币展","useless"};
     private String[] resIntro={
