@@ -115,6 +115,7 @@ public class AugmentedActivity extends AppCompatActivity {
 	private boolean mInfoSwitch = false;
 	private boolean mNeedScreenShot = false;
 	private int mARType = 0;
+	private int mCurrentARType = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -671,7 +672,8 @@ public class AugmentedActivity extends AppCompatActivity {
 	private World mWorld = null;
 	private com.threed.jpct.Camera mWorldCamera;
 	private int mFPS = 0;
-	private Object3D mTestObject = null;
+	private Object3D mWorldObject = null;
+	private Object3D mWorldPicture = null;
 
 	private boolean mIsTargetDetected = false;
 	private float mCameraMatrix[] = new float[4*4];
@@ -843,18 +845,18 @@ public class AugmentedActivity extends AppCompatActivity {
 			mWorld.setAmbientLight(180, 180, 180);
 
 			try {
-				mTestObject = Loader.loadMD2(getAssets().open("snork.md2"), 0.01f);
-				mTestObject.rotateY((float)(-0.5 * Math.PI));
-//				mTestObject.rotateX((float)(0.5*Math.PI));
+				mWorldObject = Loader.loadMD2(getAssets().open("snork.md2"), 0.01f);
+				mWorldObject.rotateY((float)(-0.5 * Math.PI));
+//				mWorldObject.rotateX((float)(0.5*Math.PI));
 
-				Mesh mesh = mTestObject.getMesh();
+				Mesh mesh = mWorldObject.getMesh();
 				float[] boundingBox = mesh.getBoundingBox();
 				Log.i("mtestobject", Arrays.toString(boundingBox));
-				mTestObject.translate(0, 0, -boundingBox[4]);
+				mWorldObject.translate(0, 0, -boundingBox[4]);
 
-				mTestObject.build();
+				mWorldObject.build();
 
-				mWorld.addObject(mTestObject);
+				mWorld.addObject(mWorldObject);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -876,7 +878,7 @@ public class AugmentedActivity extends AppCompatActivity {
 				TextureManager.getInstance().flush();
 				try {
 					TextureManager.getInstance().addTexture("disco", new Texture(getAssets().open("disco.jpg")));
-					mTestObject.setTexture("disco");
+					mWorldObject.setTexture("disco");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -894,12 +896,12 @@ public class AugmentedActivity extends AppCompatActivity {
 		@Override
 		public void onDrawFrame(GL10 gl10) {
 			if (mRotateHorizontal != 0) {
-				mTestObject.rotateY(mRotateHorizontal);
+				mWorldObject.rotateY(mRotateHorizontal);
 				mRotateHorizontal = 0;
 			}
 
 			if (mRotateVertical != 0) {
-				mTestObject.rotateX(-mRotateVertical);
+				mWorldObject.rotateX(-mRotateVertical);
 				mRotateVertical = 0;
 			}
 
@@ -907,7 +909,7 @@ public class AugmentedActivity extends AppCompatActivity {
 				mTargetSizeChanged = false;
 
 				Log.i("Scale", mTargetHeight + " "+ mTargetWidth);
-				Mesh mesh = mTestObject.getMesh();
+				Mesh mesh = mWorldObject.getMesh();
 				float[] boundingBox = mesh.getBoundingBox();
 				Log.i("Scale", Arrays.toString(boundingBox));
 
@@ -922,24 +924,50 @@ public class AugmentedActivity extends AppCompatActivity {
 
 				if(mTargetWidth / mTargetHeight > objectWidth / objectHeight){
 					// 高度对齐
-					mTestObject.scale(mTargetHeight/objectHeight);
-					Log.i("Scale", mTestObject.getScale()+"");
+					mWorldObject.scale(mTargetHeight/objectHeight);
+					Log.i("Scale", mWorldObject.getScale()+"");
 				}else{
 					// 宽度对齐
-					mTestObject.scale(mTargetWidth/objectWidth);
-					Log.i("Scale", mTestObject.getScale()+"");
+					mWorldObject.scale(mTargetWidth/objectWidth);
+					Log.i("Scale", mWorldObject.getScale()+"");
 				}
 			}
 
 			RGBColor transparent = new RGBColor(0,0,0,0);
 
 			mFrameBuffer.clear(transparent);
-			if(mIsTargetDetected && mARType == 0){
+			if(mIsTargetDetected && mARType != 2){
+				if(mCurrentARType != mARType){
+					switch (mCurrentARType){
+						case 0:
+							if(mWorldObject!=null)
+								mWorldObject.setVisibility(false);
+							break;
+						case 1:
+							if(mWorldPicture!=null)
+								mWorldPicture.setVisibility(false);
+							break;
+					}
+					mCurrentARType = mARType;
+					switch (mCurrentARType){
+						case 0:
+							if(mWorldObject!=null)
+								mWorldObject.setVisibility(true);
+							break;
+						case 1:
+							if(mWorldPicture!=null)
+								mWorldPicture.setVisibility(true);
+							break;
+					}
+				}
+
 				updateCamera();
 
 				mWorld.renderScene(mFrameBuffer);
 				mWorld.draw(mFrameBuffer);
 				mFrameBuffer.display();
+			}else if (mARType == 0){
+				mCurrentARType = 0;
 			}
 
 			if (System.currentTimeMillis() - time >= 1000) {
