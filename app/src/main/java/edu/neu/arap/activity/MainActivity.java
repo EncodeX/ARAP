@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
         MyAdapter mAdapter;
-        mAdapter = new MyAdapter();
+        mAdapter = new MyAdapter(this,null);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
         mAdapter.setOnItemClickListener(this);

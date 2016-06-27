@@ -13,6 +13,9 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,22 +28,23 @@ import edu.neu.arap.map.MapActivity;
 public class MuseumDetailActivity extends AppCompatActivity {
 
     private int RPosition;
-    private int[] resID;
-    private String[] resName;
-    private String[] resIntro;
+    private ArrayList<String > resID=new ArrayList<String>();
+    private ArrayList<String> resName=new ArrayList<String>();
+    private ArrayList<String> resIntro=new ArrayList<String>();
     private ListView listView;
-    private double[] locationInfoLatitude,locationInfoLongtitude;
+    private ArrayList<Double> locationInfoLatitude=new ArrayList<Double>();
+    private ArrayList<Double> locationInfoLongtitude=new ArrayList<Double>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_museum_detail_activitydetail);
         Intent intent=getIntent();
         RPosition=intent.getIntExtra("RPosition",0);
-        resID=intent.getIntArrayExtra("resID");
-        resName=intent.getStringArrayExtra("resName");
-        resIntro=intent.getStringArrayExtra("resIntro");
-        locationInfoLatitude= intent.getDoubleArrayExtra("locationInfoLatitude");
-        locationInfoLongtitude= intent.getDoubleArrayExtra("locationInfoLongtitude");
+        resID=intent.getStringArrayListExtra("resID");
+        resName=intent.getStringArrayListExtra("resName");
+        resIntro=intent.getStringArrayListExtra("resIntro");
+        locationInfoLatitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLatitude");
+        locationInfoLongtitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLongtitude");
         findViewById(R.id.museum_detail_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,10 +52,12 @@ public class MuseumDetailActivity extends AppCompatActivity {
                 finish();
             }
         });
-        ((TextView)findViewById(R.id.museum_detail_name)).setText(resName[RPosition]);
-        ((TextView)findViewById(R.id.museum_detail_intro)).setText(resIntro[RPosition]);
-        ((ImageView)findViewById(R.id.museum_detail_image)).setImageResource(resID[RPosition]);
-        ((TextView)findViewById(R.id.museum_detail_name_2)).setText(resName[RPosition]);
+        ((TextView)findViewById(R.id.museum_detail_name)).setText(resName.get(RPosition));
+        ((TextView)findViewById(R.id.museum_detail_intro)).setText(resIntro.get(RPosition));
+      //  ((ImageView)findViewById(R.id.museum_detail_image)).setImageResource(resID[RPosition]);
+        Picasso.with(this).load(resID.get(RPosition)).into((ImageView)findViewById(R.id.museum_detail_image));
+                // Picasso.with(context).load(resID.get(position)).centerCrop().into(MyViewHolder.getImageButton());
+        ((TextView)findViewById(R.id.museum_detail_name_2)).setText(resName.get(RPosition));
         listView=(ListView) findViewById(R.id.museum_detail_list);
         MuseumDetailAdapter adapter=new MuseumDetailAdapter(this,RPosition);
         listView.setAdapter(adapter);
@@ -62,8 +68,8 @@ public class MuseumDetailActivity extends AppCompatActivity {
                 Intent intent1=new Intent(MuseumDetailActivity.this, MapActivity.class);
                 intent1.putExtra("RPosition",RPosition);
                 intent1.putExtra("resName",resName);
-                intent1.putExtra("locationInfoLatitude",locationInfoLatitude);
-                intent1.putExtra("locationInfoLongtitude",locationInfoLongtitude);
+                intent1.putExtra("locationInfoLatitude",(Serializable) locationInfoLatitude);
+                intent1.putExtra("locationInfoLongtitude",(Serializable) locationInfoLongtitude);
                 startActivity(intent1);
             }
         });

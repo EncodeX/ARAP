@@ -32,6 +32,8 @@ import com.bigkoo.convenientbanner.ConvenientBanner;
 import com.bigkoo.convenientbanner.holder.CBViewHolderCreator;
 import com.bigkoo.convenientbanner.listener.OnItemClickListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -63,10 +65,10 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_museum_main);
         loadTestDatas();
-        ADName.add("航海罗盘");
-        ADName.add("青花暗八仙纹克拉克盘");
-        ADName.add("青花螭龙五彩四光碗");
-        ADName.add("八仙祝寿寿帐");
+//        ADName.add("航海罗盘");
+//        ADName.add("青花暗八仙纹克拉克盘");
+//        ADName.add("青花螭龙五彩四光碗");
+//        ADName.add("八仙祝寿寿帐");
         convenientBanner = (ConvenientBanner) findViewById(R.id.convenientBanner);
         convenientBanner.setPages(
                 new CBViewHolderCreator<LocalImageHolderView>() {
@@ -77,22 +79,22 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                 }, localImages)
               //  .setPageIndicator(new int[]{R.drawable.ic_page_indicator, R.drawable.ic_page_indicator_focused})
                 .setOnItemClickListener(this);
-        convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                ( (TextView) findViewById(R.id.convenientBannerIntro)).setText(ADName.get(position%4));
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
+//        convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//                ( (TextView) findViewById(R.id.convenientBannerIntro)).setText(ADName.get(position%2));
+//            }
+//
+//            @Override
+//            public void onPageSelected(int position) {
+//
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//
+//            }
+//        });
 
 
         listView=(ListView) findViewById(R.id.museumListView);
@@ -101,15 +103,15 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         setListViewHeightBasedOnChildren(listView);
 
 
-        RecyclerView mRecyclerView;
+        final RecyclerView mRecyclerView;
         LinearLayoutManager mLayoutManager;
         mRecyclerView = (RecyclerView) findViewById(R.id.explore_list);
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new MyAdapter();
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
-        mAdapter.setOnItemClickListener(this);
+//        mAdapter = new MyAdapter(this);
+//        mRecyclerView.setAdapter(mAdapter);
+//        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
+//        mAdapter.setOnItemClickListener(this);
 
         Spinner spinner= (Spinner) findViewById(R.id.museum_spinner);
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, spinnerData));
@@ -123,21 +125,6 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         aMap2.setMyLocationEnabled(true);
         aMap2.setMyLocationType(AMap.LOCATION_TYPE_LOCATE);
 
-        networkTool.setOnResponseListener(new NetworkTool.OnResponseListener() {
-            @Override
-            public void onResponse(int code, JSONObject response) {
-                switch (code)
-                {
-                    case 0:
-                        ((EditText)findViewById(R.id.museum_editText)).setText(response.toString());
-                }
-            }
-
-            @Override
-            public void onError(int code, VolleyError error) {
-
-            }
-        });
 
         final Thread thread=new Thread(new Runnable()
         {
@@ -148,8 +135,49 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        networkTool.requestMuseumMainData(0,aMap2.getMyLocation().getLatitude(),aMap2.getMyLocation().getLongitude());
-                        Toast.makeText(MuseumMainActivity.this,"Latitude:"+aMap2.getMyLocation().getLatitude()+"Longtitude:"+aMap2.getMyLocation().getLongitude(),Toast.LENGTH_SHORT).show();
+                        networkTool.requestMuseumMainData(aMap2.getMyLocation().getLatitude(), aMap2.getMyLocation().getLongitude(), new NetworkTool.OnResponseListener() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                try {
+                                    JSONArray top=response.getJSONArray("top");
+                                    for (int i=0;i<top.length();i++)
+                                    {
+                                        JSONObject topObjection=top.getJSONObject(i);
+                                        ADName.add(topObjection.getString("show_name"));
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+
+                            @Override
+                            public void onError(VolleyError error) {
+
+                            }
+                        });
+                      //  Toast.makeText(MuseumMainActivity.this,"Latitude:"+aMap2.getMyLocation().getLatitude()+"Longtitude:"+aMap2.getMyLocation().getLongitude(),Toast.LENGTH_SHORT).show();
+                        convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                            @Override
+                            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                                ( (TextView) findViewById(R.id.convenientBannerIntro)).setText(ADName.get(position%ADName.size()));
+                            }
+
+                            @Override
+                            public void onPageSelected(int position) {
+
+                            }
+
+                            @Override
+                            public void onPageScrollStateChanged(int state) {
+
+                            }
+                        });
+
+                        mAdapter = new MyAdapter(findViewById(R.id.explore_list).getContext(),aMap2);
+                        mRecyclerView.setAdapter(mAdapter);
+                        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
+                        mAdapter.setOnItemClickListener(MuseumMainActivity.this);
                     }
                 });
             }
@@ -160,7 +188,7 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 
     private void loadTestDatas() {
         //本地图片集合
-        for (int position = 0; position < 4; position++)
+        for (int position = 0; position < 2; position++)
             localImages.add(getResId("ic_test_" + position, R.drawable.class));
     }
 
@@ -255,8 +283,8 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
        // Toast.makeText(this,t[postion] , Toast.LENGTH_SHORT).show();
         Intent intent=new Intent(this,MuseumDetailActivity.class);
         intent.putExtra("RPosition",postion);
-        intent.putExtra("locationInfoLatitude",mAdapter.getLocationInfoLatitude());
-        intent.putExtra("locationInfoLongtitude",mAdapter.getGetLocationInfoLongtitude());
+        intent.putExtra("locationInfoLatitude",(Serializable) mAdapter.getLocationInfoLatitude());
+        intent.putExtra("locationInfoLongtitude",(Serializable)mAdapter.getGetLocationInfoLongtitude());
         intent.putExtra("resID",mAdapter.getResID());
         intent.putExtra("resName",mAdapter.getResName());
         intent.putExtra("resIntro",mAdapter.getResIntro());

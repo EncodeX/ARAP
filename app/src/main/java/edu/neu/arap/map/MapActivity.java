@@ -41,6 +41,7 @@ import com.amap.api.services.route.RouteSearch;
 import com.amap.api.services.route.WalkPath;
 import com.amap.api.services.route.WalkRouteResult;
 
+import java.util.ArrayList;
 import java.util.TooManyListenersException;
 
 import edu.neu.arap.R;
@@ -51,9 +52,10 @@ import edu.neu.arap.map.util.ToastUtil;
 public class MapActivity extends Activity implements LocationSource,AMapLocationListener,AMap.OnMapClickListener,
         AMap.OnMarkerClickListener, AMap.OnInfoWindowClickListener, AMap.InfoWindowAdapter, RouteSearch.OnRouteSearchListener{
 
-    private String[] resName;
+    private ArrayList<String >resName=new ArrayList<String>();
     private int RPosition;
-    private double[] locationInfoLatitude,locationInfoLongtitude;
+    private ArrayList<Double> locationInfoLatitude=new ArrayList<Double>();
+    private ArrayList<Double> locationInfoLongtitude=new ArrayList<Double>();
     private AMap aMap;
     private MapView mapView;
     private OnLocationChangedListener mListener;
@@ -93,10 +95,10 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
 
         Intent intent=getIntent();
         RPosition=intent.getIntExtra("RPosition",0);
-        resName=intent.getStringArrayExtra("resName");
-        locationInfoLatitude=intent.getDoubleArrayExtra("locationInfoLatitude");
-        locationInfoLongtitude=intent.getDoubleArrayExtra("locationInfoLongtitude");
-        ((TextView)findViewById(R.id.map_museum_name)).setText(resName[RPosition]);
+        resName=intent.getStringArrayListExtra("resName");
+        locationInfoLatitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLatitude");
+        locationInfoLongtitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLongtitude");
+        ((TextView)findViewById(R.id.map_museum_name)).setText(resName.get(RPosition));
         findViewById(R.id.map_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -105,7 +107,7 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
             }
         });
       //  mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
-        mEndPoint=new LatLonPoint(locationInfoLatitude[RPosition],locationInfoLongtitude[RPosition]);
+        mEndPoint=new LatLonPoint(locationInfoLatitude.get(RPosition),locationInfoLongtitude.get(RPosition));
         mapView = (MapView) findViewById(R.id.map);
         textViewX=(TextView) findViewById(R.id.textX);
         textViewY=(TextView) findViewById(R.id.textY);
