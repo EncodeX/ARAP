@@ -272,10 +272,10 @@ public class AugmentedActivity extends AppCompatActivity {
 					case 0:
 						break;
 					case 1:
-						test.add(i);
+						test.add(1);
 						break;
 					case 2:
-						test.add(i);
+						test.add(2);
 						break;
 				}
 			}
@@ -568,9 +568,11 @@ public class AugmentedActivity extends AppCompatActivity {
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						mARHint.setVisibility(View.INVISIBLE);
-						mScanBar1.setVisibility(View.INVISIBLE);
-						mScanBar2.setVisibility(View.INVISIBLE);
+						if(nativeCurrentTarget() == mCurrentTarget){
+							mARHint.setVisibility(View.INVISIBLE);
+							mScanBar1.setVisibility(View.INVISIBLE);
+							mScanBar2.setVisibility(View.INVISIBLE);
+						}
 					}
 				});
 			}else{
