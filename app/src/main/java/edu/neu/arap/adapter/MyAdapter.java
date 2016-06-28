@@ -1,8 +1,10 @@
 package edu.neu.arap.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 
 import com.amap.api.maps.AMap;
 import com.android.volley.VolleyError;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -23,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 
 import edu.neu.arap.R;
 import edu.neu.arap.activity.MuseumMainActivity;
+import edu.neu.arap.tool.ImageCache;
 import edu.neu.arap.tool.NetworkTool;
 
 /**
@@ -52,52 +56,70 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
 //            "useless"
 //    };
     private ArrayList<String> resIntro=new ArrayList<String >();
-    public MyAdapter(Context context, AMap aMap){
+
+	private ImageCache mImageCache;
+
+    public MyAdapter(final Context context){
         super();
-        if (aMap==null)
-            return;
         this.context=context;
         networkTool=new NetworkTool(context);
-        networkTool.requestMuseumMainData(aMap.getMyLocation().getLatitude(), aMap.getMyLocation().getLongitude(), new NetworkTool.OnResponseListener() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    JSONArray middle=response.getJSONArray("middle");
-                    resName.add("useless");
-                    resIntro.add("useless");
-                    locationInfoLatitude.add(0.0);
-                    locationInfoLongtitude.add(0.0);
-                    resID.add("useless");
-                    showId.add("useless");
-                    for (int i=0;i<middle.length();i++)
-                    {
-                        JSONObject midObjection=middle.getJSONObject(i);
-                        resName.add(midObjection.getString("show_name"));
-                        resIntro.add(midObjection.getString("show_description"));
-                        locationInfoLatitude.add(midObjection.getDouble("show_latitude"));
-                        locationInfoLongtitude.add(midObjection.getDouble("show_longitude"));
-                        resID.add(midObjection.getString("show_imgaddress"));
-                        showId.add(midObjection.getString("show_id"));
-                    }
-                    resID.add("useless");
-                    showId.add("useless");
-                    locationInfoLatitude.add(0.0);
-                    locationInfoLongtitude.add(0.0);
-                    resName.add("useless");
-                    resIntro.add("useless");
-                    notifyDataSetChanged();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+	    mImageCache = new ImageCache(context);
 
-            }
 
-            @Override
-            public void onError(VolleyError error) {
 
-            }
-        });
+	    mImageCache.setOnBitmapPreparedListener(new ImageCache.OnBitmapPreparedListener() {
+		    @Override
+		    public void onBitmapPrepared(Bitmap bitmap, String tag) {
+				Log.i("Picasso", "onBitmapPrepared "+ tag);
+		    }
+	    });
     }
+
+	public void setAMap(AMap aMap){
+		if (aMap==null)
+			return;
+
+		networkTool.requestMuseumMainData(aMap.getMyLocation().getLatitude(), aMap.getMyLocation().getLongitude(), new NetworkTool.OnResponseListener() {
+			@Override
+			public void onResponse(JSONObject response) {
+				try {
+					JSONArray middle=response.getJSONArray("middle");
+					resName.add("useless");
+					resIntro.add("useless");
+					locationInfoLatitude.add(0.0);
+					locationInfoLongtitude.add(0.0);
+					resID.add("useless");
+					showId.add("useless");
+					for (int i=0;i<middle.length();i++)
+					{
+						JSONObject midObjection=middle.getJSONObject(i);
+						resName.add(midObjection.getString("show_name"));
+						resIntro.add(midObjection.getString("show_description"));
+						locationInfoLatitude.add(midObjection.getDouble("show_latitude"));
+						locationInfoLongtitude.add(midObjection.getDouble("show_longitude"));
+						resID.add(midObjection.getString("show_imgaddress"));
+						showId.add(midObjection.getString("show_id"));
+					}
+					resID.add("useless");
+					showId.add("useless");
+					locationInfoLatitude.add(0.0);
+					locationInfoLongtitude.add(0.0);
+					resName.add("useless");
+					resIntro.add("useless");
+					notifyDataSetChanged();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+			}
+
+			@Override
+			public void onError(VolleyError error) {
+
+			}
+		});
+	}
+
     class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView imageButton;
         private TextView textView;
@@ -131,10 +153,10 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
         View view;
         if (i==1)
         {
-            view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_new,null);
+            view=LayoutInflater.from(context).inflate(R.layout.list_new,viewGroup,false);
         }
         else {
-            view=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.empty,null);
+            view=LayoutInflater.from(context).inflate(R.layout.empty,viewGroup,false);
         }
         return new MyViewHolder(view,mItemClickListener);
     }
@@ -173,7 +195,20 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
 //                }
 //            });
 
-           Picasso.with(context).load(resID.get(position)).centerCrop().into(MyViewHolder.getImageButton());
+	        mImageCache.loadImage(resID.get(position), MyViewHolder.getImageButton());
+
+//           Picasso.with(context).load(resID.get(position)).centerCrop().into(MyViewHolder.getImageButton(), new Callback() {
+//	           @Override
+//	           public void onSuccess() {
+//		           Log.i("Picasso", "Success");
+//
+//	           }
+//
+//	           @Override
+//	           public void onError() {
+//		           Log.i("Picasso", "Error");
+//	           }
+//           });
         }
         catch (Exception e)
         {

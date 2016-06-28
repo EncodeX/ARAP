@@ -49,7 +49,6 @@ import edu.neu.arap.tool.NetworkTool;
 
 public class MuseumMainActivity extends AppCompatActivity implements LocationSource, AMapLocationListener,AdapterView.OnItemClickListener, ViewPager.OnPageChangeListener, OnItemClickListener,MyItemClickListener{
     private ConvenientBanner convenientBanner;
-    RecyclerView mRecyclerView;
     private NetworkTool networkTool;
     private ListView listView;
     MyAdapter mAdapter;
@@ -104,11 +103,17 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         setListViewHeightBasedOnChildren(listView);
 
 
-
+        final RecyclerView mRecyclerView;
         LinearLayoutManager mLayoutManager;
         mRecyclerView = (RecyclerView) findViewById(R.id.explore_list);
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        mAdapter = new MyAdapter(this);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
+        mAdapter.setOnItemClickListener(MuseumMainActivity.this);
+
 //        mAdapter = new MyAdapter(this);
 //        mRecyclerView.setAdapter(mAdapter);
 //        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
@@ -161,7 +166,8 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                         convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                             @Override
                             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                                ( (TextView) findViewById(R.id.convenientBannerIntro)).setText(ADName.get(position%ADName.size()));
+                                if(ADName.size()!=0)
+                                    ( (TextView) findViewById(R.id.convenientBannerIntro)).setText(ADName.get(position%ADName.size()));
                             }
 
                             @Override
@@ -175,10 +181,7 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                             }
                         });
 
-                        mAdapter = new MyAdapter(MuseumMainActivity.this,aMap2);
-                        mRecyclerView.setAdapter(mAdapter);
-                        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
-                        mAdapter.setOnItemClickListener(MuseumMainActivity.this);
+                        mAdapter.setAMap(aMap2);
                     }
                 });
             }

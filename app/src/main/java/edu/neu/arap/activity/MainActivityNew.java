@@ -24,11 +24,11 @@ public class MainActivityNew extends AppCompatActivity implements MyItemClickLis
         mRecyclerView = (RecyclerView) findViewById(R.id.explore_list);
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        MyAdapter mAdapter;
-        mAdapter = new MyAdapter(this,null);
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
-        mAdapter.setOnItemClickListener(this);
+//        MyAdapter mAdapter;
+//        mAdapter = new MyAdapter(this,null);
+//        mRecyclerView.setAdapter(mAdapter);
+//        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
+//        mAdapter.setOnItemClickListener(this);
 
         ////////////////
         RecyclerView mRecyclerView2;
@@ -36,11 +36,11 @@ public class MainActivityNew extends AppCompatActivity implements MyItemClickLis
         mRecyclerView2 = (RecyclerView) findViewById(R.id.explore_list2);
         mLayoutManager2 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView2.setLayoutManager(mLayoutManager2);
-        MyAdapter mAdapter2;
-        mAdapter2 = new MyAdapter(this,null);
-        mRecyclerView2.setAdapter(mAdapter2);
-        mRecyclerView2.addItemDecoration(new SpacesItemDecoration(8));
-        mAdapter.setOnItemClickListener(this);
+//        MyAdapter mAdapter2;
+//        mAdapter2 = new MyAdapter(this,null);
+//        mRecyclerView2.setAdapter(mAdapter2);
+//        mRecyclerView2.addItemDecoration(new SpacesItemDecoration(8));
+//        mAdapter.setOnItemClickListener(this);
 
         findViewById(R.id.movie).setOnClickListener(new View.OnClickListener() {
             @Override

@@ -85,6 +85,29 @@ void AR::loadFromImage(const std::string& path)
         }
     }
 
+    void AR::loadFromPath(const std::string& path){
+        ImageTarget target;
+        std::string jstr = "{\n"
+                           "  \"images\" :\n"
+                           "  [\n"
+                           "    {\n"
+                           "      \"image\" : \"" + path + "\",\n"
+                           "      \"name\" : \"" + path.substr(path.find_last_of("/") + 1, path.find_last_of(".") - path.find_last_of("/") - 1) + "\"\n"
+                           "    }\n"
+                           "  ]\n"
+                           "}";
+        target.load(path.c_str(), EasyAR::kStorageApp | EasyAR::kStorageJson);
+        tracker_.loadTarget(target, new HelloCallBack());
+    }
+
+    void AR::startTracker() {
+        tracker_.start();
+    }
+
+    void AR::stopTracker() {
+        tracker_.stop();
+    }
+
 bool AR::start()
 {
     bool status = true;

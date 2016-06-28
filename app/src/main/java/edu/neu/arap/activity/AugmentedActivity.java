@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -42,12 +43,21 @@ import com.threed.jpct.SimpleVector;
 import com.threed.jpct.Texture;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
+import com.threed.jpct.util.BitmapHelper;
 import com.threed.jpct.util.MemoryHelper;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -64,9 +74,13 @@ import edu.neu.arap.adapter.ARGalleryAdapter;
 import edu.neu.arap.adapter.ARGalleryDecoration;
 import edu.neu.arap.easyar.GLView;
 import edu.neu.arap.tool.AnimateBuilder;
+import edu.neu.arap.tool.ImageCache;
 import jp.wasabeef.blurry.Blurry;
 
 public class AugmentedActivity extends AppCompatActivity {
+
+	final private static String TAG_BASE = "ar_tag_base";
+	final private static String TAG_IMAGE = "ar_tag_image";
 
 	@Bind(R.id.camera_preview)
 	FrameLayout mCameraPreview;
@@ -112,6 +126,8 @@ public class AugmentedActivity extends AppCompatActivity {
 
 	private ARGalleryAdapter mGalleryAdapter;
 
+	private ImageCache mImageCache;
+
 	private boolean mInfoSwitch = false;
 	private boolean mNeedScreenShot = false;
 	private int mARType = 0;
@@ -132,6 +148,8 @@ public class AugmentedActivity extends AppCompatActivity {
 		initAR();
 
 		initJPCT();
+
+		initData();
 	}
 
 	@Override
@@ -168,6 +186,110 @@ public class AugmentedActivity extends AppCompatActivity {
 			}
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+	private void initData(){
+		final String baseUrl = "http://219.216.125.72:8080/AugumentReality/upload/1467028763573.jpg";
+		String imageUrl = "456";
+
+		String testJson = "{\n" +
+				"            \"title\": \"鼎介绍\",\n" +
+				"            \"templateType\": 1,\n" +
+				"            \"videoShow\": 1,\n" +
+				"            \"ar_vote\": 0,\n" +
+				"            \"ar_address\": \"信息楼B504\",\n" +
+				"            \"ar_material\": [\n" +
+				"                {\n" +
+				"                    \"material_type\": 0,\n" +
+				"                    \"material_address\": \"http://219.216.125.72:8080/AugumentReality/upload/1467028365336.jpg\"\n" +
+				"                },\n" +
+				"                {\n" +
+				"                    \"material_type\": 1,\n" +
+				"                    \"material_address\": \"http://219.216.125.72:8080/AugumentReality/upload/1467028416598.jpg\"\n" +
+				"                },\n" +
+				"                {\n" +
+				"                    \"material_type\": 2,\n" +
+				"                    \"material_address\": \"http://219.216.125.72:8080/AugumentReality/upload/1467028367130.mp4\"\n" +
+				"                }\n" +
+				"            ]\n" +
+				"        }";
+
+		try {
+			JSONArray array = new JSONObject(testJson).optJSONArray("ar_material");
+
+			mARTypeModelButton.setVisibility(View.GONE);
+			mARTypeImageButton.setVisibility(View.GONE);
+			mARTypeVideoButton.setVisibility(View.GONE);
+
+			ArrayList<Integer> test = new ArrayList<>();
+
+			for(int i=0; i< array.length(); i++){
+				JSONObject object = array.optJSONObject(i);
+
+				switch (object.optInt("material_type")){
+					case 0:
+						break;
+					case 1:
+						test.add(i);
+						break;
+					case 2:
+						test.add(i);
+						break;
+				}
+			}
+			for(int i:test){
+				switch (i){
+					case 1:
+						mARTypeImageButton.setVisibility(View.VISIBLE);
+						break;
+					case 2:
+						mARTypeVideoButton.setVisibility(View.VISIBLE);
+						break;
+				}
+			}
+			if(mARTypeImageButton.getVisibility() == View.VISIBLE){
+				mARTypeImageButton.setImageResource(R.drawable.ic_ar_picture_selected);
+				mARTypeVideoButton.setImageResource(R.drawable.ic_ar_video);
+				mARType = 1;
+			}else{
+				mARTypeImageButton.setImageResource(R.drawable.ic_ar_picture);
+				mARTypeVideoButton.setImageResource(R.drawable.ic_ar_video_selected);
+				mARType = 2;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+//		Pattern pattern = Pattern.compile("(?<=upload/).+\\.jpg");
+//		Matcher matcher = pattern.matcher(baseUrl);
+//		String fileName = null;
+
+//		if(matcher.find()){
+//			fileName = matcher.group(0);
+//		}
+//
+//		mImageCache = new ImageCache(this);
+//
+//		final String finalFileName = fileName;
+//		mImageCache.setOnBitmapPreparedListener(new ImageCache.OnBitmapPreparedListener() {
+//			@Override
+//			public void onBitmapPrepared(Bitmap bitmap, String tag) {
+//				if(tag.equals(TAG_BASE)){
+//					if(finalFileName != null){
+//						String path = "res_img" + File.separator + finalFileName;
+////						String path = baseUrl;
+//						nativeLoadTargetImage(path);
+////						nativeStart();
+//					}
+//				}else if(tag.equals(TAG_IMAGE)){
+//
+//				}
+//			}
+//	});
+
+
+//		mImageCache.loadImage(baseUrl, TAG_BASE);
+//		mImageCache.loadImage(imageUrl, TAG_IMAGE);
 	}
 
 	private void initView(){
@@ -528,6 +650,12 @@ public class AugmentedActivity extends AppCompatActivity {
 	private native void nativeRotationChange(boolean portrait);
 	private native void nativeDeleteVideo();
 	private native boolean nativeGetVideoState();
+	private native void nativeLoadTargetImage(String path);
+	private native void nativeStart();
+	private native void nativeStop();
+	private native void nativeStartTracker();
+	private native void nativeStopTracker();
+	private native int nativeCurrentTarget();
 
 	private void initAR(){
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -674,6 +802,7 @@ public class AugmentedActivity extends AppCompatActivity {
 	private int mFPS = 0;
 	private Object3D mWorldObject = null;
 	private Object3D mWorldPicture = null;
+	private Object3D mWorldPicture2 = null;
 
 	private boolean mIsTargetDetected = false;
 	private float mCameraMatrix[] = new float[4*4];
@@ -687,6 +816,7 @@ public class AugmentedActivity extends AppCompatActivity {
 	private float mTouchY;
 	private float mRotateHorizontal;
 	private float mRotateVertical;
+	private int mCurrentTarget = 0;
 
 	private ARStateListener mStateListener = null;
 
@@ -857,6 +987,7 @@ public class AugmentedActivity extends AppCompatActivity {
 				mWorldObject.build();
 
 				mWorld.addObject(mWorldObject);
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -879,6 +1010,48 @@ public class AugmentedActivity extends AppCompatActivity {
 				try {
 					TextureManager.getInstance().addTexture("disco", new Texture(getAssets().open("disco.jpg")));
 					mWorldObject.setTexture("disco");
+
+					Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.pic_0)), 1024, 1024));
+					TextureManager.getInstance().addTexture("picture", texture);
+					texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.pic_1)), 1024, 1024));
+					TextureManager.getInstance().addTexture("picture2", texture);
+
+					mWorldPicture = new Object3D(2);
+					mWorldPicture.addTriangle(
+							new SimpleVector(0.37234,-0.5,0), 0.0f, 0.0f,
+							new SimpleVector(-0.37234,-0.5,0), 1.0f, 0.0f,
+							new SimpleVector(0.37234,0.5,0), 0.0f, 1.0f,
+							TextureManager.getInstance().getTextureID("picture")
+					);
+					mWorldPicture.addTriangle(
+							new SimpleVector(-0.37234,-0.5,0), 1.0f, 0.0f,
+							new SimpleVector(-0.37234,0.5,0), 1.0f, 1.0f,
+							new SimpleVector(0.37234,0.5,0), 0.0f, 1.0f,
+							TextureManager.getInstance().getTextureID("picture")
+					);
+					mWorldPicture.rotateY((float)(Math.PI));
+					mWorldPicture.strip();
+					mWorldPicture.build();
+					mWorld.addObject(mWorldPicture);
+
+					mWorldPicture2 = new Object3D(2);
+					mWorldPicture2.addTriangle(
+							new SimpleVector(0.375235,-0.5,0), 0.0f, 0.0f,
+							new SimpleVector(-0.375235,-0.5,0), 1.0f, 0.0f,
+							new SimpleVector(0.375235,0.5,0), 0.0f, 1.0f,
+							TextureManager.getInstance().getTextureID("picture2")
+					);
+					mWorldPicture2.addTriangle(
+							new SimpleVector(-0.375235,-0.5,0), 1.0f, 0.0f,
+							new SimpleVector(-0.375235,0.5,0), 1.0f, 1.0f,
+							new SimpleVector(0.375235,0.5,0), 0.0f, 1.0f,
+							TextureManager.getInstance().getTextureID("picture2")
+					);
+					mWorldPicture2.rotateY((float)(Math.PI));
+					mWorldPicture2.strip();
+					mWorldPicture2.build();
+					mWorld.addObject(mWorldPicture2);
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -938,27 +1111,38 @@ public class AugmentedActivity extends AppCompatActivity {
 			mFrameBuffer.clear(transparent);
 			if(mIsTargetDetected && mARType != 2){
 				if(mCurrentARType != mARType){
-					switch (mCurrentARType){
-						case 0:
-							if(mWorldObject!=null)
-								mWorldObject.setVisibility(false);
-							break;
-						case 1:
-							if(mWorldPicture!=null)
-								mWorldPicture.setVisibility(false);
-							break;
+					if(mWorldObject!=null){
+						mWorldObject.setVisibility(false);
+					}
+					if(mWorldPicture!=null){
+						mWorldPicture.setVisibility(false);
+					}
+					if(mWorldPicture2!=null){
+						mWorldPicture2.setVisibility(false);
 					}
 					mCurrentARType = mARType;
-					switch (mCurrentARType){
-						case 0:
-							if(mWorldObject!=null)
-								mWorldObject.setVisibility(true);
-							break;
-						case 1:
-							if(mWorldPicture!=null)
-								mWorldPicture.setVisibility(true);
-							break;
-					}
+				}
+				switch (mCurrentARType){
+					case 0:
+						if(mWorldObject!=null){
+							mWorldObject.setVisibility(true);
+						}
+						break;
+					case 1:
+						Log.i("EasyAR", "nativeCurrentTarget: "+nativeCurrentTarget());
+						switch (nativeCurrentTarget()){
+							case 2:
+								if(mWorldPicture!=null){
+									mWorldPicture.setVisibility(true);
+								}
+								break;
+							case 3:
+								if(mWorldPicture2!=null){
+									mWorldPicture2.setVisibility(true);
+								}
+								break;
+						}
+						break;
 				}
 
 				updateCamera();
