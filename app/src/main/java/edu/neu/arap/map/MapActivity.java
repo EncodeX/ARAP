@@ -52,10 +52,9 @@ import edu.neu.arap.map.util.ToastUtil;
 public class MapActivity extends Activity implements LocationSource,AMapLocationListener,AMap.OnMapClickListener,
         AMap.OnMarkerClickListener, AMap.OnInfoWindowClickListener, AMap.InfoWindowAdapter, RouteSearch.OnRouteSearchListener{
 
-    private ArrayList<String >resName=new ArrayList<String>();
-    private int RPosition;
-    private ArrayList<Double> locationInfoLatitude=new ArrayList<Double>();
-    private ArrayList<Double> locationInfoLongtitude=new ArrayList<Double>();
+    private String resName;
+    private Double locationInfoLatitude=0.0;
+    private Double locationInfoLongtitude=0.0;
     private AMap aMap;
     private MapView mapView;
     private OnLocationChangedListener mListener;
@@ -94,11 +93,10 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
         mContext = this.getApplicationContext();
 
         Intent intent=getIntent();
-        RPosition=intent.getIntExtra("RPosition",0);
-        resName=intent.getStringArrayListExtra("resName");
-        locationInfoLatitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLatitude");
-        locationInfoLongtitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLongtitude");
-        ((TextView)findViewById(R.id.map_museum_name)).setText(resName.get(RPosition));
+        resName=intent.getStringExtra("resName");
+        locationInfoLatitude= intent.getDoubleExtra("locationInfoLatitude",0.0);
+        locationInfoLongtitude= intent.getDoubleExtra("locationInfoLongtitude",0.0);
+        ((TextView)findViewById(R.id.map_museum_name)).setText(resName);
         findViewById(R.id.map_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,7 +104,7 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
             }
         });
       //  mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
-        mEndPoint=new LatLonPoint(locationInfoLatitude.get(RPosition),locationInfoLongtitude.get(RPosition));
+        mEndPoint=new LatLonPoint(locationInfoLatitude,locationInfoLongtitude);
         mapView = (MapView) findViewById(R.id.map);
         textViewX=(TextView) findViewById(R.id.textX);
         textViewY=(TextView) findViewById(R.id.textY);

@@ -67,23 +67,23 @@ public class MuseumDetailActivity extends AppCompatActivity {
       //  ((ImageView)findViewById(R.id.museum_detail_image)).setImageResource(resID[RPosition]);
         Picasso.with(this).load(resID.get(RPosition)).into((ImageView)findViewById(R.id.museum_detail_image));
                 // Picasso.with(context).load(resID.get(position)).centerCrop().into(MyViewHolder.getImageButton());
-        ((TextView)findViewById(R.id.museum_detail_name_2)).setText(resName.get(RPosition));
+    //    ((TextView)findViewById(R.id.museum_detail_name_2)).setText(resName.get(RPosition));
         listView=(ListView) findViewById(R.id.museum_detail_list);
-        adapter=new MuseumDetailAdapter(this,Integer.parseInt(showId.get(RPosition)));
+        adapter=new MuseumDetailAdapter(this,Integer.parseInt(showId.get(RPosition)),resName.get(RPosition),locationInfoLatitude.get(RPosition),locationInfoLongtitude.get(RPosition));
         listView.setAdapter(adapter);
        // adapter.notifyDataSetChanged();
       //  setListViewHeightBasedOnChildren(listView);
-        findViewById(R.id.gotoMap).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent1=new Intent(MuseumDetailActivity.this, MapActivity.class);
-                intent1.putExtra("RPosition",RPosition);
-                intent1.putExtra("resName",resName);
-                intent1.putExtra("locationInfoLatitude",(Serializable) locationInfoLatitude);
-                intent1.putExtra("locationInfoLongtitude",(Serializable) locationInfoLongtitude);
-                startActivity(intent1);
-            }
-        });
+//        findViewById(R.id.gotoMap).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent1=new Intent(MuseumDetailActivity.this, MapActivity.class);
+//                intent1.putExtra("RPosition",RPosition);
+//                intent1.putExtra("resName",resName);
+//                intent1.putExtra("locationInfoLatitude",(Serializable) locationInfoLatitude);
+//                intent1.putExtra("locationInfoLongtitude",(Serializable) locationInfoLongtitude);
+//                startActivity(intent1);
+//            }
+//        });
     }
     public void setListViewHeightBasedOnChildren(ListView listView) {
         // 获取ListView对应的Adapter
