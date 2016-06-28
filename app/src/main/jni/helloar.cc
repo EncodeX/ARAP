@@ -311,7 +311,7 @@ void HelloAR::render()
         }
 
         if(tracked_target) {
-            if (ar_type == 2){
+            if (ar_type == 2 && current_target == 1){
                 if (video == NULL){
                     video = new ARVideo;
 

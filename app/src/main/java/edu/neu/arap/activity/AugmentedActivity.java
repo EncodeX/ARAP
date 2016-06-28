@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
@@ -118,6 +119,10 @@ public class AugmentedActivity extends AppCompatActivity {
 	ImageButton mARTypeImageButton;
 	@Bind(R.id.ar_type_video_button)
 	ImageButton mARTypeVideoButton;
+	@Bind(R.id.ar_fav_icon)
+	FrameLayout mARFaveIcon;
+	@Bind(R.id.ar_fav_button)
+	RelativeLayout mARFavButton;
 
 	private View mARBlurBackground;
 
@@ -132,6 +137,8 @@ public class AugmentedActivity extends AppCompatActivity {
 	private boolean mNeedScreenShot = false;
 	private int mARType = 0;
 	private int mCurrentARType = 0;
+	private boolean mARStarred = false;
+	private String mResJson;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -192,34 +199,69 @@ public class AugmentedActivity extends AppCompatActivity {
 		final String baseUrl = "http://219.216.125.72:8080/AugumentReality/upload/1467028763573.jpg";
 		String imageUrl = "456";
 
-		String testJson = "{\n" +
-				"            \"title\": \"鼎介绍\",\n" +
-				"            \"templateType\": 1,\n" +
-				"            \"videoShow\": 1,\n" +
-				"            \"ar_vote\": 0,\n" +
-				"            \"ar_address\": \"信息楼B504\",\n" +
-				"            \"ar_material\": [\n" +
-				"                {\n" +
-				"                    \"material_type\": 0,\n" +
-				"                    \"material_address\": \"http://219.216.125.72:8080/AugumentReality/upload/1467028365336.jpg\"\n" +
-				"                },\n" +
-				"                {\n" +
-				"                    \"material_type\": 1,\n" +
-				"                    \"material_address\": \"http://219.216.125.72:8080/AugumentReality/upload/1467028416598.jpg\"\n" +
-				"                },\n" +
-				"                {\n" +
-				"                    \"material_type\": 2,\n" +
-				"                    \"material_address\": \"http://219.216.125.72:8080/AugumentReality/upload/1467028367130.mp4\"\n" +
-				"                }\n" +
-				"            ]\n" +
-				"        }";
+		Intent intent = getIntent();
+
+		mResJson = intent.getStringExtra("JSONObject");
+
+		judgeJson();
+
+//		Pattern pattern = Pattern.compile("(?<=upload/).+\\.jpg");
+//		Matcher matcher = pattern.matcher(baseUrl);
+//		String fileName = null;
+
+//		if(matcher.find()){
+//			fileName = matcher.group(0);
+//		}
+//
+//		mImageCache = new ImageCache(this);
+//
+//		final String finalFileName = fileName;
+//		mImageCache.setOnBitmapPreparedListener(new ImageCache.OnBitmapPreparedListener() {
+//			@Override
+//			public void onBitmapPrepared(Bitmap bitmap, String tag) {
+//				if(tag.equals(TAG_BASE)){
+//					if(finalFileName != null){
+//						String path = "res_img" + File.separator + finalFileName;
+////						String path = baseUrl;
+//						nativeLoadTargetImage(path);
+////						nativeStart();
+//					}
+//				}else if(tag.equals(TAG_IMAGE)){
+//
+//				}
+//			}
+//	});
+
+
+//		mImageCache.loadImage(baseUrl, TAG_BASE);
+//		mImageCache.loadImage(imageUrl, TAG_IMAGE);
+	}
+
+	private void judgeJson(){
+		mARTypeModelButton.setVisibility(View.GONE);
+		mARTypeImageButton.setVisibility(View.GONE);
+		mARTypeVideoButton.setVisibility(View.GONE);
+
+		if(mResJson == null){
+			mARHint.setText("此展品暂时没有AR展示");
+			return;
+		}
 
 		try {
-			JSONArray array = new JSONObject(testJson).optJSONArray("ar_material");
+			String title = new JSONObject(mResJson).optString("title");
 
-			mARTypeModelButton.setVisibility(View.GONE);
-			mARTypeImageButton.setVisibility(View.GONE);
-			mARTypeVideoButton.setVisibility(View.GONE);
+			if(title.equals("鼎介绍")){
+				mCurrentTarget = 1;
+			}else if(title.equals("疯狂android讲义")){
+				mCurrentTarget = 2;
+			}else if(title.equals("深入浅出mysql")){
+				mCurrentTarget = 3;
+			}else{
+				mARHint.setText("此展品暂时没有AR展示");
+				return;
+			}
+
+			JSONArray array = new JSONObject(mResJson).optJSONArray("ar_material");
 
 			ArrayList<Integer> test = new ArrayList<>();
 
@@ -259,37 +301,6 @@ public class AugmentedActivity extends AppCompatActivity {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-
-//		Pattern pattern = Pattern.compile("(?<=upload/).+\\.jpg");
-//		Matcher matcher = pattern.matcher(baseUrl);
-//		String fileName = null;
-
-//		if(matcher.find()){
-//			fileName = matcher.group(0);
-//		}
-//
-//		mImageCache = new ImageCache(this);
-//
-//		final String finalFileName = fileName;
-//		mImageCache.setOnBitmapPreparedListener(new ImageCache.OnBitmapPreparedListener() {
-//			@Override
-//			public void onBitmapPrepared(Bitmap bitmap, String tag) {
-//				if(tag.equals(TAG_BASE)){
-//					if(finalFileName != null){
-//						String path = "res_img" + File.separator + finalFileName;
-////						String path = baseUrl;
-//						nativeLoadTargetImage(path);
-////						nativeStart();
-//					}
-//				}else if(tag.equals(TAG_IMAGE)){
-//
-//				}
-//			}
-//	});
-
-
-//		mImageCache.loadImage(baseUrl, TAG_BASE);
-//		mImageCache.loadImage(imageUrl, TAG_IMAGE);
 	}
 
 	private void initView(){
@@ -435,6 +446,9 @@ public class AugmentedActivity extends AppCompatActivity {
 					mScanBar2.setVisibility(View.VISIBLE);
 					mARHint.setVisibility(View.VISIBLE);
 				}
+
+				judgeJson();
+
 				animatorSet.start();
 			}
 		});
@@ -525,6 +539,19 @@ public class AugmentedActivity extends AppCompatActivity {
 				mARTypeVideoButton.setImageResource(R.drawable.ic_ar_video_selected);
 
 				mARType = 2;
+			}
+		});
+
+		mARFavButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if(!mARStarred){
+					mARFaveIcon.setBackgroundResource(R.drawable.ic_ar_starred);
+					mARStarred = true;
+				}else{
+					mARFaveIcon.setBackgroundResource(R.drawable.ic_ar_star);
+					mARStarred = false;
+				}
 			}
 		});
 	}
@@ -1132,12 +1159,12 @@ public class AugmentedActivity extends AppCompatActivity {
 						Log.i("EasyAR", "nativeCurrentTarget: "+nativeCurrentTarget());
 						switch (nativeCurrentTarget()){
 							case 2:
-								if(mWorldPicture!=null){
+								if(mWorldPicture!=null && mCurrentTarget == 2){
 									mWorldPicture.setVisibility(true);
 								}
 								break;
 							case 3:
-								if(mWorldPicture2!=null){
+								if(mWorldPicture2!=null && mCurrentTarget == 3){
 									mWorldPicture2.setVisibility(true);
 								}
 								break;

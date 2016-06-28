@@ -65,8 +65,6 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
         networkTool=new NetworkTool(context);
 	    mImageCache = new ImageCache(context);
 
-
-
 	    mImageCache.setOnBitmapPreparedListener(new ImageCache.OnBitmapPreparedListener() {
 		    @Override
 		    public void onBitmapPrepared(Bitmap bitmap, String tag) {

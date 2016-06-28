@@ -79,7 +79,8 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:layout_gravity="center_horizontal"
-				style="@style/AppTheme.UnboundedButton.White.Borderless">
+				style="@style/AppTheme.UnboundedButton.White.Borderless"
+				android:clickable="true">
 				<RelativeLayout
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
@@ -112,7 +113,8 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:layout_gravity="center_horizontal"
-				style="@style/AppTheme.UnboundedButton.White.Borderless">
+				style="@style/AppTheme.UnboundedButton.White.Borderless"
+				android:clickable="true">
 				<RelativeLayout
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
@@ -145,12 +147,12 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:layout_gravity="center_horizontal"
-				style="@style/AppTheme.UnboundedButton.White.Borderless">
+				style="@style/AppTheme.UnboundedButton.White.Borderless"
+				android:clickable="true">
 				<RelativeLayout
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_centerInParent="true"
-					android:clickable="false">
+					android:layout_centerInParent="true">
 					<FrameLayout
 						android:id="@+id/ar_fav_icon"
 						android:layout_width="56dp"
