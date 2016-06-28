@@ -111,10 +111,6 @@ public class MuseumDetailAdapter extends BaseAdapter {
     }
     @Override
     public int getCount() {
-        if (mData.size()==0)
-        {
-           // Toast.makeText(context,"!!!!!!!",Toast.LENGTH_SHORT).show();
-        }
         return mData.size();
     }
 

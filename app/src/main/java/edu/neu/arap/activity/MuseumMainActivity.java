@@ -31,6 +31,11 @@ import com.android.volley.VolleyError;
 import com.bigkoo.convenientbanner.ConvenientBanner;
 import com.bigkoo.convenientbanner.holder.CBViewHolderCreator;
 import com.bigkoo.convenientbanner.listener.OnItemClickListener;
+import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +44,8 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import edu.neu.arap.R;
 import edu.neu.arap.adapter.MyAdapter;
@@ -51,7 +58,9 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
     private ConvenientBanner convenientBanner;
     private NetworkTool networkTool;
     private ListView listView;
-    MyAdapter mAdapter;
+    private MyAdapter mAdapter;
+    private ArrayList<String> networkImages=new ArrayList<String>();
+    private MuseumListAdapter museumAdapter;
     private String[] spinnerData={"距离优先","好评优先"};
     private ArrayList<String> ADName=new ArrayList<String>();
     private ArrayList<Integer> localImages = new ArrayList<Integer>();
@@ -70,15 +79,35 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 //        ADName.add("青花螭龙五彩四光碗");
 //        ADName.add("八仙祝寿寿帐");
         convenientBanner = (ConvenientBanner) findViewById(R.id.convenientBanner);
-        convenientBanner.setPages(
-                new CBViewHolderCreator<LocalImageHolderView>() {
-                    @Override
-                    public LocalImageHolderView createHolder() {
-                        return new LocalImageHolderView();
-                    }
-                }, localImages)
-              //  .setPageIndicator(new int[]{R.drawable.ic_page_indicator, R.drawable.ic_page_indicator_focused})
-                .setOnItemClickListener(this);
+        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder().
+                showImageForEmptyUri(R.drawable.xi_kou_ping)
+                .cacheInMemory(true).cacheOnDisk(true).build();
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
+                getApplicationContext()).defaultDisplayImageOptions(defaultOptions)
+                .threadPriority(Thread.NORM_PRIORITY - 2)
+                .denyCacheImageMultipleSizesInMemory()
+                .diskCacheFileNameGenerator(new Md5FileNameGenerator())
+                .tasksProcessingOrder(QueueProcessingType.LIFO).build();
+        ImageLoader.getInstance().init(config);
+        //networkImages= Arrays.asList(images);
+
+//        convenientBanner.setPages(new CBViewHolderCreator<NetworkImageHolderView>() {
+//            @Override
+//            public NetworkImageHolderView createHolder() {
+//                return new NetworkImageHolderView();
+//            }
+//        },networkImages);
+
+//        convenientBanner.setPages(
+//                new CBViewHolderCreator<LocalImageHolderView>() {
+//                    @Override
+//                    public LocalImageHolderView createHolder() {
+//                        return new LocalImageHolderView();
+//                    }
+//                }, localImages)
+//              //  .setPageIndicator(new int[]{R.drawable.ic_page_indicator, R.drawable.ic_page_indicator_focused})
+//                .setOnItemClickListener(this);
 //        convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 //            @Override
 //            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -98,9 +127,9 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 
 
         listView=(ListView) findViewById(R.id.museumListView);
-        MuseumListAdapter museumAdapter=new MuseumListAdapter(this, this);
+        museumAdapter=new MuseumListAdapter(this);
         listView.setAdapter(museumAdapter);
-        setListViewHeightBasedOnChildren(listView);
+        //setListViewHeightBasedOnChildren(listView);
 
 
         final RecyclerView mRecyclerView;
@@ -150,7 +179,9 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                                     {
                                         JSONObject topObjection=top.getJSONObject(i);
                                         ADName.add(topObjection.getString("show_name"));
+                                        networkImages.add(topObjection.getString("show_imgaddress"));
                                     }
+                                    convenientBanner.notifyDataSetChanged();
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -163,6 +194,12 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                             }
                         });
                       //  Toast.makeText(MuseumMainActivity.this,"Latitude:"+aMap2.getMyLocation().getLatitude()+"Longtitude:"+aMap2.getMyLocation().getLongitude(),Toast.LENGTH_SHORT).show();
+                        convenientBanner.setPages(new CBViewHolderCreator<NetworkImageHolderView>() {
+                            @Override
+                            public NetworkImageHolderView createHolder() {
+                                return new NetworkImageHolderView();
+                            }
+                        },(List) networkImages);
                         convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                             @Override
                             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -180,13 +217,26 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 
                             }
                         });
-
+                        museumAdapter.setData(aMap2);
                         mAdapter.setAMap(aMap2);
                     }
                 });
             }
         });
         thread.start();
+        Thread threadListView=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (museumAdapter.getCount()<=0);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setListViewHeightBasedOnChildren(listView);
+                    }
+                });
+            }
+        });
+        threadListView.start();
     }
 
 

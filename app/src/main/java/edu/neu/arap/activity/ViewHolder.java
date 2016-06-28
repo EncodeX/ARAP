@@ -12,5 +12,6 @@ public final class ViewHolder {
     public TextView mname;
     public TextView mintro;
     public TextView mark;
+    public TextView distance;
     //  public Button mbtn;
 }
