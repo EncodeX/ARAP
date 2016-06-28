@@ -288,6 +288,7 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         intent.putExtra("resID",mAdapter.getResID());
         intent.putExtra("resName",mAdapter.getResName());
         intent.putExtra("resIntro",mAdapter.getResIntro());
+        intent.putExtra("showId",mAdapter.getShowId());
         startActivity(intent);
     }
 

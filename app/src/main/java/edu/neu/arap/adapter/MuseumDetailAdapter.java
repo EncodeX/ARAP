@@ -8,6 +8,14 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.VolleyError;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,53 +26,86 @@ import java.util.Map;
 import edu.neu.arap.R;
 import edu.neu.arap.activity.AugmentedActivity;
 import edu.neu.arap.activity.ViewHolder;
+import edu.neu.arap.tool.NetworkTool;
 
 /**
  * Created by yuziw on 2016/6/17.
  */
 public class MuseumDetailAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
+    private NetworkTool networkTool;
     Context context;
-    private int museumID;
+    private int showId;
     private List<Map<String, Object>> mData;
-    public MuseumDetailAdapter(Context context,int museumID){
-        this.mInflater = LayoutInflater.from(context);
-        this.museumID=museumID;
-        mData=getData();
+    public MuseumDetailAdapter(Context context,int showId){
         this.context=context;
+        this.mInflater = LayoutInflater.from(context);
+        this.showId=showId;
+        mData=getData();
     }
 
     private List<Map<String, Object>> getData(){
-        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-        switch (museumID)
-        {
-            case 1:
-                Map<String, Object> map = new HashMap<String, Object>();
-                map.put("name", "波须圣母玻璃反画");
-                map.put("intro", "这件玻璃反画是复制品，原件是一件17世纪圣母玛利亚像，神圣罗马帝国皇帝利奥波德一世的皇后埃利诺·玛格达莱妮称之为蔷薇圣母，原件至今仍摆放在维也纳圣史蒂芬大教堂中殿西南角的圣坛上。");
-                map.put("image", R.drawable.a);
-                map.put("mark","评分4.9");
-                list.add(map);
-                map = new HashMap<String, Object>();
-                map.put("name", "彩色拼花窗玻璃");
-                map.put("intro", "这块窗玻璃来自库特纳霍拉（德语：库滕贝格，直译“矿山”）的圣芭芭拉教堂，图案是正在采矿的矿工。库特纳霍拉富含银矿，是波希米亚第二大城市，仅次于布拉格，但在经济上和政治上独占鳌头。");
-                map.put("image", R.drawable.cai_se_bo_li);
-                map.put("mark","评分4.9");
-                list.add(map);
-                map = new HashMap<String, Object>();
-                map.put("name", "贝壳形细口瓶");
-                map.put("intro", "蓝色玻璃，用金属模具制成，镶锡口。这件细口瓶是朝圣纪念品。扇贝贝壳是圣詹姆斯的纹章，也是朝圣者的象征。");
-                map.put("image", R.drawable.xi_kou_ping);
-                map.put("mark","评分4.9");
-                list.add(map);
-                break;
-            case 2:
-                break;
-        }
+        final List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        networkTool=new NetworkTool(context);
+        networkTool.requestMuseumData(showId, new NetworkTool.OnResponseListener() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONArray arItems=response.getJSONArray("ar_items");
+                    for (int i=0;i<arItems.length();i++)
+                    {
+                        JSONObject arItem=arItems.getJSONObject(i);
+                        Map<String, Object> map = new HashMap<String, Object>();
+                        map.put("title",arItem.getString("title"));
+                        map.put("arVote",arItem.getString("ar_vote"));
+                        map.put("arAddress",arItem.getString("ar_address"));
+                        map.put("image",arItem.getJSONArray("ar_material").getJSONObject(0).getString("material_address"));
+                        list.add(map);
+                    }
+                    notifyDataSetChanged();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+
+            }
+        });
+//        switch (museumID)
+//        {
+//            case 1:
+//                Map<String, Object> map = new HashMap<String, Object>();
+//                map.put("name", "波须圣母玻璃反画");
+//                map.put("intro", "这件玻璃反画是复制品，原件是一件17世纪圣母玛利亚像，神圣罗马帝国皇帝利奥波德一世的皇后埃利诺·玛格达莱妮称之为蔷薇圣母，原件至今仍摆放在维也纳圣史蒂芬大教堂中殿西南角的圣坛上。");
+//                map.put("image", R.drawable.a);
+//                map.put("mark","评分4.9");
+//                list.add(map);
+//                map = new HashMap<String, Object>();
+//                map.put("name", "彩色拼花窗玻璃");
+//                map.put("intro", "这块窗玻璃来自库特纳霍拉（德语：库滕贝格，直译“矿山”）的圣芭芭拉教堂，图案是正在采矿的矿工。库特纳霍拉富含银矿，是波希米亚第二大城市，仅次于布拉格，但在经济上和政治上独占鳌头。");
+//                map.put("image", R.drawable.cai_se_bo_li);
+//                map.put("mark","评分4.9");
+//                list.add(map);
+//                map = new HashMap<String, Object>();
+//                map.put("name", "贝壳形细口瓶");
+//                map.put("intro", "蓝色玻璃，用金属模具制成，镶锡口。这件细口瓶是朝圣纪念品。扇贝贝壳是圣詹姆斯的纹章，也是朝圣者的象征。");
+//                map.put("image", R.drawable.xi_kou_ping);
+//                map.put("mark","评分4.9");
+//                list.add(map);
+//                break;
+//            case 2:
+//                break;
+//        }
         return list;
     }
     @Override
     public int getCount() {
+        if (mData.size()==0)
+        {
+           // Toast.makeText(context,"!!!!!!!",Toast.LENGTH_SHORT).show();
+        }
         return mData.size();
     }
 
@@ -80,6 +121,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
+        notifyDataSetChanged();
         ViewHolder holder = null;
         if (convertView == null) {
 
@@ -96,10 +138,11 @@ public class MuseumDetailAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.mimage.setBackgroundResource((Integer)mData.get(position).get("image"));
-        holder.mname.setText((String)mData.get(position).get("name"));
-        holder.mintro.setText((String)mData.get(position).get("intro"));
-        holder.mark.setText((String)mData.get(position).get("mark"));
+        //holder.mimage.setBackgroundResource((Integer)mData.get(position).get("image"));
+        Picasso.with(context).load((String) mData.get(position).get("image")).into(holder.mimage);
+        holder.mname.setText((String)mData.get(position).get("title"));
+        holder.mintro.setText((String)mData.get(position).get("arAddress"));
+        holder.mark.setText("评分："+(String)mData.get(position).get("arVote"));
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

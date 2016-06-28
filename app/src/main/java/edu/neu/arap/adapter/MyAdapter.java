@@ -37,6 +37,7 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
    // private  double[] getLocationInfoLongtitude={123.45861554,123.42680576,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554,123.45861554};
    // private int[] resID={0,R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.f,R.drawable.g,0};
     private ArrayList<String> resID=new ArrayList<String>();
+    private  ArrayList<String> showId=new ArrayList<String>();
 //    private String[] resName={"useless","晶火传奇艺术展","明清瓷器展","明清玉器展","万历海贸传奇","辽宁民间绣品展","拿破仑文物展","中国古代货币展","useless"};
     private ArrayList<String> resName=new ArrayList<String>();
 //    private String[] resIntro={
@@ -67,6 +68,7 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
                     locationInfoLatitude.add(0.0);
                     locationInfoLongtitude.add(0.0);
                     resID.add("useless");
+                    showId.add("useless");
                     for (int i=0;i<middle.length();i++)
                     {
                         JSONObject midObjection=middle.getJSONObject(i);
@@ -75,8 +77,10 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
                         locationInfoLatitude.add(midObjection.getDouble("show_latitude"));
                         locationInfoLongtitude.add(midObjection.getDouble("show_longitude"));
                         resID.add(midObjection.getString("show_imgaddress"));
+                        showId.add(midObjection.getString("show_id"));
                     }
                     resID.add("useless");
+                    showId.add("useless");
                     locationInfoLatitude.add(0.0);
                     locationInfoLongtitude.add(0.0);
                     resName.add("useless");
@@ -186,6 +190,7 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
     public ArrayList<String> getResName(){return resName;}
     public ArrayList<String> getResIntro(){return resIntro;}
+    public ArrayList<String> getShowId(){return showId;}
     public ArrayList<Double> getLocationInfoLatitude(){return locationInfoLatitude;}
     public ArrayList<Double> getGetLocationInfoLongtitude(){return locationInfoLongtitude;}
 
