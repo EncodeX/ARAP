@@ -36,6 +36,9 @@ public:
     virtual void resizeGL(int width, int height);
     virtual void render();
     void setPortrait(bool portrait);
+    void loadFromPath(const std::string& path);
+    void startTracker();
+    void stopTracker();
 protected:
     CameraDevice camera_;
     ImageTracker tracker_;

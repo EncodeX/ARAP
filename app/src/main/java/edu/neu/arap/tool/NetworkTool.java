@@ -74,7 +74,7 @@ public class NetworkTool {
 
 		req.setOnResponseListener(listener);
 
-		String url = "http://219.216.125.72:8080/AugumentReality/getInfo/" +
+		String url = "http://219.216.125.72:8080/AugumentReality/getInfo/show/" +
 				String.valueOf(id) +
 				".html";
 

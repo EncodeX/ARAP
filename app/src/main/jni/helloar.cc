@@ -23,6 +23,12 @@ extern "C" {
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeRender(JNIEnv* env, jobject obj));
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeRotationChange(JNIEnv* env, jobject obj, jboolean portrait));
     JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeDeleteVideo(JNIEnv*, jobject));
+    JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeLoadTargetImage(JNIEnv* env, jobject, jstring path));
+    JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStart(JNIEnv*, jobject));
+    JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStop(JNIEnv*, jobject));
+    JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStartTracker(JNIEnv*, jobject));
+    JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStopTracker(JNIEnv*, jobject));
+    JNIEXPORT jint JNICALL JNIFUNCTION_NATIVE(nativeCurrentTarget(JNIEnv*, jobject));
 };
 
 namespace EasyAR {
@@ -40,6 +46,8 @@ public:
     virtual bool clear();
     void deleteVideo();
     bool isVideoNotNull();
+    std::string jstring2str(JNIEnv* env, jstring jstr);
+    int currentTarget();
 private:
     Vec2I view_size;
     Renderer renderer;
@@ -65,6 +73,8 @@ private:
     int target_id;
     ARVideo* video;
     VideoRenderer* video_renderer;
+
+    int current_target;
 };
 
 HelloAR::HelloAR()
@@ -83,6 +93,7 @@ HelloAR::HelloAR()
     targetHeight = 0;
 
     ar_type = 0;
+    current_target = 0;
 }
 
 HelloAR::~HelloAR()
@@ -229,39 +240,50 @@ void HelloAR::render()
             }
         }
         if (!tracked_target) {
-//            if (video == NULL) {
-                if(frame.targets()[0].target().name() == std::string("argame") && texid[0]) {
-                    if (video == NULL) {
-                        video = new ARVideo;
-                        video->openVideoFile("video.mp4", texid[0]);
-                        video_renderer = videoRenderer[0];
-                    }
-                }
-                else if(frame.targets()[0].target().name() == std::string("namecard") && texid[1]) {
-                    if (video == NULL) {
-                        video = new ARVideo;
-                        video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
-                        video_renderer = videoRenderer[1];
-                    }
-                }
-                else if(frame.targets()[0].target().name() == std::string("scene_day")) {
+////            if (video == NULL) {
+//                if(frame.targets()[0].target().name() == std::string("1467028365336") && texid[0]) {
+//                    if (video == NULL) {
+//                        video = new ARVideo;
+//                        video->openVideoFile("video.mp4", texid[0]);
+//                        video_renderer = videoRenderer[0];
+//                    }
+//                }
+//                else if(frame.targets()[0].target().name() == std::string("namecard") && texid[1]) {
+//                    if (video == NULL) {
+//                        video = new ARVideo;
+//                        video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
+//                        video_renderer = videoRenderer[1];
+//                    }
+//                }
+//                else if(frame.targets()[0].target().name() == std::string("scene_day")) {
+////                    video = new ARVideo;
+////                    video->openStreamingVideo("http://7xl1ve.com5.z0.glb.clouddn.com/sdkvideo/EasyARSDKShow201520.mp4", texid[2]);
+////                    video_renderer = videoRenderer[2];
+//                    target_detect_state = true;
+//                }
+//                else if(frame.targets()[0].target().name() == std::string("scene_night") && texid[2]) {
 //                    video = new ARVideo;
-//                    video->openStreamingVideo("http://7xl1ve.com5.z0.glb.clouddn.com/sdkvideo/EasyARSDKShow201520.mp4", texid[2]);
+//                    video->openVideoFile("scene_movie.mp4", texid[2]);
 //                    video_renderer = videoRenderer[2];
-                    target_detect_state = true;
-                }
-                else if(frame.targets()[0].target().name() == std::string("scene_night") && texid[2]) {
-                    video = new ARVideo;
-                    video->openVideoFile("scene_movie.mp4", texid[2]);
-                    video_renderer = videoRenderer[2];
-                }
-//            }
+//                }
+////            }
+
+            if(frame.targets()[0].target().name() == std::string("1467028365336")) {
+                target_detect_state = true;
+                current_target = 1;
+            } else if (frame.targets()[0].target().name() == std::string("1467028416208")){
+                target_detect_state = true;
+                current_target = 2;
+            }else if (frame.targets()[0].target().name() == std::string("1467028763573")){
+                target_detect_state = true;
+                current_target = 3;
+            }
 
             tracked_target = target_id;
-            if (video) {
-                video->onFound();
-                active_target = target_id;
-            }
+//            if (video) {
+//                video->onFound();
+//                active_target = target_id;
+//            }
         }
         projectionMatrix = getProjectionGL(camera_.cameraCalibration(), 0.00001f, 10.f);
         cameraview = getPoseGL(frame.targets()[0].pose());
@@ -292,7 +314,12 @@ void HelloAR::render()
             if (ar_type == 2){
                 if (video == NULL){
                     video = new ARVideo;
-                    video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
+
+                    if(frame.targets()[0].target().name() == std::string("1467028365336")) {
+                        video->openStreamingVideo(
+                                "http://219.216.125.72:8080/AugumentReality/upload/1467028367130.mp4", texid[1]);
+                    }
+//                    video->openTransparentVideoFile("transparentvideo.mp4", texid[1]);
                     video_renderer = videoRenderer[1];
 
                     if (video) {
@@ -306,8 +333,10 @@ void HelloAR::render()
                     video_renderer->render(projectionMatrix, cameraview, target.size());
                 }
             }
-            if(frame.targets()[0].target().name() == std::string("scene_day")){
+
+            if(frame.targets()[0].target().name() == std::string("1467028365336")) {
                 target_detect_state = true;
+                current_target = 1;
             }
         }
 
@@ -319,6 +348,7 @@ void HelloAR::render()
                 video->onLost();
             }
             tracked_target = 0;
+            current_target = 0;
         }
     }
 
@@ -433,6 +463,30 @@ void HelloAR::render(JNIEnv * env, jobject thiz) {
         return video != NULL;
     }
 
+    std::string HelloAR::jstring2str(JNIEnv* env, jstring jstr)
+    {
+        char*   rtn   =   NULL;
+        jclass   clsstring   =   env->FindClass("java/lang/String");
+        jstring   strencode   =   env->NewStringUTF("UTF-8");
+        jmethodID   mid   =   env->GetMethodID(clsstring,   "getBytes",   "(Ljava/lang/String;)[B");
+        jbyteArray   barr=   (jbyteArray)env->CallObjectMethod(jstr,mid,strencode);
+        jsize   alen   =   env->GetArrayLength(barr);
+        jbyte*   ba   =   env->GetByteArrayElements(barr,JNI_FALSE);
+        if(alen   >   0)
+        {
+            rtn   =   (char*)malloc(alen+1);
+            memcpy(rtn,ba,alen);
+            rtn[alen]=0;
+        }
+        env->ReleaseByteArrayElements(barr,ba,0);
+        std::string stemp(rtn);
+        free(rtn);
+        return   stemp;
+    }
+
+    int HelloAR::currentTarget() {
+        return current_target;
+    }
 }
 }
 EasyAR::samples::HelloAR ar;
@@ -441,12 +495,15 @@ JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv*, jobject))
 {
     // 读取tracker信息
     jboolean status = (jboolean)ar.initCamera();
-    ar.loadFromJsonFile("targets.json", "argame");
-    ar.loadFromJsonFile("targets.json", "idback");
-    ar.loadFromJsonFile("targets.json", "scene_day");
-    ar.loadFromJsonFile("targets.json", "scene_night");
-    ar.loadAllFromJsonFile("targets2.json");
-    ar.loadFromImage("namecard.jpg");
+//    ar.loadFromJsonFile("targets.json", "argame");
+//    ar.loadFromJsonFile("targets.json", "idback");
+//    ar.loadFromJsonFile("targets.json", "scene_day");
+//    ar.loadFromJsonFile("targets.json", "scene_night");
+//    ar.loadAllFromJsonFile("targets2.json");
+//    ar.loadFromImage("namecard.jpg");
+    ar.loadFromImage("1467028365336.jpg");
+    ar.loadFromImage("1467028416208.jpg");
+    ar.loadFromImage("1467028763573.jpg");
     status &= ar.start();
 
     return status;
@@ -487,4 +544,33 @@ JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeDeleteVideo(JNIEnv*, jobject))
 JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeGetVideoState(JNIEnv*, jobject))
 {
     return (jboolean) ar.isVideoNotNull();
+}
+
+JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeLoadTargetImage(JNIEnv* env, jobject, jstring path))
+{
+    ar.loadFromPath(ar.jstring2str(env,path));
+}
+
+JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStart(JNIEnv*, jobject))
+{
+    ar.start();
+}
+
+JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStop(JNIEnv*, jobject))
+{
+    ar.stop();
+}
+
+JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStartTracker(JNIEnv*, jobject))
+{
+    ar.startTracker();
+}
+
+JNIEXPORT void JNICALL JNIFUNCTION_NATIVE(nativeStopTracker(JNIEnv*, jobject))
+{
+    ar.stopTracker();
+}
+JNIEXPORT jint JNICALL JNIFUNCTION_NATIVE(nativeCurrentTarget(JNIEnv*, jobject))
+{
+    return ar.currentTarget();
 }

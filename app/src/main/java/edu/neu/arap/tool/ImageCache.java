@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.Log;
 import android.util.LruCache;
 
 import com.jakewharton.disklrucache.DiskLruCache;
@@ -14,6 +15,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,6 +25,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created with Android Studio.
@@ -36,6 +40,8 @@ public class ImageCache {
 	private Set<ASyncDownloadImage> mTasks;
 	private DiskLruCache mDiskCache;
 	private OnBitmapPreparedListener onBitmapPreparedListener;
+
+	private String resPath;
 
 	public ImageCache(Context context) {
 		int maxMemory = (int) Runtime.getRuntime().maxMemory();
@@ -53,6 +59,14 @@ public class ImageCache {
 		if (!cacheDir.exists()) {
 			cacheDir.mkdirs();
 		}
+
+		File saveDir = getFileCache(context, "res_img");
+		if (!saveDir.exists()) {
+			saveDir.mkdirs();
+		}
+
+		resPath = getCacheDirPath(context);
+
 		try {
 			mDiskCache = DiskLruCache.open(cacheDir, 1, 1, 10 * 1024 * 1024);
 		} catch (IOException e) {
@@ -79,12 +93,12 @@ public class ImageCache {
 	}
 
 	// 从LruCache获取中获取缓存对象
-	public Bitmap getBitmapFromMemoryCaches(String url) {
+	private Bitmap getBitmapFromMemoryCaches(String url) {
 		return mMemoryCache.get(url);
 	}
 
 	// 增加缓存对象到LruCache
-	public void addBitmapToMemoryCaches(String url, Bitmap bitmap) {
+	private void addBitmapToMemoryCaches(String url, Bitmap bitmap) {
 		if (getBitmapFromMemoryCaches(url) == null) {
 			mMemoryCache.put(url, bitmap);
 		}
@@ -114,18 +128,35 @@ public class ImageCache {
 	}
 
 	private File getFileCache(Context context, String cacheFileName) {
-		String cachePath;
-		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
-				|| !Environment.isExternalStorageRemovable()) {
-			if (context.getExternalCacheDir() != null) {
-				cachePath = context.getExternalCacheDir().getPath();
-			}else{
-				cachePath = context.getCacheDir().getPath();
-			}
-		} else {
-			cachePath = context.getCacheDir().getPath();
-		}
+		String cachePath = context.getFilesDir().getPath();
+
+//		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+//				|| !Environment.isExternalStorageRemovable()) {
+//			if (context.getExternalCacheDir() != null) {
+//				cachePath = context.getExternalCacheDir().getPath();
+//			}else{
+//				cachePath = context.getCacheDir().getPath();
+//			}
+//		} else {
+//			cachePath = context.getCacheDir().getPath();
+//		}
 		return new File(cachePath + File.separator + cacheFileName);
+	}
+
+	public String getCacheDirPath(Context context){
+		String cachePath = context.getFilesDir().getPath();
+//		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+//				|| !Environment.isExternalStorageRemovable()) {
+//			if (context.getExternalCacheDir() != null) {
+//				cachePath = context.getExternalCacheDir().getPath();
+//			}else{
+//				cachePath = context.getCacheDir().getPath();
+//			}
+//		} else {
+//			cachePath = context.getCacheDir().getPath();
+//		}
+
+		return cachePath + File.separator + "res_img";
 	}
 
 	private static boolean getBitmapUrlToStream(String urlString, OutputStream outputStream) {
@@ -268,6 +299,29 @@ public class ImageCache {
 		@Override
 		protected void onPostExecute(Bitmap bitmap) {
 			super.onPostExecute(bitmap);
+
+			Pattern pattern = Pattern.compile("(?<=upload/).+.jpg");
+			Matcher matcher = pattern.matcher(url);
+
+			FileOutputStream out = null;
+			try {
+				if(matcher.find()){
+					out = new FileOutputStream(resPath + File.separator + matcher.group());
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out); // bmp is your Bitmap instance
+					// PNG is a lossless format, the compression factor (100) is ignored
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if (out != null) {
+						out.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
 			if(onBitmapPreparedListener!=null){
 				onBitmapPreparedListener.onBitmapPrepared(bitmap, tag);
 			}
