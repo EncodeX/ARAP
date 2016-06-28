@@ -51,7 +51,8 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
     private ConvenientBanner convenientBanner;
     private NetworkTool networkTool;
     private ListView listView;
-    MyAdapter mAdapter;
+    private MyAdapter mAdapter;
+    private MuseumListAdapter museumAdapter;
     private String[] spinnerData={"距离优先","好评优先"};
     private ArrayList<String> ADName=new ArrayList<String>();
     private ArrayList<Integer> localImages = new ArrayList<Integer>();
@@ -98,9 +99,9 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 
 
         listView=(ListView) findViewById(R.id.museumListView);
-        MuseumListAdapter museumAdapter=new MuseumListAdapter(this, this);
+        museumAdapter=new MuseumListAdapter(this);
         listView.setAdapter(museumAdapter);
-        setListViewHeightBasedOnChildren(listView);
+        //setListViewHeightBasedOnChildren(listView);
 
 
         final RecyclerView mRecyclerView;
@@ -180,13 +181,26 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 
                             }
                         });
-
+                        museumAdapter.setData(aMap2);
                         mAdapter.setAMap(aMap2);
                     }
                 });
             }
         });
         thread.start();
+        Thread threadListView=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (museumAdapter.getCount()<=0);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setListViewHeightBasedOnChildren(listView);
+                    }
+                });
+            }
+        });
+        threadListView.start();
     }
 
 
