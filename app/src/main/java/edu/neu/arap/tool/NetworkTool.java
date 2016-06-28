@@ -68,7 +68,7 @@ public class NetworkTool {
 	}
 
 	public void requestMuseumData(int id, OnResponseListener listener){
-		// http://219.216.125.72:8080/AugumentReality/getInfo/14.html
+		// http://219.216.125.72:8080/AugumentReality/getInfo/show/14.html
 
 		final Request req = new Request();
 

@@ -25,7 +25,7 @@ public class MainActivityNew extends AppCompatActivity implements MyItemClickLis
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
         MyAdapter mAdapter;
-        mAdapter = new MyAdapter();
+        mAdapter = new MyAdapter(this,null);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
         mAdapter.setOnItemClickListener(this);
@@ -37,7 +37,7 @@ public class MainActivityNew extends AppCompatActivity implements MyItemClickLis
         mLayoutManager2 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView2.setLayoutManager(mLayoutManager2);
         MyAdapter mAdapter2;
-        mAdapter2 = new MyAdapter();
+        mAdapter2 = new MyAdapter(this,null);
         mRecyclerView2.setAdapter(mAdapter2);
         mRecyclerView2.addItemDecoration(new SpacesItemDecoration(8));
         mAdapter.setOnItemClickListener(this);
