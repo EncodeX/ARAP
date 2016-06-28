@@ -70,7 +70,7 @@ public class MuseumDetailActivity extends AppCompatActivity {
                 // Picasso.with(context).load(resID.get(position)).centerCrop().into(MyViewHolder.getImageButton());
     //    ((TextView)findViewById(R.id.museum_detail_name_2)).setText(resName.get(RPosition));
         listView=(ListView) findViewById(R.id.museum_detail_list);
-        adapter=new MuseumDetailAdapter(this,Integer.parseInt(showId.get(RPosition)),resName.get(RPosition));
+        adapter=new MuseumDetailAdapter(this,Integer.parseInt(showId.get(RPosition)),resName.get(RPosition),locationInfoLatitude.get(RPosition),locationInfoLongtitude.get(RPosition));
         listView.setAdapter(adapter);
        // adapter.notifyDataSetChanged();
       //  setListViewHeightBasedOnChildren(listView);

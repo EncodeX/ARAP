@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ import java.util.Map;
 import edu.neu.arap.R;
 import edu.neu.arap.activity.AugmentedActivity;
 import edu.neu.arap.activity.ViewHolder;
+import edu.neu.arap.map.MapActivity;
 import edu.neu.arap.tool.NetworkTool;
 
 /**
@@ -34,15 +36,19 @@ import edu.neu.arap.tool.NetworkTool;
 public class MuseumDetailAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
     private NetworkTool networkTool;
-    String showName;
-    Context context;
+    private String showName;
+    private Context context;
+    private Double locationInfoLatitude=0.0;
+    private Double locationInfoLongtitude=0.0;
     private int showId;
     private List<Map<String, Object>> mData;
-    public MuseumDetailAdapter(Context context,int showId,String showName){
+    public MuseumDetailAdapter(Context context,int showId,String showName,Double locationInfoLatitude,Double locationInfoLongtitude  ){
         this.context=context;
         this.mInflater = LayoutInflater.from(context);
         this.showId=showId;
         this.showName=showName;
+        this.locationInfoLatitude=locationInfoLatitude;
+        this.locationInfoLongtitude=locationInfoLongtitude;
         mData=getData();
     }
 
@@ -127,18 +133,28 @@ public class MuseumDetailAdapter extends BaseAdapter {
         notifyDataSetChanged();
         if (position==0)
         {
-            convertView = mInflater.inflate(R.layout.museum_list_item_top, null);
             ViewHolder holder = null;
             if (convertView == null) {
                 holder = new ViewHolder();
+                convertView = mInflater.inflate(R.layout.museum_list_item_top, null);
                 holder.mname = (TextView) convertView.findViewById(R.id.museum_detail_name_2);
                 convertView.setTag(holder);
-                holder.mname.setText(showName);
             }
             else {
 
                 holder = (ViewHolder) convertView.getTag();
             }
+            holder.mname.setText(showName);
+            ((Button)convertView.findViewById(R.id.gotoMap)).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent1=new Intent(context, MapActivity.class);
+                    intent1.putExtra("resName",showName);
+                    intent1.putExtra("locationInfoLatitude",locationInfoLatitude);
+                    intent1.putExtra("locationInfoLongtitude",locationInfoLongtitude);
+                    context.startActivity(intent1);
+                }
+            });
             return convertView;
         }
         convertView=null;
@@ -166,10 +182,31 @@ public class MuseumDetailAdapter extends BaseAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(context,AugmentedActivity.class);
-                intent.putExtra("museumDetailData",(Serializable)mData);//    private List<Map<String, Object>> mData;
-                intent.putExtra("museumDetailPosition",position);//position :int
-                context.startActivity(intent);
+
+                networkTool.requestMuseumData(showId, new NetworkTool.OnResponseListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray arItems=response.getJSONArray("ar_items");
+                        //    Toast.makeText(context,arItems.getJSONObject(position-1).toString(),Toast.LENGTH_SHORT).show();
+                            Intent intent=new Intent(context,AugmentedActivity.class);
+                            intent.putExtra("JSONObject",arItems.getJSONObject(position-1).toString());
+                            context.startActivity(intent);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+
+                    }
+                });
+//                Intent intent=new Intent(context,AugmentedActivity.class);
+//                intent.putExtra("museumDetailData",(Serializable)mData);//    private List<Map<String, Object>> mData;
+//                intent.putExtra("museumDetailPosition",position);//position :int
+//              //  context.startActivity(intent);
             }
         });
         return convertView;
