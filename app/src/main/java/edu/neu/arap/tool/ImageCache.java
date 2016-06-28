@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.util.LruCache;
+import android.widget.ImageView;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 
@@ -89,6 +90,22 @@ public class ImageCache {
 			if(onBitmapPreparedListener != null){
 				onBitmapPreparedListener.onBitmapPrepared(bitmap,tag);
 			}
+		}
+	}
+
+	public void loadImage(String url, ImageView imageView){
+//		if(onBitmapPreparedListener!=null){
+//			onBitmapPreparedListener.onBitmapPrepared(null,tag);
+//		}
+
+		// Todo 暂时测试 实际情况为下方已注释代码
+		Bitmap bitmap = getBitmapFromMemoryCaches(url);
+		if(bitmap == null){
+			ASyncDownloadImage task = new ASyncDownloadImage(url,imageView);
+			mTasks.add(task);
+			task.execute(url);
+		}else{
+			imageView.setImageBitmap(bitmap);
 		}
 	}
 
@@ -243,10 +260,16 @@ public class ImageCache {
 
 		private String url;
 		private String tag;
+		private ImageView imageView;
 
 		public ASyncDownloadImage(String url, String tag) {
 			this.url = url;
 			this.tag = tag;
+		}
+
+		public ASyncDownloadImage(String url, ImageView imageView) {
+			this.url = url;
+			this.imageView = imageView;
 		}
 
 		@Override
@@ -303,27 +326,31 @@ public class ImageCache {
 			Pattern pattern = Pattern.compile("(?<=upload/).+.jpg");
 			Matcher matcher = pattern.matcher(url);
 
-			FileOutputStream out = null;
-			try {
-				if(matcher.find()){
-					out = new FileOutputStream(resPath + File.separator + matcher.group());
-					bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out); // bmp is your Bitmap instance
-					// PNG is a lossless format, the compression factor (100) is ignored
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					if (out != null) {
-						out.close();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+//			FileOutputStream out = null;
+//			try {
+//				if(matcher.find()){
+//					out = new FileOutputStream(resPath + File.separator + matcher.group());
+//					bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out); // bmp is your Bitmap instance
+//					// PNG is a lossless format, the compression factor (100) is ignored
+//				}
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				try {
+//					if (out != null) {
+//						out.close();
+//					}
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
 
-			if(onBitmapPreparedListener!=null){
-				onBitmapPreparedListener.onBitmapPrepared(bitmap, tag);
+			if(imageView!=null){
+				imageView.setImageBitmap(bitmap);
+			}else{
+				if(onBitmapPreparedListener!=null){
+					onBitmapPreparedListener.onBitmapPrepared(bitmap, tag);
+				}
 			}
 			mTasks.remove(this);
 		}

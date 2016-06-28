@@ -168,11 +168,11 @@ public class MainActivity extends AppCompatActivity implements MyItemClickListen
         mRecyclerView = (RecyclerView)findViewById(R.id.explore_list);
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        MyAdapter mAdapter;
-        mAdapter = new MyAdapter(this,null);
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
-        mAdapter.setOnItemClickListener(this);
+//        MyAdapter mAdapter;
+//        mAdapter = new MyAdapter(this,null);
+//        mRecyclerView.setAdapter(mAdapter);
+//        mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
+//        mAdapter.setOnItemClickListener(this);
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, spinnerData));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
