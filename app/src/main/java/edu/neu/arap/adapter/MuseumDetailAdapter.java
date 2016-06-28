@@ -34,18 +34,21 @@ import edu.neu.arap.tool.NetworkTool;
 public class MuseumDetailAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
     private NetworkTool networkTool;
+    String showName;
     Context context;
     private int showId;
     private List<Map<String, Object>> mData;
-    public MuseumDetailAdapter(Context context,int showId){
+    public MuseumDetailAdapter(Context context,int showId,String showName){
         this.context=context;
         this.mInflater = LayoutInflater.from(context);
         this.showId=showId;
+        this.showName=showName;
         mData=getData();
     }
 
     private List<Map<String, Object>> getData(){
         final List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        list.add(new HashMap<String, Object>());
         networkTool=new NetworkTool(context);
         networkTool.requestMuseumData(showId, new NetworkTool.OnResponseListener() {
             @Override
@@ -122,6 +125,23 @@ public class MuseumDetailAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         notifyDataSetChanged();
+        if (position==0)
+        {
+            convertView = mInflater.inflate(R.layout.museum_list_item_top, null);
+            ViewHolder holder = null;
+            if (convertView == null) {
+                holder = new ViewHolder();
+                holder.mname = (TextView) convertView.findViewById(R.id.museum_detail_name_2);
+                convertView.setTag(holder);
+                holder.mname.setText(showName);
+            }
+            else {
+
+                holder = (ViewHolder) convertView.getTag();
+            }
+            return convertView;
+        }
+        convertView=null;
         ViewHolder holder = null;
         if (convertView == null) {
 

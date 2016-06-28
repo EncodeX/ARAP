@@ -49,6 +49,7 @@ import edu.neu.arap.tool.NetworkTool;
 
 public class MuseumMainActivity extends AppCompatActivity implements LocationSource, AMapLocationListener,AdapterView.OnItemClickListener, ViewPager.OnPageChangeListener, OnItemClickListener,MyItemClickListener{
     private ConvenientBanner convenientBanner;
+    RecyclerView mRecyclerView;
     private NetworkTool networkTool;
     private ListView listView;
     MyAdapter mAdapter;
@@ -103,7 +104,7 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         setListViewHeightBasedOnChildren(listView);
 
 
-        final RecyclerView mRecyclerView;
+
         LinearLayoutManager mLayoutManager;
         mRecyclerView = (RecyclerView) findViewById(R.id.explore_list);
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -174,7 +175,7 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
                             }
                         });
 
-                        mAdapter = new MyAdapter(findViewById(R.id.explore_list).getContext(),aMap2);
+                        mAdapter = new MyAdapter(MuseumMainActivity.this,aMap2);
                         mRecyclerView.setAdapter(mAdapter);
                         mRecyclerView.addItemDecoration(new SpacesItemDecoration(8));
                         mAdapter.setOnItemClickListener(MuseumMainActivity.this);

@@ -52,7 +52,7 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
 //            "useless"
 //    };
     private ArrayList<String> resIntro=new ArrayList<String >();
-    public MyAdapter(final Context context, AMap aMap){
+    public MyAdapter(Context context, AMap aMap){
         super();
         if (aMap==null)
             return;
