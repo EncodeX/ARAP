@@ -59,8 +59,7 @@ public class MuseumDetailActivity extends AppCompatActivity {
         findViewById(R.id.museum_detail_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MuseumDetailActivity.this,MuseumMainActivity.class));
-                finish();
+                onBackPressed();
             }
         });
         ((TextView)findViewById(R.id.museum_detail_name)).setText(resName.get(RPosition));

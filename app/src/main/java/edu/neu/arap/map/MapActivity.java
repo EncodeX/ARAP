@@ -100,8 +100,7 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
         findViewById(R.id.map_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MapActivity.this,MuseumDetailActivity.class));
-                finish();
+                onBackPressed();
             }
         });
       //  mStartPoint=new LatLonPoint(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude());
