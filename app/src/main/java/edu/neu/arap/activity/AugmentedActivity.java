@@ -256,6 +256,8 @@ public class AugmentedActivity extends AppCompatActivity {
 				mCurrentTarget = 2;
 			}else if(title.equals("深入浅出mysql")){
 				mCurrentTarget = 3;
+			}else if(title.equals("spring精通")){
+				mCurrentTarget = 4;
 			}else{
 				mARHint.setText("此展品暂时没有AR展示");
 				return;
@@ -832,6 +834,7 @@ public class AugmentedActivity extends AppCompatActivity {
 	private Object3D mWorldObject = null;
 	private Object3D mWorldPicture = null;
 	private Object3D mWorldPicture2 = null;
+	private Object3D mWorldPicture3 = null;
 
 	private boolean mIsTargetDetected = false;
 	private float mCameraMatrix[] = new float[4*4];
@@ -1044,6 +1047,8 @@ public class AugmentedActivity extends AppCompatActivity {
 					TextureManager.getInstance().addTexture("picture", texture);
 					texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.pic_1)), 1024, 1024));
 					TextureManager.getInstance().addTexture("picture2", texture);
+					texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.pic_2)), 1024, 1024));
+					TextureManager.getInstance().addTexture("picture3", texture);
 
 					mWorldPicture = new Object3D(2);
 					mWorldPicture.addTriangle(
@@ -1080,6 +1085,24 @@ public class AugmentedActivity extends AppCompatActivity {
 					mWorldPicture2.strip();
 					mWorldPicture2.build();
 					mWorld.addObject(mWorldPicture2);
+
+					mWorldPicture3 = new Object3D(2);
+					mWorldPicture3.addTriangle(
+							new SimpleVector(0.35714,-0.5,0), 0.0f, 0.0f,
+							new SimpleVector(-0.35714,-0.5,0), 1.0f, 0.0f,
+							new SimpleVector(0.35714,0.5,0), 0.0f, 1.0f,
+							TextureManager.getInstance().getTextureID("picture3")
+					);
+					mWorldPicture3.addTriangle(
+							new SimpleVector(-0.35714,-0.5,0), 1.0f, 0.0f,
+							new SimpleVector(-0.35714,0.5,0), 1.0f, 1.0f,
+							new SimpleVector(0.35714,0.5,0), 0.0f, 1.0f,
+							TextureManager.getInstance().getTextureID("picture3")
+					);
+					mWorldPicture3.rotateY((float)(Math.PI));
+					mWorldPicture3.strip();
+					mWorldPicture3.build();
+					mWorld.addObject(mWorldPicture3);
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -1149,6 +1172,9 @@ public class AugmentedActivity extends AppCompatActivity {
 					if(mWorldPicture2!=null){
 						mWorldPicture2.setVisibility(false);
 					}
+					if(mWorldPicture3!=null){
+						mWorldPicture3.setVisibility(false);
+					}
 					mCurrentARType = mARType;
 				}
 				switch (mCurrentARType){
@@ -1168,6 +1194,11 @@ public class AugmentedActivity extends AppCompatActivity {
 							case 3:
 								if(mWorldPicture2!=null && mCurrentTarget == 3){
 									mWorldPicture2.setVisibility(true);
+								}
+								break;
+							case 4:
+								if(mWorldPicture3!=null && mCurrentTarget == 4){
+									mWorldPicture3.setVisibility(true);
 								}
 								break;
 						}

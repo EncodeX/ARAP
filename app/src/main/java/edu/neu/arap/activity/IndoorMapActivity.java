@@ -135,6 +135,7 @@ public class IndoorMapActivity extends AppCompatActivity {
 			@Override
 			public void onLocationChange(Point p) {
 				Log.i("IAView", "LocationChanged");
+				Toast.makeText(IndoorMapActivity.this, "到达" + p.getLatitude() +", " + p.getLongitude(), Toast.LENGTH_LONG).show();
 			}
 		});
 

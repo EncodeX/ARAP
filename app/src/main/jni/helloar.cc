@@ -277,6 +277,9 @@ void HelloAR::render()
             }else if (frame.targets()[0].target().name() == std::string("1467028763573")){
                 target_detect_state = true;
                 current_target = 3;
+            }else if (frame.targets()[0].target().name() == std::string("1467340832711")){
+                target_detect_state = true;
+                current_target = 4;
             }
 
             tracked_target = target_id;
@@ -504,6 +507,7 @@ JNIEXPORT jboolean JNICALL JNIFUNCTION_NATIVE(nativeInit(JNIEnv*, jobject))
     ar.loadFromImage("1467028365336.jpg");
     ar.loadFromImage("1467028416208.jpg");
     ar.loadFromImage("1467028763573.jpg");
+    ar.loadFromImage("1467340832711.jpg");
     status &= ar.start();
 
     return status;
