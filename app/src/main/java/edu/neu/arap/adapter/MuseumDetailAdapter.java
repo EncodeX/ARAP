@@ -45,7 +45,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
     private int showId;
     private List<Map<String, Object>> mData;
 	private JSONArray arItems;
-    public MuseumDetailAdapter(Context context,int showId,String showName,Double locationInfoLatitude,Double locationInfoLongtitude  ){
+    public MuseumDetailAdapter(Context context,int showId,String showName,Double locationInfoLatitude,Double locationInfoLongtitude , String resVote ){
         this.context=context;
         this.mInflater = LayoutInflater.from(context);
         this.showId=showId;
@@ -174,61 +174,60 @@ public class MuseumDetailAdapter extends BaseAdapter {
 	        }
             return convertView;
         }
-        else
-        {
-            convertView=null;
-            ViewHolder holder = null;
-            if (convertView == null) {
+        else {
+	        convertView = null;
+	        ViewHolder holder = null;
+	        if (convertView == null) {
 
-                holder = new ViewHolder();
+		        holder = new ViewHolder();
 
-                convertView = mInflater.inflate(R.layout.museum_list_item, null);
-                holder.mimage = (ImageView) convertView.findViewById(R.id.museumListViewImage);
-                holder.mname = (TextView) convertView.findViewById(R.id.museumListViewName);
-                holder.mintro = (TextView) convertView.findViewById(R.id.museumListViewIntro);
-                holder.mark = (TextView) convertView.findViewById(R.id.museumMark);
-                convertView.setTag(holder);
-            } else {
+		        convertView = mInflater.inflate(R.layout.museum_list_item, null);
+		        holder.mimage = (ImageView) convertView.findViewById(R.id.museumListViewImage);
+		        holder.mname = (TextView) convertView.findViewById(R.id.museumListViewName);
+		        holder.mintro = (TextView) convertView.findViewById(R.id.museumListViewIntro);
+		        holder.mark = (TextView) convertView.findViewById(R.id.museumMark);
+		        convertView.setTag(holder);
+	        } else {
 
-                holder = (ViewHolder) convertView.getTag();
-            }
+		        holder = (ViewHolder) convertView.getTag();
+	        }
 
-            //holder.mimage.setBackgroundResource((Integer)mData.get(position).get("image"));
-            Picasso.with(context).load((String) mData.get(position).get("image")).into(holder.mimage);
-            holder.mname.setText((String)mData.get(position).get("title"));
-            holder.mintro.setText((String)mData.get(position).get("arAddress"));
-            holder.mark.setText("评分："+(String)mData.get(position).get("arVote"));
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+	        //holder.mimage.setBackgroundResource((Integer)mData.get(position).get("image"));
+	        Picasso.with(context).load((String) mData.get(position).get("image")).into(holder.mimage);
+	        holder.mname.setText((String) mData.get(position).get("title"));
+	        holder.mintro.setText((String) mData.get(position).get("arAddress"));
+	        holder.mark.setText("评分：" + (String) mData.get(position).get("arVote"));
+	        convertView.setOnClickListener(new View.OnClickListener() {
+		        @Override
+		        public void onClick(View v) {
 
-                networkTool.requestMuseumData(showId, new NetworkTool.OnResponseListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            arItems=response.getJSONArray("ar_items");
-                        //    Toast.makeText(context,arItems.getJSONObject(position-1).toString(),Toast.LENGTH_SHORT).show();
-                            Intent intent=new Intent(context,AugmentedActivity.class);
-                            intent.putExtra("JSONObject",arItems.getJSONObject(position-1).toString());
-                            context.startActivity(intent);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+			        networkTool.requestMuseumData(showId, new NetworkTool.OnResponseListener() {
+				        @Override
+				        public void onResponse(JSONObject response) {
+					        try {
+						        arItems = response.getJSONArray("ar_items");
+						        //    Toast.makeText(context,arItems.getJSONObject(position-1).toString(),Toast.LENGTH_SHORT).show();
+						        Intent intent = new Intent(context, AugmentedActivity.class);
+						        intent.putExtra("JSONObject", arItems.getJSONObject(position - 1).toString());
+						        context.startActivity(intent);
+					        } catch (JSONException e) {
+						        e.printStackTrace();
+					        }
 
-                    }
+				        }
 
-                    @Override
-                    public void onError(VolleyError error) {
+				        @Override
+				        public void onError(VolleyError error) {
 
-                    }
-                });
+				        }
+			        });
 //                Intent intent=new Intent(context,AugmentedActivity.class);
 //                intent.putExtra("museumDetailData",(Serializable)mData);//    private List<Map<String, Object>> mData;
 //                intent.putExtra("museumDetailPosition",position);//position :int
 //              //  context.startActivity(intent);
-            }
-        });
-        return convertView;
-
+		        }
+	        });
+	        return convertView;
+        }
     }
 }
