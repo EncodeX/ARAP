@@ -2,6 +2,7 @@ package edu.neu.arap.activity;
 
 import android.Manifest;
 import android.app.DownloadManager;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.net.Uri;
@@ -13,9 +14,15 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.edu.neu.navigation.View.IAView;
+import com.edu.neu.navigation.View.IndoorLocationListener;
+import com.edu.neu.navigation.util.Point;
 import com.indooratlas.android.sdk.IALocation;
 import com.indooratlas.android.sdk.IALocationListener;
 import com.indooratlas.android.sdk.IALocationManager;
@@ -29,12 +36,18 @@ import com.indooratlas.android.sdk.resources.IAResultCallback;
 import com.indooratlas.android.sdk.resources.IATask;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import edu.neu.arap.R;
 import edu.neu.arap.view.BlueDotView;
+import edu.neu.arap.view.SquareImageView;
 
 public class IndoorMapActivity extends AppCompatActivity {
 	private final int CODE_PERMISSION = 6920;
@@ -42,16 +55,18 @@ public class IndoorMapActivity extends AppCompatActivity {
 	private static final float dotRadius = 1.0f;
 
 	@Bind(R.id.indoor_map_view)
-	BlueDotView mIndoorMapView;
+	IAView mIndoorMapView;
+	@Bind(R.id.indoor_item_image)
+	SquareImageView mIndoorItemImage;
+	@Bind(R.id.indoor_description_button)
+	Button mIndoorDescriptionButton;
+	@Bind(R.id.indoor_ar_button)
+	Button mIndoorARButton;
+	@Bind(R.id.indoor_back_button)
+	ImageButton mIndoorBackButton;
 
-	private IALocationManager mIALocationManager;
-	private IALocationListener mIALocationListener;
-	private IAResourceManager mIAResourceManager;
-	private IALocation mIALocation;
-	private IATask<IAFloorPlan> mPendingAsyncResult;
-	private IAFloorPlan mIAFloorPlan;
-
-	private IARegion.Listener mRegionListener;
+	private ArrayList<POI> mItemList;
+	private ArrayList<String> mItemJsonList;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,29 +80,23 @@ public class IndoorMapActivity extends AppCompatActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.i("IALocation", "onResume");
+//		Log.i("IALocation", "onResume");
 
 		ensurePermissions();
 
-		mIALocationManager.requestLocationUpdates(IALocationRequest.create(), mIALocationListener);
-		mIALocationManager.registerRegionListener(mRegionListener);
-
-		mIALocationManager.setLocation(mIALocation);
-
-
+		mIndoorMapView.initResume();
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		mIALocationManager.removeLocationUpdates(mIALocationListener);
-		mIALocationManager.unregisterRegionListener(mRegionListener);
+		mIndoorMapView.initPause();
 	}
 
 	@Override
 	protected void onDestroy() {
-		mIALocationManager.destroy();
 		super.onDestroy();
+		mIndoorMapView.initDestroy();
 	}
 
 	@Override
@@ -122,109 +131,67 @@ public class IndoorMapActivity extends AppCompatActivity {
 	private void initView(){
 		ButterKnife.bind(this);
 
+		mIndoorMapView.setIndoorLocationListener(new IndoorLocationListener() {
+			@Override
+			public void onLocationChange(Point p) {
+				Log.i("IAView", "LocationChanged");
+			}
+		});
 
+		try {
+			Intent intent = getIntent();
+			JSONArray itemList = new JSONArray(intent.getStringExtra("json"));
+
+			mItemList = new ArrayList<>();
+			mItemJsonList = new ArrayList<>();
+
+			for(int i = 0; i<itemList.length();i++){
+				JSONObject item = itemList.optJSONObject(i);
+
+				POI poi = new POI();
+				poi.point = new Point(item.optDouble("ar_latitude"), item.optDouble("ar_longitude"), item.optString("title"));
+				poi.name = item.optString("title");
+				poi.address = item.optString("ar_address");
+				poi.imageUrl = item.optJSONArray("ar_material").optJSONObject(0).optString("material_address");
+				poi.arMaterials = item.optJSONArray("ar_material").toString();
+				mItemList.add(poi);
+
+				mItemJsonList.add(item.toString());
+			}
+
+			String imgUrl = itemList.optJSONObject(0).optJSONArray("ar_material").optJSONObject(0).optString("material_address");
+			Picasso.with(this).load(imgUrl).into(mIndoorItemImage);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		mIndoorBackButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onBackPressed();
+			}
+		});
+
+		mIndoorARButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent intent = new Intent(IndoorMapActivity.this, AugmentedActivity.class);
+				intent.putExtra("JSONObject", mItemJsonList.get(0));
+				startActivity(intent);
+			}
+		});
 	}
 
 	private void initActivity(){
-		Bundle bundle = new Bundle(2);
-		bundle.putString(IALocationManager.EXTRA_API_KEY, getString(R.string.atlas_api_key));
-		bundle.putString(IALocationManager.EXTRA_API_SECRET, getString(R.string.atlas_api_secret));
 
-		mIALocationManager = IALocationManager.create(this, bundle);
-		mIALocationListener = new IALocationListener() {
-			@Override
-			public void onLocationChanged(IALocation iaLocation) {
-				Log.i("IALocation", "Latitude: " + iaLocation.getLatitude());
-				Log.i("IALocation", "Longitude: " + iaLocation.getLongitude());
-
-				if (mIndoorMapView != null && mIndoorMapView.isReady()) {
-					IALatLng latLng = new IALatLng(iaLocation.getLatitude(), iaLocation.getLongitude());
-					PointF point = mIAFloorPlan.coordinateToPoint(latLng);
-					mIndoorMapView.setDotCenter(point);
-					mIndoorMapView.postInvalidate();
-				}
-			}
-
-			@Override
-			public void onStatusChanged(String s, int i, Bundle bundle) {
-				Log.i("IALocation", "onStatusChanged");
-
-				switch (i){
-					case IALocationManager.STATUS_AVAILABLE:
-						Log.i("IALocation", "STATUS_AVAILABLE");
-						break;
-					case IALocationManager.STATUS_CALIBRATION_CHANGED:
-						Log.i("IALocation", "STATUS_CALIBRATION_CHANGED");
-						break;
-					case IALocationManager.STATUS_LIMITED:
-						Log.i("IALocation", "STATUS_LIMITED");
-						break;
-					case IALocationManager.STATUS_OUT_OF_SERVICE:
-						Log.i("IALocation", "STATUS_OUT_OF_SERVICE");
-						break;
-					case IALocationManager.STATUS_TEMPORARILY_UNAVAILABLE:
-						Log.i("IALocation", "STATUS_TEMPORARILY_UNAVAILABLE");
-						break;
-				}
-			}
-		};
-
-		mRegionListener = new IARegion.Listener() {
-			@Override
-			public void onEnterRegion(IARegion region) {
-//				if (region.getType() == IARegion.TYPE_FLOOR_PLAN) {
-//					fetchFloorPlan(region.getId());
-//				}
-				Log.i("IALocation","Region Entered");
-			}
-
-			@Override
-			public void onExitRegion(IARegion region) {
-				// leaving a previously entered region
-			}
-		};
-
-		mIAResourceManager = IAResourceManager.create(this);
-
-		mIALocation = IALocation.from(IARegion.floorPlan("02588c9d-6c01-45ad-9528-ad244b9a2fce"));
-
-		Log.d("IALocation", "fetching floor plan...");
-		fetchFloorPlan("02588c9d-6c01-45ad-9528-ad244b9a2fce");
 	}
 
-	private void fetchFloorPlan(String id) {
-		cancelPendingNetworkCalls();
-		final IATask<IAFloorPlan> asyncResult = mIAResourceManager.fetchFloorPlanWithId(id);
-		mPendingAsyncResult = asyncResult;
-		if (mPendingAsyncResult != null) {
-			mPendingAsyncResult.setCallback(new IAResultCallback<IAFloorPlan>() {
-				@Override
-				public void onResult(IAResult<IAFloorPlan> result) {
-					Log.d("IALocation", "fetch floor plan result:" + result);
-					if (result.isSuccess() && result.getResult() != null) {
-						mIAFloorPlan = result.getResult();
-
-						mIndoorMapView.setRadius(mIAFloorPlan.getMetersToPixels() * dotRadius);
-
-						Picasso.with(IndoorMapActivity.this)
-								.load(mIAFloorPlan.getUrl())
-								.into(mIndoorMapView);
-					} else {
-						// do something with error
-						if (!asyncResult.isCancelled()) {
-							Log.i("IALocation",result.getError() != null
-									? "error loading floor plan: " + result.getError()
-									: "access to floor plan denied");
-						}
-					}
-				}
-			}, Looper.getMainLooper()); // deliver callbacks in main thread
-		}
-	}
-
-	private void cancelPendingNetworkCalls() {
-		if (mPendingAsyncResult != null && !mPendingAsyncResult.isCancelled()) {
-			mPendingAsyncResult.cancel();
-		}
+	private class POI{
+		Point point;
+		String imageUrl;
+		String name;
+		String address;
+		String arMaterials;
 	}
 }

@@ -48,4 +48,23 @@
 		<item name="android:backgroundDimEnabled">false</item>
 	</style>
 
+	<style name="AppTheme.Button.Primary" parent="Widget.AppCompat.Button">
+		<item name="android:background">@drawable/btn_default</item>
+		<item name="android:textColor">@android:color/white</item>
+	</style>
+
+	<style name="AppTheme.Button.Primary.Borderless" parent="Widget.AppCompat.Button.Borderless.Colored">
+		<item name="android:background">@drawable/btn_default</item>
+		<item name="android:textColor">@android:color/white</item>
+	</style>
+
+	<style name="AppTheme.Button.Clear.Borderless" parent="Widget.AppCompat.Button.Borderless.Colored">
+		<item name="android:background">@drawable/btn_borderless</item>
+		<item name="android:textColor">@color/colorPrimary</item>
+	</style>
+
+	<style name="AppTheme.Button.Borderless" parent="Widget.AppCompat.Button.Borderless">
+
+	</style>
+
 </resources>

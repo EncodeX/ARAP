@@ -26,6 +26,7 @@ import java.util.Map;
 
 import edu.neu.arap.R;
 import edu.neu.arap.activity.AugmentedActivity;
+import edu.neu.arap.activity.IndoorMapActivity;
 import edu.neu.arap.activity.ViewHolder;
 import edu.neu.arap.map.MapActivity;
 import edu.neu.arap.tool.NetworkTool;
@@ -42,6 +43,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
     private Double locationInfoLongtitude=0.0;
     private int showId;
     private List<Map<String, Object>> mData;
+	private JSONArray arItems;
     public MuseumDetailAdapter(Context context,int showId,String showName,Double locationInfoLatitude,Double locationInfoLongtitude  ){
         this.context=context;
         this.mInflater = LayoutInflater.from(context);
@@ -60,7 +62,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    JSONArray arItems=response.getJSONArray("ar_items");
+                    arItems=response.getJSONArray("ar_items");
                     for (int i=0;i<arItems.length();i++)
                     {
                         JSONObject arItem=arItems.getJSONObject(i);
@@ -141,16 +143,30 @@ public class MuseumDetailAdapter extends BaseAdapter {
                 holder = (ViewHolder) convertView.getTag();
             }
             holder.mname.setText(showName);
-            ((Button)convertView.findViewById(R.id.gotoMap)).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent1=new Intent(context, MapActivity.class);
-                    intent1.putExtra("resName",showName);
-                    intent1.putExtra("locationInfoLatitude",locationInfoLatitude);
-                    intent1.putExtra("locationInfoLongtitude",locationInfoLongtitude);
-                    context.startActivity(intent1);
-                }
-            });
+	        Button btn = ((Button)convertView.findViewById(R.id.gotoMap));
+	        if(btn != null){
+		        btn.setOnClickListener(new View.OnClickListener() {
+			        @Override
+			        public void onClick(View v) {
+				        Intent intent1=new Intent(context, MapActivity.class);
+				        intent1.putExtra("resName",showName);
+				        intent1.putExtra("locationInfoLatitude",locationInfoLatitude);
+				        intent1.putExtra("locationInfoLongtitude",locationInfoLongtitude);
+				        context.startActivity(intent1);
+			        }
+		        });
+	        }
+	        btn = ((Button)convertView.findViewById(R.id.museum_detail_indoor));
+	        if(btn != null){
+		        btn.setOnClickListener(new View.OnClickListener() {
+			        @Override
+			        public void onClick(View v) {
+				        Intent intent=new Intent(context, IndoorMapActivity.class);
+				        intent.putExtra("json", arItems.toString());
+				        context.startActivity(intent);
+			        }
+		        });
+	        }
             return convertView;
         }
         convertView=null;
@@ -183,7 +199,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            JSONArray arItems=response.getJSONArray("ar_items");
+                            arItems=response.getJSONArray("ar_items");
                         //    Toast.makeText(context,arItems.getJSONObject(position-1).toString(),Toast.LENGTH_SHORT).show();
                             Intent intent=new Intent(context,AugmentedActivity.class);
                             intent.putExtra("JSONObject",arItems.getJSONObject(position-1).toString());
