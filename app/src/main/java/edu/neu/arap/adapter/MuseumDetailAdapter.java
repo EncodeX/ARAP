@@ -41,6 +41,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
     private Context context;
     private Double locationInfoLatitude=0.0;
     private Double locationInfoLongtitude=0.0;
+    private String resVote;
     private int showId;
     private List<Map<String, Object>> mData;
 	private JSONArray arItems;
@@ -51,6 +52,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
         this.showName=showName;
         this.locationInfoLatitude=locationInfoLatitude;
         this.locationInfoLongtitude=locationInfoLongtitude;
+        this.resVote=resVote;
         mData=getData();
     }
 
@@ -128,14 +130,16 @@ public class MuseumDetailAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        notifyDataSetChanged();
+       // notifyDataSetChanged();
         if (position==0)
         {
             ViewHolder holder = null;
+            convertView=null;
             if (convertView == null) {
                 holder = new ViewHolder();
                 convertView = mInflater.inflate(R.layout.museum_list_item_top, null);
                 holder.mname = (TextView) convertView.findViewById(R.id.museum_detail_name_2);
+                holder.mark =(TextView)convertView.findViewById(R.id.museum_detail_mark);
                 convertView.setTag(holder);
             }
             else {
@@ -143,6 +147,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
                 holder = (ViewHolder) convertView.getTag();
             }
             holder.mname.setText(showName);
+	        holder.mark.setText("评分:"+resVote);
 	        Button btn = ((Button)convertView.findViewById(R.id.gotoMap));
 	        if(btn != null){
 		        btn.setOnClickListener(new View.OnClickListener() {
@@ -169,31 +174,33 @@ public class MuseumDetailAdapter extends BaseAdapter {
 	        }
             return convertView;
         }
-        convertView=null;
-        ViewHolder holder = null;
-        if (convertView == null) {
+        else
+        {
+            convertView=null;
+            ViewHolder holder = null;
+            if (convertView == null) {
 
-            holder = new ViewHolder();
+                holder = new ViewHolder();
 
-            convertView = mInflater.inflate(R.layout.museum_list_item, null);
-            holder.mimage = (ImageView) convertView.findViewById(R.id.museumListViewImage);
-            holder.mname = (TextView) convertView.findViewById(R.id.museumListViewName);
-            holder.mintro = (TextView) convertView.findViewById(R.id.museumListViewIntro);
-            holder.mark = (TextView) convertView.findViewById(R.id.museumMark);
-            convertView.setTag(holder);
-        } else {
+                convertView = mInflater.inflate(R.layout.museum_list_item, null);
+                holder.mimage = (ImageView) convertView.findViewById(R.id.museumListViewImage);
+                holder.mname = (TextView) convertView.findViewById(R.id.museumListViewName);
+                holder.mintro = (TextView) convertView.findViewById(R.id.museumListViewIntro);
+                holder.mark = (TextView) convertView.findViewById(R.id.museumMark);
+                convertView.setTag(holder);
+            } else {
 
-            holder = (ViewHolder) convertView.getTag();
-        }
+                holder = (ViewHolder) convertView.getTag();
+            }
 
-        //holder.mimage.setBackgroundResource((Integer)mData.get(position).get("image"));
-        Picasso.with(context).load((String) mData.get(position).get("image")).into(holder.mimage);
-        holder.mname.setText((String)mData.get(position).get("title"));
-        holder.mintro.setText((String)mData.get(position).get("arAddress"));
-        holder.mark.setText("评分："+(String)mData.get(position).get("arVote"));
-        convertView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            //holder.mimage.setBackgroundResource((Integer)mData.get(position).get("image"));
+            Picasso.with(context).load((String) mData.get(position).get("image")).into(holder.mimage);
+            holder.mname.setText((String)mData.get(position).get("title"));
+            holder.mintro.setText((String)mData.get(position).get("arAddress"));
+            holder.mark.setText("评分："+(String)mData.get(position).get("arVote"));
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
                 networkTool.requestMuseumData(showId, new NetworkTool.OnResponseListener() {
                     @Override

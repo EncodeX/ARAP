@@ -35,6 +35,7 @@ import edu.neu.arap.tool.NetworkTool;
 public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
     private NetworkTool networkTool;
     private Context context;
+    private int useless=0;
 //    private  double[] locationInfoLatitude={41.67779212,41.65592365,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212,41.67779212};
     private ArrayList<Double> locationInfoLatitude=new ArrayList<Double>();
     private ArrayList<Double> locationInfoLongtitude=new ArrayList<Double>();
@@ -44,6 +45,7 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
     private  ArrayList<String> showId=new ArrayList<String>();
 //    private String[] resName={"useless","晶火传奇艺术展","明清瓷器展","明清玉器展","万历海贸传奇","辽宁民间绣品展","拿破仑文物展","中国古代货币展","useless"};
     private ArrayList<String> resName=new ArrayList<String>();
+    private ArrayList<String > resVote=new ArrayList<String>();
 //    private String[] resIntro={
 //            "useless",
 //            "  玻璃的魅力在于它是一种充满张力的神奇物质，柔时似水，钢时如钻，极强的可塑性造就了它变幻无穷的非凡美丽。在光与影的参与下，玻璃就有了魂，令人产生如梦如幻之感。",
@@ -82,12 +84,16 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
 			public void onResponse(JSONObject response) {
 				try {
 					JSONArray middle=response.getJSONArray("middle");
-					resName.add("useless");
-					resIntro.add("useless");
-					locationInfoLatitude.add(0.0);
-					locationInfoLongtitude.add(0.0);
-					resID.add("useless");
-					showId.add("useless");
+                    if (useless==0)
+                    {
+                        resName.add("useless");
+                        resIntro.add("useless");
+                        locationInfoLatitude.add(0.0);
+                        locationInfoLongtitude.add(0.0);
+                        resID.add("useless");
+                        showId.add("useless");
+                        resVote.add("useless");
+                    }
 					for (int i=0;i<middle.length();i++)
 					{
 						JSONObject midObjection=middle.getJSONObject(i);
@@ -97,13 +103,19 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
 						locationInfoLongtitude.add(midObjection.getDouble("show_longitude"));
 						resID.add(midObjection.getString("show_imgaddress"));
 						showId.add(midObjection.getString("show_id"));
+                        resVote.add(midObjection.getString("show_vote"));
 					}
-					resID.add("useless");
-					showId.add("useless");
-					locationInfoLatitude.add(0.0);
-					locationInfoLongtitude.add(0.0);
-					resName.add("useless");
-					resIntro.add("useless");
+                    if (useless==0)
+                    {
+                        resID.add("useless");
+                        showId.add("useless");
+                        locationInfoLatitude.add(0.0);
+                        locationInfoLongtitude.add(0.0);
+                        resName.add("useless");
+                        resIntro.add("useless");
+                        resVote.add("useless");
+                        useless++;
+                    }
 					notifyDataSetChanged();
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -121,11 +133,13 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
     class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView imageButton;
         private TextView textView;
+        private TextView mark;
         private MyItemClickListener mListener;
         public MyViewHolder(View root, MyItemClickListener listener) {
             super(root);
             textView= (TextView) root.findViewById(R.id.listText);
             imageButton= (ImageView) root.findViewById(R.id.listImage);
+            mark=(TextView)root.findViewById(R.id.mark);
             this.mListener = listener;
             root.setOnClickListener(this);
         }
@@ -134,6 +148,7 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
         public TextView getTextView() {
             return textView;
         }
+        public TextView getMark(){return mark;}
 
         @Override
         public void onClick(View v) {
@@ -181,6 +196,7 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
                 return;
             MyViewHolder MyViewHolder =(MyViewHolder)holder;
             MyViewHolder.getTextView().setText(resName.get(position));
+            MyViewHolder.getMark().setText("评分:"+resVote.get(position));
 //            networkTool.getImageResource(resID.get(position), MyViewHolder.getImageButton(), new NetworkTool.OnResponseListener() {
 //                @Override
 //                public void onResponse(JSONObject response) {
@@ -226,5 +242,6 @@ public class MyAdapter extends RecyclerView.Adapter<ViewHolder> {
     public ArrayList<String> getShowId(){return showId;}
     public ArrayList<Double> getLocationInfoLatitude(){return locationInfoLatitude;}
     public ArrayList<Double> getGetLocationInfoLongtitude(){return locationInfoLongtitude;}
+    public ArrayList<String> getResVote(){return resVote;}
 
 }

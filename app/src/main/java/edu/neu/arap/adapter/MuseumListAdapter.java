@@ -39,11 +39,13 @@ public class MuseumListAdapter extends BaseAdapter {
     private ArrayList<String> resID=new ArrayList<String>();
     private ArrayList<String> resIntro=new ArrayList<String>();
     private ArrayList<String> showId=new ArrayList<String>();
+    private ArrayList<String> resVote=new ArrayList<String>();
     private Context context;
     private NetworkTool networkTool;
     private LayoutInflater mInflater;
     private ArrayList<Double> locationInfoLatitude=new ArrayList<Double>();
     private ArrayList<Double>  locationInfoLongtitude=new ArrayList<Double>();
+    private OnGetListDataListener mOnGetListDataListener;
 
     public MuseumListAdapter(Context context) {
         super();
@@ -51,6 +53,10 @@ public class MuseumListAdapter extends BaseAdapter {
         this.mInflater = LayoutInflater.from(context);
         networkTool=new NetworkTool(context);
         //mData=getData();
+    }
+
+    public void setOnGetListDataListener(OnGetListDataListener onGetListDataListener){
+        mOnGetListDataListener = onGetListDataListener;
     }
 
     public void setData(AMap aMap){
@@ -80,9 +86,12 @@ public class MuseumListAdapter extends BaseAdapter {
                         resID.add((String)m.get("image"));
                         resName.add((String)m.get("name"));
                         resIntro.add((String) m.get("intro"));
+                        resVote.add((String)m.get("mark"));
                     }
                     
-                    
+                    if(mOnGetListDataListener !=null){
+                        mOnGetListDataListener.onGetLIstData();
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -173,7 +182,7 @@ public class MuseumListAdapter extends BaseAdapter {
         Picasso.with(context).load((String)mData.get(position).get("image")).into(holder.mimage);
         holder.mname.setText((String)mData.get(position).get("name"));
         holder.mintro.setText((String)mData.get(position).get("intro"));
-        holder.mark.setText((String)mData.get(position).get("mark"));
+        holder.mark.setText("评分:"+(String)mData.get(position).get("mark"));
         holder.distance.setText((String)mData.get(position).get("distance")+"km");
         //holder.distance.setText(""+getCount());
       /*  holder.mbtn.setOnClickListener(new View.OnClickListener() {
@@ -194,6 +203,7 @@ public class MuseumListAdapter extends BaseAdapter {
                 intent.putExtra("showId",showId);
                 intent.putExtra("resID",resID);
                 intent.putExtra("resName",resName);
+                intent.putExtra("resVote",resVote);
                 intent.putExtra("resIntro",resIntro);
                 context.startActivity(intent);
                 //Toast.makeText(v.getContext(), position + "", Toast.LENGTH_SHORT).show();
@@ -202,4 +212,7 @@ public class MuseumListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public interface OnGetListDataListener{
+          void onGetLIstData();
+    }
 }
