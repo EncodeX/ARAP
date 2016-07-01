@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Navigation</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_image">ImageActivity</string>
+    <string name="atlas_api_key">412a56b4-9a1f-4781-96e4-85c127981252</string>
+    <string name="atlas_api_secret">nK4QXcXp7cKKNvnWhfTWdWENj6s2HoMUtNTG2RrhWKtb0Mugx8gdc2ZWs5SIQEGfU+KALtQqfnu7b40JWtXOhiigcGQ+DWyXZ67kSHjp3X0+ACuim//7aQSP6FokDg==</string>
+</resources>

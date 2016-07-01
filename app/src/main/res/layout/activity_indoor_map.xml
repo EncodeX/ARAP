@@ -7,7 +7,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	tools:context="edu.neu.arap.activity.IndoorMapActivity">
-	<edu.neu.arap.view.BlueDotView
+	<com.edu.neu.navigation.View.IAView
 		android:id="@+id/indoor_map_view"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"/>
