@@ -41,6 +41,7 @@ public class MuseumDetailActivity extends AppCompatActivity {
     private ArrayList<String> resName=new ArrayList<String>();
     private ArrayList<String> resIntro=new ArrayList<String>();
     private ArrayList<String> showId=new ArrayList<String>();
+    private ArrayList<String> resVote=new ArrayList<String>();
     private ListView listView;
     private ArrayList<Double> locationInfoLatitude=new ArrayList<Double>();
     private ArrayList<Double> locationInfoLongtitude=new ArrayList<Double>();
@@ -53,6 +54,7 @@ public class MuseumDetailActivity extends AppCompatActivity {
         resID=intent.getStringArrayListExtra("resID");
         resName=intent.getStringArrayListExtra("resName");
         showId=intent.getStringArrayListExtra("showId");
+        resVote=intent.getStringArrayListExtra("resVote");
         resIntro=intent.getStringArrayListExtra("resIntro");
         locationInfoLatitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLatitude");
         locationInfoLongtitude= (ArrayList<Double>) intent.getSerializableExtra("locationInfoLongtitude");
@@ -69,7 +71,7 @@ public class MuseumDetailActivity extends AppCompatActivity {
                 // Picasso.with(context).load(resID.get(position)).centerCrop().into(MyViewHolder.getImageButton());
     //    ((TextView)findViewById(R.id.museum_detail_name_2)).setText(resName.get(RPosition));
         listView=(ListView) findViewById(R.id.museum_detail_list);
-        adapter=new MuseumDetailAdapter(this,Integer.parseInt(showId.get(RPosition)),resName.get(RPosition),locationInfoLatitude.get(RPosition),locationInfoLongtitude.get(RPosition));
+        adapter=new MuseumDetailAdapter(this,Integer.parseInt(showId.get(RPosition)),resName.get(RPosition),locationInfoLatitude.get(RPosition),locationInfoLongtitude.get(RPosition),resVote.get(RPosition));
         listView.setAdapter(adapter);
        // adapter.notifyDataSetChanged();
       //  setListViewHeightBasedOnChildren(listView);

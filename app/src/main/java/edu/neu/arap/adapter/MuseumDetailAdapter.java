@@ -40,15 +40,17 @@ public class MuseumDetailAdapter extends BaseAdapter {
     private Context context;
     private Double locationInfoLatitude=0.0;
     private Double locationInfoLongtitude=0.0;
+    private String resVote;
     private int showId;
     private List<Map<String, Object>> mData;
-    public MuseumDetailAdapter(Context context,int showId,String showName,Double locationInfoLatitude,Double locationInfoLongtitude  ){
+    public MuseumDetailAdapter(Context context,int showId,String showName,Double locationInfoLatitude,Double locationInfoLongtitude,String resVote  ){
         this.context=context;
         this.mInflater = LayoutInflater.from(context);
         this.showId=showId;
         this.showName=showName;
         this.locationInfoLatitude=locationInfoLatitude;
         this.locationInfoLongtitude=locationInfoLongtitude;
+        this.resVote=resVote;
         mData=getData();
     }
 
@@ -134,6 +136,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
                 holder = new ViewHolder();
                 convertView = mInflater.inflate(R.layout.museum_list_item_top, null);
                 holder.mname = (TextView) convertView.findViewById(R.id.museum_detail_name_2);
+                holder.mark =(TextView)convertView.findViewById(R.id.museum_detail_mark);
                 convertView.setTag(holder);
             }
             else {
@@ -141,6 +144,7 @@ public class MuseumDetailAdapter extends BaseAdapter {
                 holder = (ViewHolder) convertView.getTag();
             }
             holder.mname.setText(showName);
+            holder.mark.setText("评分:"+resVote);
             ((Button)convertView.findViewById(R.id.gotoMap)).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

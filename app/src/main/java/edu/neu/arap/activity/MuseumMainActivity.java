@@ -1,6 +1,7 @@
 package edu.neu.arap.activity;
 
 import android.content.Intent;
+import android.location.Location;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -128,7 +129,15 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
 
         listView=(ListView) findViewById(R.id.museumListView);
         museumAdapter=new MuseumListAdapter(this);
+        museumAdapter.setOnGetListDataListener(new MuseumListAdapter.OnGetListDataListener() {
+            @Override
+            public void onGetLIstData() {
+                Log.i("123","123");
+                setListViewHeightBasedOnChildren(listView);
+            }
+        });
         listView.setAdapter(museumAdapter);
+
         //setListViewHeightBasedOnChildren(listView);
 
 
@@ -160,83 +169,95 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         aMap2.setMyLocationEnabled(true);
         aMap2.setMyLocationType(AMap.LOCATION_TYPE_LOCATE);
 
-
-        final Thread thread=new Thread(new Runnable()
-        {
+        aMap2.setOnMyLocationChangeListener(new AMap.OnMyLocationChangeListener() {
             @Override
-            public void run()
-            {
-                while (aMap2.getMyLocation()==null);
-                runOnUiThread(new Runnable() {
+            public void onMyLocationChange(Location location) {
+                Log.i("123",location.getLatitude()+" "+ location.getLongitude());
+
+                networkTool.requestMuseumMainData(location.getLatitude(), location.getLongitude(), new NetworkTool.OnResponseListener() {
                     @Override
-                    public void run() {
-                        networkTool.requestMuseumMainData(aMap2.getMyLocation().getLatitude(), aMap2.getMyLocation().getLongitude(), new NetworkTool.OnResponseListener() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    JSONArray top=response.getJSONArray("top");
-                                    for (int i=0;i<top.length();i++)
-                                    {
-                                        JSONObject topObjection=top.getJSONObject(i);
-                                        ADName.add(topObjection.getString("show_name"));
-                                        networkImages.add(topObjection.getString("show_imgaddress"));
-                                    }
-                                    convenientBanner.notifyDataSetChanged();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray top=response.getJSONArray("top");
+                            for (int i=0;i<top.length();i++)
+                            {
+                                JSONObject topObjection=top.getJSONObject(i);
+                                ADName.add(topObjection.getString("show_name"));
+                                networkImages.add(topObjection.getString("show_imgaddress"));
                             }
+                            convenientBanner.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
-                            @Override
-                            public void onError(VolleyError error) {
+                    }
 
-                            }
-                        });
-                      //  Toast.makeText(MuseumMainActivity.this,"Latitude:"+aMap2.getMyLocation().getLatitude()+"Longtitude:"+aMap2.getMyLocation().getLongitude(),Toast.LENGTH_SHORT).show();
-                        convenientBanner.setPages(new CBViewHolderCreator<NetworkImageHolderView>() {
-                            @Override
-                            public NetworkImageHolderView createHolder() {
-                                return new NetworkImageHolderView();
-                            }
-                        },(List) networkImages);
-                        convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                            @Override
-                            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                                if(ADName.size()!=0)
-                                    ( (TextView) findViewById(R.id.convenientBannerIntro)).setText(ADName.get(position%ADName.size()));
-                            }
+                    @Override
+                    public void onError(VolleyError error) {
 
-                            @Override
-                            public void onPageSelected(int position) {
-
-                            }
-
-                            @Override
-                            public void onPageScrollStateChanged(int state) {
-
-                            }
-                        });
-                        museumAdapter.setData(aMap2);
-                        mAdapter.setAMap(aMap2);
                     }
                 });
-            }
-        });
-        thread.start();
-        Thread threadListView=new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (museumAdapter.getCount()<=0);
-                runOnUiThread(new Runnable() {
+                //  Toast.makeText(MuseumMainActivity.this,"Latitude:"+aMap2.getMyLocation().getLatitude()+"Longtitude:"+aMap2.getMyLocation().getLongitude(),Toast.LENGTH_SHORT).show();
+                convenientBanner.setPages(new CBViewHolderCreator<NetworkImageHolderView>() {
                     @Override
-                    public void run() {
-                        setListViewHeightBasedOnChildren(listView);
+                    public NetworkImageHolderView createHolder() {
+                        return new NetworkImageHolderView();
+                    }
+                },(List) networkImages);
+                convenientBanner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                    @Override
+                    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                        if(ADName.size()!=0)
+                            ( (TextView) findViewById(R.id.convenientBannerIntro)).setText(ADName.get(position%ADName.size()));
+                    }
+
+                    @Override
+                    public void onPageSelected(int position) {
+
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int state) {
+
                     }
                 });
+                museumAdapter.setData(aMap2);
+                mAdapter.setAMap(aMap2);
+
+                aMap2.setOnMyLocationChangeListener(null);
             }
         });
-        threadListView.start();
+
+
+//        final Thread thread=new Thread(new Runnable()
+//        {
+//            @Override
+//            public void run()
+//            {
+//                while (aMap2.getMyLocation()==null);
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                    }
+//                });
+//            }
+//        });
+//        thread.start();
+
+//        Thread threadListView=new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (museumAdapter.getCount()<=0);
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        setListViewHeightBasedOnChildren(listView);
+//                    }
+//                });
+//            }
+//        });
+//        threadListView.start();
     }
 
 
@@ -343,6 +364,7 @@ public class MuseumMainActivity extends AppCompatActivity implements LocationSou
         intent.putExtra("resName",mAdapter.getResName());
         intent.putExtra("resIntro",mAdapter.getResIntro());
         intent.putExtra("showId",mAdapter.getShowId());
+        intent.putExtra("resVote",mAdapter.getResVote());
         startActivity(intent);
     }
 
