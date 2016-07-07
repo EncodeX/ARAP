@@ -7,8 +7,8 @@ package com.edu.neu.navigation.util;
 public class Point {
     private double latitude;
     private double longitude;
-    private float x;
-    private float y;
+    public float x;
+    public float y;
     private String message;
 
     public Point(double latitude, double longitude, String message) {

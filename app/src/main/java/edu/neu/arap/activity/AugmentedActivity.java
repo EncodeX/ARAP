@@ -1162,7 +1162,7 @@ public class AugmentedActivity extends AppCompatActivity {
 
 			mFrameBuffer.clear(transparent);
 			if(mIsTargetDetected && mARType != 2){
-				if(mCurrentARType != mARType){
+				if(mCurrentARType != mARType || mCurrentTarget != nativeCurrentTarget()){
 					if(mWorldObject!=null){
 						mWorldObject.setVisibility(false);
 					}
@@ -1184,7 +1184,6 @@ public class AugmentedActivity extends AppCompatActivity {
 						}
 						break;
 					case 1:
-						Log.i("EasyAR", "nativeCurrentTarget: "+nativeCurrentTarget());
 						switch (nativeCurrentTarget()){
 							case 2:
 								if(mWorldPicture!=null && mCurrentTarget == 2){

@@ -3,17 +3,23 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.edu.neu.navigation.R;
+import com.edu.neu.navigation.listener.IndoorListener;
+import com.edu.neu.navigation.util.NavigationUtil;
 import com.edu.neu.navigation.util.Point;
 import com.indooratlas.android.sdk.IALocation;
 import com.indooratlas.android.sdk.IALocationListener;
@@ -37,11 +43,15 @@ import java.util.List;
  * Created by Administrator on 2016/6/28.
  */
 
-public class IAView extends SubsamplingScaleImageView implements Target {
+public class IAView extends SubsamplingScaleImageView implements Target, SensorEventListener {
     private static final  String TAG ="IAView";
-    private IndoorLocationListener indoorLocationListener;
+    private IndoorListener indoorLocationListener;
     Context context;
     IAView iaView ;
+
+    public IAView getIaView() {
+        return iaView;
+    }
 
     private IALocationManager mIALocationManager;
     private IALocationListener mIALocationListener;
@@ -58,6 +68,12 @@ public class IAView extends SubsamplingScaleImageView implements Target {
 
     private float radius = 1f;
     private PointF dotCenter = null;
+
+
+    private double currentDegree;
+    private SensorManager mSensorManager;
+    private Sensor mSensor;
+    private int mTargetIndex = 0;
 
     public void setRadius(float radius) {
         this.radius = radius;
@@ -77,7 +93,12 @@ public class IAView extends SubsamplingScaleImageView implements Target {
         this.context = context;
         initIndoorSDK();
         initialise();
+
+        mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
     }
+    private Point nearPoint;
+    private PointF point;
     private void initIndoorSDK()
     {
         iaView= this;
@@ -95,16 +116,15 @@ public class IAView extends SubsamplingScaleImageView implements Target {
                 longitude = iaLocation.getLongitude();
                 if (this != null && isReady()) {
                     IALatLng latLng = new IALatLng(iaLocation.getLatitude(), iaLocation.getLongitude());
-                    PointF point = mIAFloorPlan.coordinateToPoint(latLng);
-                    //PointF point = new PointF((float)290,(float)910);
+                    point= mIAFloorPlan.coordinateToPoint(latLng);
                     Log.d(TAG,"测试"+point.x);
                     Log.d(TAG,"测试"+point.y);
-                    Point nearPoint =nearSomePoint(new Point(point.x,point.y,"当前位置"));
+
                     if(nearPoint!=null)
                     {
-
-                        indoorLocationListener.onLocationChange(nearPoint);
+                        indoorLocationListener.onLocationChange(nearPoint,poiIndex);
                     }
+
                     setDotCenter(point);
 
                     postInvalidate();
@@ -155,6 +175,7 @@ public class IAView extends SubsamplingScaleImageView implements Target {
         mIAResourceManager = IAResourceManager.create(context);
 
         String floorId ="02588c9d-6c01-45ad-9528-ad244b9a2fce";
+
         //String floorId ="0638f62a-38d3-4cd5-ae46-c067b21bfbca";
         mIALocation = IALocation.from(IARegion.floorPlan(floorId));
         Log.d("IALocation", "fetching floor plan...");
@@ -175,6 +196,8 @@ public class IAView extends SubsamplingScaleImageView implements Target {
 
                         setRadius(mIAFloorPlan.getMetersToPixels() * dotRadius);
 
+
+                        indoorLocationListener.onFloorPlanReadyToDownload(mIAFloorPlan.getUrl());
                         Picasso.with(context)
                                 .load(mIAFloorPlan.getUrl())
                                 .into(iaView);
@@ -202,6 +225,8 @@ public class IAView extends SubsamplingScaleImageView implements Target {
         setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_CENTER);
        // inflate(this,)
     }
+    private Canvas c;
+    private PointF p;
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -212,8 +237,10 @@ public class IAView extends SubsamplingScaleImageView implements Target {
         }
 
         if (dotCenter != null) {
-            //dotCenter = new PointF((float)290,(float)800);
+            //dotCenter = new PointF((float)290,(float)910);
             PointF vPoint = sourceToViewCoord(dotCenter);
+            c = canvas;
+            p = vPoint;
             Log.d(TAG,"dotCenter.x"+dotCenter.x);
             Log.d(TAG,"dotCenter.x"+dotCenter.y);
             Log.d(TAG,""+vPoint.y);
@@ -225,24 +252,46 @@ public class IAView extends SubsamplingScaleImageView implements Target {
             canvas.drawCircle(vPoint.x, vPoint.y, scaledRadius, paint);
 //            Log.d(TAG,"vpointx "+vPoint.x);
 //            Log.d(TAG,"vpointy "+vPoint.y);
-            initPoints(canvas,vPoint);
+            //initPoints(canvas,vPoint);
+            indoorLocationListener.onDrawReady(canvas,vPoint);
+
+            //initNavigationTriangle(canvas,vPoint);
 
         }
     }
-    private List<Point> getPoi()
-    {
-        List<Point> poiList = new ArrayList<>();
-        //poiList.add(new Point((float)290,(float)2286,"init位置"));
-        poiList.add(new Point((float)290,(float)913.5112,"504门口"));
-        poiList.add(new Point((float)290,(float)550,"拐弯口"));
-        poiList.add(new Point((float)2150,(float)550,"路口"));
-        poiList.add(new Point((float)2150,(float)1100,"厕所"));
+
+
+    private List<Point> poiList;
+    //目前位置在pioList中第几个
+    private int poiIndex;
+
+    public List<Point> getPoiList() {
         return poiList;
     }
+    public void setPoiList(List<Point> poiList) {
+        List<Point> pList = new ArrayList<>();
+        for (Point p:poiList) {
+            IALatLng latLng = new IALatLng(p.getLatitude(), p.getLongitude());
+            PointF floorPoint= mIAFloorPlan.coordinateToPoint(latLng);
+            p.setX(floorPoint.x);
+            p.setY(floorPoint.y);
+            pList.add(p);
+        }
+        //传值为经纬度
+        this.poiList = pList;
+        //传值为图上坐标
+        //this.poiList =poiList;
+
+        initPoints(c,p);
+        nearPoint=nearSomePoint(new Point(point.x,point.y,"当前位置"));
+        //nearPoint=nearSomePoint(new Point((float)290,(float)910,"当前位置"));
+    }
+
+
     private Point nearSomePoint(Point currentPoint)
     {
         float distance_limit =40;
-        List<Point> poiList= getPoi();
+        List<Point> poiList= getPoiList();
         for (Point p:poiList) {
             float xDistance =currentPoint.getX()-p.getX();
             float yDistance =currentPoint.getY()-p.getY();
@@ -262,7 +311,7 @@ public class IAView extends SubsamplingScaleImageView implements Target {
     private void initPoints(Canvas canvas, PointF vPoint) {
         float scaledRadius = getScale() * radius ;
         //init points
-        List<Point> poiList = getPoi();
+        List<Point> poiList = getPoiList();
 
         List<PointF> pathList = new ArrayList<>();
         Paint anotherPaint = new Paint();
@@ -276,6 +325,7 @@ public class IAView extends SubsamplingScaleImageView implements Target {
         }
         int total_points=pathList.size();
         int base_point =getBase(vPoint,pathList);
+        poiIndex =base_point;
         PointF base = new PointF(vPoint.x,vPoint.y);
         PointF start =base;
         for(int i =0;i<total_points;i++)
@@ -289,6 +339,32 @@ public class IAView extends SubsamplingScaleImageView implements Target {
 
             }
         }
+    }
+    private void initNavigationTriangle(Canvas canvas, PointF vPoint) {
+        double angle =30*Math.PI/180;
+        int length=30;
+        int vertical=20;
+
+        PointF a = new PointF((float)(vPoint.x+(length+vertical)*Math.sin(angle)),(float)(vPoint.y+(length+vertical)*Math.cos(angle)));
+
+        PointF b = new PointF((float)(vPoint.x+(length)*Math.sin(angle)-vertical*Math.cos(angle)),(float)(vPoint.y+length*Math.cos(angle)+vertical*Math.sin(angle)));
+
+        PointF c = new PointF((float)(vPoint.x+length*Math.sin(angle)+vertical*Math.cos(angle)),(float)(vPoint.y+length*Math.cos(angle)-vertical*Math.sin(angle)));
+        float scaledRadius = getScale() * radius *0.5f;
+        Path path = new Path();
+        path.moveTo(a.x,a.y);
+        path.lineTo(b.x,b.y);
+        path.lineTo(c.x,c.y);
+        path.close();
+
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(getResources().getColor(R.color.ia_red));
+        canvas.drawPath(path, paint);
+
+
+
     }
 
     private int getBase(PointF vPoint, List<PointF> pathList) {
@@ -351,7 +427,7 @@ public class IAView extends SubsamplingScaleImageView implements Target {
     public void onPrepareLoad(Drawable placeHolderDrawable) {
 
     }
-    public void setIndoorLocationListener(IndoorLocationListener indoorLocationListener) {
+    public void setIndoorLocationListener(IndoorListener indoorLocationListener) {
         this.indoorLocationListener = indoorLocationListener;
     }
     public void initResume()
@@ -360,11 +436,14 @@ public class IAView extends SubsamplingScaleImageView implements Target {
         mIALocationManager.registerRegionListener(mRegionListener);
 
         mIALocationManager.setLocation(mIALocation);
+
+        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);  //为传感器注册监听器
     }
     public void initPause()
     {
         mIALocationManager.removeLocationUpdates(mIALocationListener);
         mIALocationManager.unregisterRegionListener(mRegionListener);
+        mSensorManager.unregisterListener(this);
     }
     public void initDestroy()
     {
@@ -372,5 +451,27 @@ public class IAView extends SubsamplingScaleImageView implements Target {
     }
 
 
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+            currentDegree = sensorEvent.values[0];
+        }
+
+        Log.i("IndoorMapActivity", "Navigation Ready");
+        NavigationUtil util = new NavigationUtil();
+        if(p !=null){
+            List ins = util.getNavigation(new Point(latitude,longitude,p.x,p.y,"当前位置"), getPoiList().get(mTargetIndex),currentDegree);
+
+            if(indoorLocationListener!=null){
+                indoorLocationListener.onNavigationReady(ins);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
 
 }
