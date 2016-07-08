@@ -209,17 +209,7 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
         catch (Exception e){
             Toast.makeText(view.getContext(),"定位失败！",Toast.LENGTH_LONG).show();
         }
-        ////////////////////////////////////
-        aMap.clear();
-        aMap.addPolyline((new PolylineOptions())
-                .add(new LatLng(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude()), new LatLng(41.655077, 123.42694))
-                .setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr)));
-        aMap.addPolyline((new PolylineOptions())
-                .add(new LatLng(41.655077, 123.42694), new LatLng(41.655779, 123.426897))
-                .setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr)));
-        /////////////////////////////////////////////
-        //searchRouteResult(ROUTE_TYPE_WALK, RouteSearch.WalkDefault);
-
+        searchRouteResult(ROUTE_TYPE_WALK, RouteSearch.WalkDefault);
         mDrive.setImageResource(R.drawable.route_drive_normal);
         mBus.setImageResource(R.drawable.route_bus_normal);
         mWalk.setImageResource(R.drawable.route_walk_select);
@@ -499,7 +489,15 @@ public class MapActivity extends Activity implements LocationSource,AMapLocation
                             mWalkRouteResult.getStartPos(),
                             mWalkRouteResult.getTargetPos());
                     walkRouteOverlay.removeFromMap();
-                    walkRouteOverlay.addToMap();
+                    //walkRouteOverlay.addToMap();
+                    ////////////////////////////////////
+                    aMap.addPolyline((new PolylineOptions())
+                            .add(new LatLng(aMap.getMyLocation().getLatitude(),aMap.getMyLocation().getLongitude()), new LatLng(41.655077, 123.42694))
+                            .setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr)));
+                    aMap.addPolyline((new PolylineOptions())
+                            .add(new LatLng(41.655077, 123.42694), new LatLng(41.655779, 123.426897))
+                            .setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr)));
+                    /////////////////////////////////////////////
                     walkRouteOverlay.zoomToSpan();
                     mBottomLayout.setVisibility(View.VISIBLE);
                     int dis = (int) walkPath.getDistance();
